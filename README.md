@@ -4,6 +4,7 @@
 #To start the proyect, run the following commands:
 ```
 cd libros-app
+npm i
 npm start
 ```
 
