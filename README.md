@@ -8,7 +8,9 @@ npm start
 ```
 
 #To restart cache, run this command instead of the npm start command:
-```npx expo start -c ```
+```
+npx expo start -c
+```
 
 
 
