@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "libros-app",
-    "slug": "libros-app",
+    "name": "libros-app-try-catch",
+    "slug": "libros-app-try-catch",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "librosapp",
+    "scheme": "librosapptrycatch",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
