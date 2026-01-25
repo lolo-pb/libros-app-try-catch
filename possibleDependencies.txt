@@ -1,6 +1,0 @@
-react-native-maps
-Hardcover api // buscar nuevos libros
-Open Library Covers API // covers y data de los libros
-
-# maybe // vvv
-Cloudinary
