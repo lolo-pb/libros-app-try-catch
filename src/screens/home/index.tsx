@@ -53,24 +53,26 @@ export function HomeScreen() {
         <ThemedView style={styles.contentPadding}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>Recommended for you</ThemedText>
 
-          {RECOMMENDED_BOOKS.map((book) => (
-            <TouchableOpacity key={book.id} style={styles.bookCard}>
-              <Image
-                source={{ uri: book.cover }}
-                style={styles.bookCover}
-                contentFit="cover"
-                transition={400}
-              />
-              <ThemedView style={styles.bookInfo}>
-                <ThemedText type="defaultSemiBold" style={styles.titleText}>{book.title}</ThemedText>
-                <ThemedText style={{ color: colors.tabIconDefault }}>{book.author}</ThemedText>
+          <ThemedView style={styles.cardsContainer}>
+            {RECOMMENDED_BOOKS.map((book) => (
+              <TouchableOpacity key={book.id} style={styles.bookCard}>
+                <Image
+                  source={{ uri: book.cover }}
+                  style={styles.bookCover}
+                  contentFit="cover"
+                  transition={400}
+                />
+                <ThemedView style={styles.bookInfo}>
+                  <ThemedText type="defaultSemiBold" style={styles.titleText}>{book.title}</ThemedText>
+                  <ThemedText style={{ color: colors.tabIconDefault }}>{book.author}</ThemedText>
 
-                <ThemedView style={[styles.badge, { backgroundColor: colors.tint + '15' }]}>
-                  <ThemedText style={{ color: colors.tint, fontSize: 12, fontWeight: '600' }}>2.4 miles away</ThemedText>
+                  <ThemedView style={[styles.badge, { backgroundColor: colors.tint + '15' }]}>
+                    <ThemedText style={{ color: colors.tint, fontSize: 12, fontWeight: '600' }}>2.4 miles away</ThemedText>
+                  </ThemedView>
                 </ThemedView>
-              </ThemedView>
-            </TouchableOpacity>
-          ))}
+              </TouchableOpacity>
+            ))}
+          </ThemedView>
         </ThemedView>
       </ScrollView>
     </ThemedView>
@@ -84,12 +86,13 @@ const styles = StyleSheet.create({
   fixedHeader: {
     paddingHorizontal: 20,
     paddingBottom: 15,
-    paddingTop: 10,
+    paddingTop: 40,
     gap: 12,
+    alignItems: 'center',
   },
   logoText: {
     fontSize: 28,
-    color: '#E91E63', // A pretty pink/red "BookTrade" brand color
+    color: '#E91E63', // A pretty pink/red "BookTrade" brand color//can change
     fontWeight: '900',
   },
   searchContainer: {
@@ -97,6 +100,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 15,
     justifyContent: 'center',
+    alignSelf: 'stretch',
+  },
+  cardsContainer: {
+    width: '100%',
+    alignItems: 'center',
   },
   searchInput: {
     fontSize: 16,
@@ -114,6 +122,7 @@ const styles = StyleSheet.create({
   },
   mapPin: {
     fontSize: 40,
+    lineHeight: 50,
     marginBottom: 5,
   },
   contentPadding: {
