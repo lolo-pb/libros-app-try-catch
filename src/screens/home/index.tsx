@@ -1,115 +1,151 @@
 import { Image } from "expo-image";
-import { Platform, Pressable, StyleSheet } from "react-native";
+import React, { useState } from 'react';
+import { SafeAreaView, ScrollView, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 
-import { HelloWave } from "@/src/components/hello-wave";
-import ParallaxScrollView from "@/src/components/parallax-scroll-view";
 import { ThemedText } from "@/src/components/themed-text";
 import { ThemedView } from "@/src/components/themed-view";
 import { Colors } from "@/src/constants/theme";
-import { useAppNavigation } from "@/src/context/navigation-context";
 import { useColorScheme } from "@/src/hooks/use-color-scheme";
 
+const RECOMMENDED_BOOKS = [
+  { id: '1', title: 'The Great Gatsby', author: 'F. Scott Fitzgerald', cover: 'https://images.unsplash.com/photo-1543005187-9f4c4b7a80fe?w=400' },
+  { id: '2', title: '1984', author: 'George Orwell', cover: 'https://images.unsplash.com/photo-1541963463532-d68292c34b19?w=400' },
+  { id: '3', title: 'The Hobbit', author: 'J.R.R. Tolkien', cover: 'https://images.unsplash.com/photo-1621351123083-b88ecd2d5708?w=400' },
+  { id: '4', title: 'Ulysses', author: 'James Joyce', cover: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400' },
+];
+
 export function HomeScreen() {
-  const { navigateToScreen } = useAppNavigation();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
-
-  const handleGoToDetails = () => {
-    navigateToScreen("home", "home-details");
-  };
+  const [search, setSearch] = useState('');
 
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
-      headerImage={
-        <Image
-          source={require("@/assets/images/partial-react-logo.png")}
-          style={styles.reactLogo}
-        />
-      }
-    >
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit{" "}
-          <ThemedText type="defaultSemiBold">
-            src/screens/home/index.tsx
-          </ThemedText>{" "}
-          to see changes. Press{" "}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: "cmd + d",
-              android: "cmd + m",
-              web: "F12",
-            })}
-          </ThemedText>{" "}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Navegar a otra pantalla</ThemedText>
-        <ThemedText>
-          Usa el hook{" "}
-          <ThemedText type="defaultSemiBold">useAppNavigation</ThemedText> para
-          navegar entre pantallas dentro de la misma sección.
-        </ThemedText>
-        <Pressable
-          style={[
-            styles.button,
-            {
-              backgroundColor: colors.tint,
-            },
-          ]}
-          onPress={handleGoToDetails}
-        >
-          <ThemedText
-            style={{
-              color: "#fff",
-              fontSize: 16,
-              fontWeight: "600",
-              textAlign: "center",
-            }}
-          >
-            Ir a Detalles
-          </ThemedText>
-        </Pressable>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Explore some more</ThemedText>
-        <ThemedText>
-          Usa la barra de navegación en la parte inferior para cambiar entre
-          secciones. Cada sección muestra su propia pantalla.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <ThemedView style={styles.container}>
+      {/* --- FIXED HEADER SECTION --- */}
+      <SafeAreaView style={{ backgroundColor: colors.background }}>
+        <ThemedView style={styles.fixedHeader}>
+          <ThemedText type="title" style={styles.logoText}>BookTrade</ThemedText>
+          <ThemedView style={[styles.searchContainer, { backgroundColor: colorScheme === 'dark' ? '#2c2c2e' : '#f0f0f0' }]}>
+            <TextInput
+              style={[styles.searchInput, { color: colors.text }]}
+              placeholder="Search nearby books..."
+              placeholderTextColor={colors.tabIconDefault}
+              value={search}
+              onChangeText={setSearch}
+            />
+          </ThemedView>
+        </ThemedView>
+      </SafeAreaView>
+
+      {/* --- SCROLLABLE CONTENT --- */}
+      <ScrollView stickyHeaderIndices={[]} showsVerticalScrollIndicator={false}>
+
+        {/* 1. Map Section (Goes up when scrolling) */}
+        <ThemedView style={styles.mapSection}>
+          <ThemedView style={[styles.mapPlaceholder, { backgroundColor: colors.tint + '10', borderColor: colors.tint + '30' }]}>
+            <ThemedText style={styles.mapPin}>📍</ThemedText>
+            <ThemedText type="subtitle">Books near you</ThemedText>
+            <ThemedText style={{ color: colors.tabIconDefault }}>Showing 12 active trades</ThemedText>
+          </ThemedView>
+        </ThemedView>
+
+        {/* 2. Recommendations List */}
+        <ThemedView style={styles.contentPadding}>
+          <ThemedText type="subtitle" style={styles.sectionTitle}>Recommended for you</ThemedText>
+
+          {RECOMMENDED_BOOKS.map((book) => (
+            <TouchableOpacity key={book.id} style={styles.bookCard}>
+              <Image
+                source={{ uri: book.cover }}
+                style={styles.bookCover}
+                contentFit="cover"
+                transition={400}
+              />
+              <ThemedView style={styles.bookInfo}>
+                <ThemedText type="defaultSemiBold" style={styles.titleText}>{book.title}</ThemedText>
+                <ThemedText style={{ color: colors.tabIconDefault }}>{book.author}</ThemedText>
+
+                <ThemedView style={[styles.badge, { backgroundColor: colors.tint + '15' }]}>
+                  <ThemedText style={{ color: colors.tint, fontSize: 12, fontWeight: '600' }}>2.4 miles away</ThemedText>
+                </ThemedView>
+              </ThemedView>
+            </TouchableOpacity>
+          ))}
+        </ThemedView>
+      </ScrollView>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
+  container: {
+    flex: 1,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  fixedHeader: {
+    paddingHorizontal: 20,
+    paddingBottom: 15,
+    paddingTop: 10,
+    gap: 12,
   },
-  button: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginTop: 8,
+  logoText: {
+    fontSize: 28,
+    color: '#E91E63', // A pretty pink/red "BookTrade" brand color
+    fontWeight: '900',
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: "absolute",
+  searchContainer: {
+    height: 45,
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    justifyContent: 'center',
+  },
+  searchInput: {
+    fontSize: 16,
+  },
+  mapSection: {
+    padding: 20,
+  },
+  mapPlaceholder: {
+    height: 200,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderStyle: 'dashed',
+  },
+  mapPin: {
+    fontSize: 40,
+    marginBottom: 5,
+  },
+  contentPadding: {
+    paddingHorizontal: 20,
+    paddingBottom: 40,
+  },
+  sectionTitle: {
+    marginBottom: 15,
+  },
+  bookCard: {
+    flexDirection: 'row',
+    marginBottom: 20,
+    alignItems: 'center',
+    gap: 15,
+  },
+  bookCover: {
+    width: 90,
+    height: 130,
+    borderRadius: 12,
+  },
+  bookInfo: {
+    flex: 1,
+    gap: 2,
+  },
+  titleText: {
+    fontSize: 18,
+  },
+  badge: {
+    marginTop: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
   },
 });
