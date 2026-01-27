@@ -38,7 +38,7 @@ export function HomeScreen() {
       </SafeAreaView>
 
       {/* --- SCROLLABLE CONTENT --- */}
-      <ScrollView stickyHeaderIndices={[]} showsVerticalScrollIndicator={false}>
+      <ScrollView stickyHeaderIndices={[1]} showsVerticalScrollIndicator={false}>
 
         {/* 1. Map Section (Goes up when scrolling) */}
         <ThemedView style={styles.mapSection}>
@@ -49,30 +49,31 @@ export function HomeScreen() {
           </ThemedView>
         </ThemedView>
 
-        {/* 2. Recommendations List */}
-        <ThemedView style={styles.contentPadding}>
+        {/* 2. Recommendations title */}
+        <ThemedView style={[styles.stickyHeaderWrapper, { backgroundColor: colors.background }]}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>Recommended for you</ThemedText>
+        </ThemedView>
 
-          <ThemedView style={styles.cardsContainer}>
-            {RECOMMENDED_BOOKS.map((book) => (
-              <TouchableOpacity key={book.id} style={styles.bookCard}>
-                <Image
-                  source={{ uri: book.cover }}
-                  style={styles.bookCover}
-                  contentFit="cover"
-                  transition={400}
-                />
-                <ThemedView style={styles.bookInfo}>
-                  <ThemedText type="defaultSemiBold" style={styles.titleText}>{book.title}</ThemedText>
-                  <ThemedText style={{ color: colors.tabIconDefault }}>{book.author}</ThemedText>
+        {/* 3. Recommendations List */}
+        <ThemedView style={styles.cardsContainer}>
+          {RECOMMENDED_BOOKS.map((book) => (
+            <TouchableOpacity key={book.id} style={styles.bookCard}>
+              <Image
+                source={{ uri: book.cover }}
+                style={styles.bookCover}
+                contentFit="cover"
+                transition={400}
+              />
+              <ThemedView style={styles.bookInfo}>
+                <ThemedText type="defaultSemiBold" style={styles.titleText}>{book.title}</ThemedText>
+                <ThemedText style={{ color: colors.tabIconDefault }}>{book.author}</ThemedText>
 
-                  <ThemedView style={[styles.badge, { backgroundColor: colors.tint + '15' }]}>
-                    <ThemedText style={{ color: colors.tint, fontSize: 12, fontWeight: '600' }}>2.4 miles away</ThemedText>
-                  </ThemedView>
+                <ThemedView style={[styles.badge, { backgroundColor: colors.tint + '15' }]}>
+                  <ThemedText style={{ color: colors.tint, fontSize: 12, fontWeight: '600' }}>2.4 miles away</ThemedText>
                 </ThemedView>
-              </TouchableOpacity>
-            ))}
-          </ThemedView>
+              </ThemedView>
+            </TouchableOpacity>
+          ))}
         </ThemedView>
       </ScrollView>
     </ThemedView>
@@ -105,6 +106,8 @@ const styles = StyleSheet.create({
   cardsContainer: {
     width: '100%',
     alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 40,
   },
   searchInput: {
     fontSize: 16,
@@ -125,12 +128,15 @@ const styles = StyleSheet.create({
     lineHeight: 50,
     marginBottom: 5,
   },
-  contentPadding: {
+  stickyHeaderWrapper: {
     paddingHorizontal: 20,
-    paddingBottom: 40,
+    paddingBottom: 5,
+    width: '100%',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(0,0,0,0.1)',
   },
   sectionTitle: {
-    marginBottom: 15,
+    marginBottom: 0,
   },
   bookCard: {
     flexDirection: 'row',
