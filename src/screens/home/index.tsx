@@ -1,115 +1,112 @@
-import { Image } from "expo-image";
-import { Platform, Pressable, StyleSheet } from "react-native";
-
-import { HelloWave } from "@/src/components/hello-wave";
-import ParallaxScrollView from "@/src/components/parallax-scroll-view";
-import { ThemedText } from "@/src/components/themed-text";
-import { ThemedView } from "@/src/components/themed-view";
 import { Colors } from "@/src/constants/theme";
 import { useAppNavigation } from "@/src/context/navigation-context";
 import { useColorScheme } from "@/src/hooks/use-color-scheme";
+import { Image } from "expo-image";
+
+import { Cloudinary } from '@cloudinary/url-gen';
+import { thumbnail } from "@cloudinary/url-gen/actions/resize";
+import React from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export function HomeScreen() {
   const { navigateToScreen } = useAppNavigation();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? "light"];
+
+  // 1. Get the current theme and colors
+  const colorScheme = useColorScheme() ?? "light";
+  const colors = Colors[colorScheme];
+
+  // 2. Generate the styles by passing the theme variables
+  const styles = getStyles(colors, colorScheme);
 
   const handleGoToDetails = () => {
     navigateToScreen("home", "home-details");
   };
 
+  const cld = new Cloudinary({
+    cloud: { cloudName: 'demo' }
+  });
+
+  const imageUrl = cld.image('dog')
+    .resize(thumbnail().width(500).height(500))
+    .toURL();
+
+  const localGreyPixel = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=";
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
-      headerImage={
-        <Image
-          source={require("@/assets/images/partial-react-logo.png")}
-          style={styles.reactLogo}
-        />
-      }
-    >
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit{" "}
-          <ThemedText type="defaultSemiBold">
-            src/screens/home/index.tsx
-          </ThemedText>{" "}
-          to see changes. Press{" "}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: "cmd + d",
-              android: "cmd + m",
-              web: "F12",
-            })}
-          </ThemedText>{" "}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Navegar a otra pantalla</ThemedText>
-        <ThemedText>
-          Usa el hook{" "}
-          <ThemedText type="defaultSemiBold">useAppNavigation</ThemedText> para
-          navegar entre pantallas dentro de la misma sección.
-        </ThemedText>
-        <Pressable
-          style={[
-            styles.button,
-            {
-              backgroundColor: colors.tint,
-            },
-          ]}
-          onPress={handleGoToDetails}
-        >
-          <ThemedText
-            style={{
-              color: "#fff",
-              fontSize: 16,
-              fontWeight: "600",
-              textAlign: "center",
-            }}
-          >
-            Ir a Detalles
-          </ThemedText>
-        </Pressable>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Explore some more</ThemedText>
-        <ThemedText>
-          Usa la barra de navegación en la parte inferior para cambiar entre
-          secciones. Cada sección muestra su propia pantalla.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <ScrollView contentContainerStyle={styles.scrollContent}>
+      <Text style={styles.title}>API & Layout Debug</Text>
+
+      <Text style={styles.label}>1. Cloudinary 'demo' Dog (API Test)</Text>
+      <Image
+        source={{ uri: imageUrl }}
+        style={styles.imageBox}
+        contentFit="cover"
+        onLoad={() => console.log("Cloudinary Image Loaded!")}
+        onError={(e) => console.log("Cloudinary Load Error:", e.error)}
+      />
+
+      <Text style={styles.label}>2. Guaranteed Grey Image (Local Test)</Text>
+      <Image
+        source={{ uri: localGreyPixel }}
+        style={styles.imageBox}
+        contentFit="cover"
+        onLoad={() => console.log("Local Grey Image Loaded!")}
+      />
+
+      <View style={styles.infoBox}>
+        <Text style={styles.urlCode}>Generated URL: {imageUrl}</Text>
+      </View>
+    </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
+// 3. The Style Function (Defined outside to keep the component clean)
+const getStyles = (colors: any, colorScheme: 'light' | 'dark') => StyleSheet.create({
+  scrollContent: {
+    flexGrow: 1,
+    alignItems: 'center',
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+    backgroundColor: colors.background,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  title: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: colors.text,
+    marginBottom: 10,
   },
-  button: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginTop: 8,
+  label: {
+    fontSize: 14,
+    color: colors.text,
+    opacity: 0.7,
+    marginTop: 24,
+    marginBottom: 12,
+    fontWeight: '600',
+    alignSelf: 'flex-start',
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: "absolute",
+  imageBox: {
+    width: '100%',
+    aspectRatio: 1,
+    borderRadius: 16,
+    backgroundColor: colorScheme === 'dark' ? '#2C2C2E' : '#F2F2F7',
+    borderWidth: 1,
+    borderColor: colorScheme === 'dark' ? '#38383A' : '#E5E5EA',
+    overflow: 'hidden',
+  },
+  infoBox: {
+    marginTop: 30,
+    padding: 16,
+    backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#F9F9F9',
+    borderRadius: 12,
+    width: '100%',
+    borderStyle: 'dashed',
+    borderWidth: 1,
+    borderColor: colors.text + '33', // Adding transparency to the border
+  },
+  urlCode: {
+    fontSize: 11,
+    color: '#E91E63',
+    lineHeight: 16,
+    textAlign: 'center',
   },
 });
