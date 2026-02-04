@@ -23,10 +23,10 @@ export function HomeScreen() {
   };
 
   const cld = new Cloudinary({
-    cloud: { cloudName: 'demo' }
+    cloud: { cloudName: process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME }
   });
 
-  const imageUrl = cld.image('dog')
+  const imageUrl = cld.image('main-sample')
     .resize(thumbnail().width(500).height(500))
     .toURL();
 
