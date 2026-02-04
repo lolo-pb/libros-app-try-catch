@@ -1,127 +1,139 @@
-import { Image } from "expo-image";
-import { Platform, StyleSheet } from "react-native";
-
-import { ExternalLink } from "@/src/components/external-link";
-import ParallaxScrollView from "@/src/components/parallax-scroll-view";
-import { ThemedText } from "@/src/components/themed-text";
-import { ThemedView } from "@/src/components/themed-view";
-import { Collapsible } from "@/src/components/ui/collapsible";
-import { IconSymbol } from "@/src/components/ui/icon-symbol";
-import { Fonts } from "@/src/constants/theme";
+import React from "react";
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useColorScheme,
+  View,
+} from "react-native";
 
 export function ExploreScreen() {
+  const scheme = useColorScheme();
+  const isDark = scheme === "dark";
+
+  const profile = {
+    name: "Jane Doe",
+    avatarUrl: "https://via.placeholder.com/150",
+    zone: "Buenos Aires, AR",
+    rating: 4, // 0–5
+    books: [
+      "The Pragmatic Programmer",
+      "Clean Code",
+      "Designing Data-Intensive Applications",
+    ],
+  };
+
+  const c = {
+    bg: isDark ? "#000" : "#fff",
+    text: isDark ? "#fff" : "#000",
+    muted: isDark ? "#ddd" : "#666",
+    border: isDark ? "#fff" : "#e5e5e5",
+    stars: isDark ? "#fff" : "#f5c518",
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: "#D0D0D0", dark: "#353636" }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }
-    >
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}
-        >
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>
-        This app includes example code to help you get started.
-      </ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has multiple screens organized by sections. Each section can
-          have multiple screens, allowing you to navigate between different
-          views while staying in the same section.
-        </ThemedText>
-        <ThemedText>
-          The navigation system is managed through the custom nav bar component
-          in{" "}
-          <ThemedText type="defaultSemiBold">
-            src/components/section-nav-bar.tsx
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the
-          web version, press <ThemedText type="defaultSemiBold">w</ThemedText>{" "}
-          in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the{" "}
-          <ThemedText type="defaultSemiBold">@2x</ThemedText> and{" "}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to
-          provide files for different screen densities
-        </ThemedText>
-        <Image
-          source={require("@/assets/images/react-logo.png")}
-          style={{ width: 100, height: 100, alignSelf: "center" }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{" "}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook
-          lets you inspect what the user&apos;s current color scheme is, and so
-          you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{" "}
-          <ThemedText type="defaultSemiBold">
-            components/hello-wave.tsx
-          </ThemedText>{" "}
-          component uses the powerful{" "}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{" "}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The{" "}
-              <ThemedText type="defaultSemiBold">
-                components/parallax-scroll-view.tsx
-              </ThemedText>{" "}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: c.bg }]}>
+      <View style={[styles.card, { borderColor: c.border, backgroundColor: c.bg }]}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Image
+            source={{ uri: profile.avatarUrl }}
+            style={[styles.avatar, { borderColor: c.border }]}
+          />
+
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.name, { color: c.text }]}>{profile.name}</Text>
+            <Text style={[styles.zone, { color: c.muted }]}>{profile.zone}</Text>
+
+            {/* Stars */}
+            <View style={styles.starsRow}>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Text key={i} style={{ color: c.stars, fontSize: 18 }}>
+                  {i < profile.rating ? "★" : "☆"}
+                </Text>
+              ))}
+            </View>
+          </View>
+        </View>
+
+        {/* Books */}
+        <View style={[styles.section, { borderTopColor: c.border }]}>
+          <Text style={[styles.sectionTitle, { color: c.text }]}>Available Books</Text>
+
+          {profile.books.map((book) => (
+            <View key={book} style={styles.bookRow}>
+              <Text style={[styles.bullet, { color: c.text }]}>•</Text>
+              <Text style={[styles.bookText, { color: c.text }]}>{book}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: "#808080",
-    bottom: -90,
-    left: -35,
-    position: "absolute",
+  container: {
+    padding: 16,
+    paddingTop: 40,
+    alignItems: "center",
   },
-  titleContainer: {
+  card: {
+    width: "100%",
+    maxWidth: 600,
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+  },
+  header: {
     flexDirection: "row",
-    gap: 8,
+    gap: 16,
+    alignItems: "center",
+  },
+  avatar: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    borderWidth: 1,
+    backgroundColor: "#999",
+  },
+  name: {
+    fontSize: 22,
+    fontWeight: "700",
+  },
+  zone: {
+    marginTop: 4,
+    fontSize: 14,
+  },
+  starsRow: {
+    flexDirection: "row",
+    marginTop: 8,
+    gap: 2,
+  },
+  section: {
+    marginTop: 20,
+    paddingTop: 16,
+    borderTopWidth: 1,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 10,
+  },
+  bookRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 8,
+  },
+  bullet: {
+    marginRight: 8,
+    fontSize: 16,
+    lineHeight: 20,
+  },
+  bookText: {
+    flex: 1,
+    fontSize: 16,
+    lineHeight: 20,
   },
 });
