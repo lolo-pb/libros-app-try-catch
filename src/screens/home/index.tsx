@@ -3,14 +3,16 @@ import { ThemedView } from "@/src/components/themed-view";
 import { Colors } from "@/src/constants/theme";
 import { useColorScheme } from "@/src/hooks/use-color-scheme";
 import { Image } from "expo-image";
-import React, { useState } from "react";
+import { default as React, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
   TextInput,
   TouchableOpacity,
 } from "react-native";
+import MapView from 'react-native-maps';
 import { SafeAreaView } from "react-native-safe-area-context";
+
 
 const RECOMMENDED_BOOKS = [
   {
@@ -78,21 +80,7 @@ export function HomeScreen() {
       >
         {/* 1. Map Section (Goes up when scrolling) */}
         <ThemedView style={styles.mapSection}>
-          <ThemedView
-            style={[
-              styles.mapPlaceholder,
-              {
-                backgroundColor: colors.tint + "10",
-                borderColor: colors.tint + "30",
-              },
-            ]}
-          >
-            <ThemedText style={styles.mapPin}>📍</ThemedText>
-            <ThemedText type="subtitle">Books near you</ThemedText>
-            <ThemedText style={{ color: colors.tabIconDefault }}>
-              Showing 12 active trades
-            </ThemedText>
-          </ThemedView>
+          <MapView style={styles.map} />
         </ThemedView>
 
         {/* 2. Recommendations title */}
@@ -184,6 +172,7 @@ const styles = StyleSheet.create({
   },
   mapSection: {
     padding: 20,
+    flex: 1,
   },
   mapPlaceholder: {
     height: 200,
@@ -232,5 +221,9 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 6,
     alignSelf: "flex-start",
+  },
+  map: {
+    width: '100%',
+    height: '100%',
   },
 });
