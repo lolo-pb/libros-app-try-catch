@@ -1,22 +1,21 @@
+import { ThemedText } from "@/src/components/themed-text";
 import React from "react";
 import {
   Image,
   ScrollView,
   StyleSheet,
-  Text,
   useColorScheme,
   View,
 } from "react-native";
 
 export function ExploreScreen() {
-  const scheme = useColorScheme();
-  const isDark = scheme === "dark";
+  const isDark = useColorScheme() === "dark";
 
   const profile = {
     name: "Jane Doe",
     avatarUrl: "https://via.placeholder.com/150",
     zone: "Buenos Aires, AR",
-    rating: 4, // 0–5
+    rating: 4,
     books: [
       "The Pragmatic Programmer",
       "Clean Code",
@@ -24,59 +23,79 @@ export function ExploreScreen() {
     ],
   };
 
-  const c = {
+  const colors = {
     bg: isDark ? "#000" : "#fff",
-    text: isDark ? "#fff" : "#000",
-    muted: isDark ? "#ddd" : "#666",
     border: isDark ? "#fff" : "#e5e5e5",
-    stars: isDark ? "#fff" : "#f5c518",
   };
 
   return (
-    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: c.bg }]}>
-      <View style={[styles.card, { borderColor: c.border, backgroundColor: c.bg }]}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Image
-            source={{ uri: profile.avatarUrl }}
-            style={[styles.avatar, { borderColor: c.border }]}
-          />
+    <View style={[styles.screen, { backgroundColor: colors.bg }]}>
+      {/* STATIC HEADER (outside scroll) */}
+      <View style={styles.logoContainer}>
+        <ThemedText type="title" style={styles.logoText}>
+          BookTrade
+        </ThemedText>
+      </View>
 
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.name, { color: c.text }]}>{profile.name}</Text>
-            <Text style={[styles.zone, { color: c.muted }]}>{profile.zone}</Text>
+      {/* SCROLLABLE CONTENT */}
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={[styles.card, { borderColor: colors.border }]}>
+          {/* header */}
+          <View style={styles.header}>
+            <Image
+              source={{ uri: profile.avatarUrl }}
+              style={[styles.avatar, { borderColor: colors.border }]}
+            />
 
-            {/* Stars */}
-            <View style={styles.starsRow}>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Text key={i} style={{ color: c.stars, fontSize: 18 }}>
-                  {i < profile.rating ? "★" : "☆"}
-                </Text>
-              ))}
+            <View style={styles.headerText}>
+              <ThemedText type="subtitle">{profile.name}</ThemedText>
+              <ThemedText type="defaultSemiBold">
+                {profile.zone}
+              </ThemedText>
+
+              <View style={styles.stars}>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <ThemedText key={i}>
+                    {i < profile.rating ? "★" : "☆"}
+                  </ThemedText>
+                ))}
+              </View>
             </View>
           </View>
-        </View>
 
-        {/* Books */}
-        <View style={[styles.section, { borderTopColor: c.border }]}>
-          <Text style={[styles.sectionTitle, { color: c.text }]}>Available Books</Text>
+          {/* books */}
+          <View style={styles.section}>
+            <ThemedText type="subtitle">Favorite Books</ThemedText>
 
-          {profile.books.map((book) => (
-            <View key={book} style={styles.bookRow}>
-              <Text style={[styles.bullet, { color: c.text }]}>•</Text>
-              <Text style={[styles.bookText, { color: c.text }]}>{book}</Text>
-            </View>
-          ))}
+            {profile.books.map((book) => (
+              <View key={book} style={styles.bookRow}>
+                <ThemedText>•</ThemedText>
+                <ThemedText>{book}</ThemedText>
+              </View>
+            ))}
+          </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
+    flex: 1,
+  },
+  logoContainer: {
+    paddingTop: 48,
+    paddingBottom: 16,
+    alignItems: "center",
+  },
+  logoText: {
+    fontSize: 28,
+    color: "#E91E63", // A pretty pink/red "BookTrade" brand color//can change
+    fontWeight: "900",
+  },
+  scrollContent: {
     padding: 16,
-    paddingTop: 40,
     alignItems: "center",
   },
   card: {
@@ -91,22 +110,16 @@ const styles = StyleSheet.create({
     gap: 16,
     alignItems: "center",
   },
+  headerText: {
+    flex: 1,
+  },
   avatar: {
     width: 96,
     height: 96,
     borderRadius: 48,
     borderWidth: 1,
-    backgroundColor: "#999",
   },
-  name: {
-    fontSize: 22,
-    fontWeight: "700",
-  },
-  zone: {
-    marginTop: 4,
-    fontSize: 14,
-  },
-  starsRow: {
+  stars: {
     flexDirection: "row",
     marginTop: 8,
     gap: 2,
@@ -114,26 +127,10 @@ const styles = StyleSheet.create({
   section: {
     marginTop: 20,
     paddingTop: 16,
-    borderTopWidth: 1,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 10,
   },
   bookRow: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 8,
-  },
-  bullet: {
-    marginRight: 8,
-    fontSize: 16,
-    lineHeight: 20,
-  },
-  bookText: {
-    flex: 1,
-    fontSize: 16,
-    lineHeight: 20,
+    gap: 8,
+    marginTop: 6,
   },
 });
