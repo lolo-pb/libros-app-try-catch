@@ -60,6 +60,14 @@ export function NavigationContainer({
           return true;
         }
 
+        if (navigationState.currentSection !== "home") {
+          onNavigationChange({
+            currentSection: "home",
+            currentScreen: "home-main",
+          });
+          return true;
+        }
+
         return false;
       },
     );
