@@ -1,2 +1,7 @@
 Before production/deployment:
 - Re-enable Supabase email confirmation for signups after the deployed app URL is configured in Authentication > URL Configuration.
+
+what i want for the mvp: 
+ trade requests full flow,
+ profile basics - (cambiar nombres reviews y ratings),
+ error and empty state - polish, (no imagae shi like that)
