@@ -18,6 +18,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+const NO_COVER_IMAGE = require("../../../assets/images/no-cover-available.png");
+
 export function BookScreen() {
   const { navigationState, navigateToScreen } = useAppNavigation();
   const { session } = useAuth();
@@ -150,12 +152,12 @@ export function BookScreen() {
     ]);
   };
 
-  const coverUrl = book?.cover_path?.startsWith("http")
+  const coverSource = book?.cover_path?.startsWith("http")
     ? book.cover_path
     : book?.cover_path
       ? supabase.storage.from("book-covers").getPublicUrl(book.cover_path).data
           .publicUrl
-      : "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=800";
+      : NO_COVER_IMAGE;
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
@@ -185,7 +187,15 @@ export function BookScreen() {
           </ThemedView>
         ) : (
           <>
-            <Image source={{ uri: coverUrl }} style={styles.cover} contentFit="cover" />
+            <Image
+              source={
+                typeof coverSource === "string"
+                  ? { uri: coverSource }
+                  : coverSource
+              }
+              style={styles.cover}
+              contentFit="cover"
+            />
             <ThemedText type="title" style={styles.title}>
               {book.title}
             </ThemedText>

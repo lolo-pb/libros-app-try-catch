@@ -8,8 +8,16 @@ import { supabase } from "@/src/lib/supabase";
 import type { Book } from "@/src/types/database";
 import { Image } from "expo-image";
 import React, { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+const NO_COVER_IMAGE = require("../../../assets/images/no-cover-available.png");
 
 export function MyBooksScreen() {
   const { session, isLoading: isAuthLoading } = useAuth();
@@ -18,15 +26,18 @@ export function MyBooksScreen() {
   const colors = Colors[colorScheme ?? "light"];
   const [books, setBooks] = useState<Book[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const loadBooks = useCallback(async () => {
+  const loadBooks = useCallback(async (showSpinner = true) => {
     if (!session) {
       setBooks([]);
       return;
     }
 
-    setIsLoading(true);
+    if (showSpinner) {
+      setIsLoading(true);
+    }
     setErrorMessage(null);
 
     const { data, error } = await supabase
@@ -42,11 +53,17 @@ export function MyBooksScreen() {
     }
 
     setIsLoading(false);
+    setIsRefreshing(false);
   }, [session]);
 
   useEffect(() => {
     loadBooks();
   }, [loadBooks]);
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    loadBooks(false);
+  };
 
   const handleTogglePublished = async (book: Book) => {
     const { error } = await supabase
@@ -77,7 +94,7 @@ export function MyBooksScreen() {
         .data.publicUrl;
     }
 
-    return "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600";
+    return NO_COVER_IMAGE;
   };
 
   if (isAuthLoading) {
@@ -109,7 +126,16 @@ export function MyBooksScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            tintColor={colors.tint}
+            onRefresh={handleRefresh}
+          />
+        }
+      >
         <ThemedView style={styles.headerRow}>
           <ThemedView style={styles.headerText}>
             <ThemedText type="title" style={styles.title}>
@@ -128,9 +154,18 @@ export function MyBooksScreen() {
         </ThemedView>
 
         {errorMessage ? (
-          <ThemedText style={[styles.errorText, { color: colors.tint }]}>
-            {errorMessage}
-          </ThemedText>
+          <ThemedView style={styles.errorBox}>
+            <ThemedText type="defaultSemiBold">Could not load your books</ThemedText>
+            <ThemedText style={[styles.errorText, { color: colors.tabIconDefault }]}>
+              {errorMessage}
+            </ThemedText>
+            <Pressable
+              onPress={() => loadBooks()}
+              style={[styles.retryButton, { backgroundColor: colors.tint }]}
+            >
+              <ThemedText style={styles.retryButtonText}>Try again</ThemedText>
+            </Pressable>
+          </ThemedView>
         ) : null}
 
         {isLoading ? (
@@ -141,8 +176,14 @@ export function MyBooksScreen() {
           <ThemedView style={styles.emptyBox}>
             <ThemedText type="defaultSemiBold">No books yet</ThemedText>
             <ThemedText style={{ color: colors.tabIconDefault }}>
-              Add your first book to start building your trade shelf.
+              Add your first book to start trading.
             </ThemedText>
+            <Pressable
+              onPress={() => navigateToScreen("books", "new-book")}
+              style={[styles.emptyButton, { backgroundColor: colors.tint }]}
+            >
+              <ThemedText style={styles.emptyButtonText}>Add a book</ThemedText>
+            </Pressable>
           </ThemedView>
         ) : (
           books.map((book) => (
@@ -153,11 +194,20 @@ export function MyBooksScreen() {
               }
               style={styles.bookCard}
             >
-              <Image
-                source={{ uri: getCoverSource(book) }}
-                style={styles.bookCover}
-                contentFit="cover"
-              />
+              {(() => {
+                const coverSource = getCoverSource(book);
+                return (
+                  <Image
+                    source={
+                      typeof coverSource === "string"
+                        ? { uri: coverSource }
+                        : coverSource
+                    }
+                    style={styles.bookCover}
+                    contentFit="cover"
+                  />
+                );
+              })()}
               <ThemedView style={styles.bookInfo}>
                 <ThemedText type="defaultSemiBold" style={styles.bookTitle}>
                   {book.title}
@@ -239,12 +289,39 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   errorText: {
+    textAlign: "center",
+  },
+  errorBox: {
+    alignItems: "center",
+    gap: 8,
     marginBottom: 14,
+  },
+  retryButton: {
+    alignItems: "center",
+    borderRadius: 8,
+    marginTop: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  retryButtonText: {
+    color: "#fff",
+    fontWeight: "700",
   },
   emptyBox: {
     alignItems: "center",
     gap: 8,
     paddingVertical: 50,
+  },
+  emptyButton: {
+    alignItems: "center",
+    borderRadius: 8,
+    marginTop: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  emptyButtonText: {
+    color: "#fff",
+    fontWeight: "700",
   },
   bookCard: {
     alignItems: "center",

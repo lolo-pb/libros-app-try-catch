@@ -9,17 +9,15 @@ import { Image } from "expo-image";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  RefreshControl,
+  Pressable,
   ScrollView,
   StyleSheet,
   TextInput,
   TouchableOpacity,
 } from "react-native";
 
-const FALLBACK_COVERS = [
-  "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=600",
-  "https://images.unsplash.com/photo-1541963463532-d68292c34b19?w=600",
-  "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600",
-];
+const NO_COVER_IMAGE = require("../../../assets/images/no-cover-available.png");
 
 export function HomeScreen() {
   const colorScheme = useColorScheme();
@@ -28,13 +26,14 @@ export function HomeScreen() {
   const [search, setSearch] = useState("");
   const [books, setBooks] = useState<Book[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadPublishedBooks() {
-      setIsLoading(true);
+  const loadPublishedBooks = React.useCallback(
+    async (showSpinner = true) => {
+      if (showSpinner) {
+        setIsLoading(true);
+      }
       setErrorMessage(null);
 
       const { data, error } = await supabase
@@ -42,10 +41,6 @@ export function HomeScreen() {
         .select("*")
         .eq("is_published", true)
         .order("created_at", { ascending: false });
-
-      if (!isMounted) {
-        return;
-      }
 
       if (error) {
         setErrorMessage(error.message);
@@ -55,14 +50,19 @@ export function HomeScreen() {
       }
 
       setIsLoading(false);
-    }
+      setIsRefreshing(false);
+    },
+    [],
+  );
 
+  useEffect(() => {
     loadPublishedBooks();
+  }, [loadPublishedBooks]);
 
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    loadPublishedBooks(false);
+  };
 
   const filteredBooks = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -79,7 +79,7 @@ export function HomeScreen() {
     });
   }, [books, search]);
 
-  const getCoverSource = (book: Book, index: number) => {
+  const getCoverSource = (book: Book) => {
     if (book.cover_path?.startsWith("http")) {
       return book.cover_path;
     }
@@ -91,7 +91,7 @@ export function HomeScreen() {
       return data.publicUrl;
     }
 
-    return FALLBACK_COVERS[index % FALLBACK_COVERS.length];
+    return NO_COVER_IMAGE;
   };
 
   return (
@@ -119,7 +119,17 @@ export function HomeScreen() {
         </ThemedView>
       </ThemedView>
 
-      <ScrollView stickyHeaderIndices={[1]} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        stickyHeaderIndices={[1]}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            tintColor={colors.tint}
+            onRefresh={handleRefresh}
+          />
+        }
+      >
         <ThemedView style={styles.mapSection}>
           <ThemedView
             style={[
@@ -165,18 +175,28 @@ export function HomeScreen() {
               >
                 {errorMessage}
               </ThemedText>
+              <Pressable
+                onPress={() => loadPublishedBooks()}
+                style={[styles.feedbackButton, { backgroundColor: colors.tint }]}
+              >
+                <ThemedText style={styles.feedbackButtonText}>Try again</ThemedText>
+              </Pressable>
             </ThemedView>
           ) : filteredBooks.length === 0 ? (
             <ThemedView style={styles.feedbackState}>
-              <ThemedText type="defaultSemiBold">No books found</ThemedText>
+              <ThemedText type="defaultSemiBold">
+                {books.length === 0 ? "No books available yet" : "No matches found"}
+              </ThemedText>
               <ThemedText
                 style={[styles.feedbackText, { color: colors.tabIconDefault }]}
               >
-                Try another title or author.
+                {books.length === 0
+                  ? "When people publish books, they will show up here."
+                  : "Try another title or author."}
               </ThemedText>
             </ThemedView>
           ) : (
-            filteredBooks.map((book, index) => (
+            filteredBooks.map((book) => (
               <TouchableOpacity
                 key={book.id}
                 onPress={() =>
@@ -184,12 +204,21 @@ export function HomeScreen() {
                 }
                 style={styles.bookCard}
               >
-                <Image
-                  source={{ uri: getCoverSource(book, index) }}
-                  style={styles.bookCover}
-                  contentFit="cover"
-                  transition={400}
-                />
+                {(() => {
+                  const coverSource = getCoverSource(book);
+                  return (
+                    <Image
+                      source={
+                        typeof coverSource === "string"
+                          ? { uri: coverSource }
+                          : coverSource
+                      }
+                      style={styles.bookCover}
+                      contentFit="cover"
+                      transition={400}
+                    />
+                  );
+                })()}
                 <ThemedView style={styles.bookInfo}>
                   <ThemedText type="defaultSemiBold" style={styles.titleText}>
                     {book.title}
@@ -304,6 +333,17 @@ const styles = StyleSheet.create({
   },
   feedbackText: {
     textAlign: "center",
+  },
+  feedbackButton: {
+    alignItems: "center",
+    borderRadius: 8,
+    marginTop: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  feedbackButtonText: {
+    color: "#fff",
+    fontWeight: "700",
   },
   titleText: {
     fontSize: 18,

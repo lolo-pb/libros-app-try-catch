@@ -3,5 +3,3 @@ Before production/deployment:
 
 what i want for the mvp: 
  trade requests full flow,
- profile basics - (cambiar nombres reviews y ratings),
- error and empty state - polish, (no imagae shi like that)
