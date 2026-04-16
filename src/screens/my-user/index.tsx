@@ -5,6 +5,7 @@ import { useAuth } from "@/src/context/auth-context";
 import { useAppNavigation } from "@/src/context/navigation-context";
 import { useColorScheme } from "@/src/hooks/use-color-scheme";
 import { supabase } from "@/src/lib/supabase";
+import { Image } from "expo-image";
 import React, { useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -21,6 +22,13 @@ export function MyUserScreen() {
     await supabase.auth.signOut();
     setIsSigningOut(false);
   };
+
+  const avatarUrl = profile?.avatar_path?.startsWith("http")
+    ? profile.avatar_path
+    : profile?.avatar_path
+      ? supabase.storage.from("avatars").getPublicUrl(profile.avatar_path).data
+          .publicUrl
+      : null;
 
   if (isLoading) {
     return (
@@ -53,9 +61,17 @@ export function MyUserScreen() {
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <ThemedView style={styles.container}>
         <ThemedView style={[styles.avatar, { backgroundColor: colors.tint + "20" }]}>
-          <ThemedText style={[styles.avatarText, { color: colors.tint }]}>
-            {(profile?.display_name ?? session.user.email ?? "B").slice(0, 1)}
-          </ThemedText>
+          {avatarUrl ? (
+            <Image
+              source={{ uri: avatarUrl }}
+              style={styles.avatarImage}
+              contentFit="cover"
+            />
+          ) : (
+            <ThemedText style={[styles.avatarText, { color: colors.tint }]}>
+              {(profile?.display_name ?? session.user.email ?? "B").slice(0, 1)}
+            </ThemedText>
+          )}
         </ThemedView>
         <ThemedText type="title" style={styles.nameText}>
           {profile?.display_name ?? "BookTrade user"}
@@ -67,6 +83,29 @@ export function MyUserScreen() {
           {profile?.city ?? "Location can be added later for nearby books."}
         </ThemedText>
 
+        <ThemedView
+          style={[styles.statsBox, { backgroundColor: colors.tint + "10" }]}
+        >
+          <ThemedView style={styles.statItem}>
+            <ThemedText type="subtitle">No rating yet</ThemedText>
+            <ThemedText style={{ color: colors.tabIconDefault }}>
+              Ratings unlock after trades.
+            </ThemedText>
+          </ThemedView>
+          <ThemedView style={styles.statItem}>
+            <ThemedText type="subtitle">0 reviews</ThemedText>
+            <ThemedText style={{ color: colors.tabIconDefault }}>
+              Reviews will come with trade requests.
+            </ThemedText>
+          </ThemedView>
+        </ThemedView>
+
+        <Pressable
+          onPress={() => navigateToScreen("user", "user-settings")}
+          style={[styles.secondaryButton, { borderColor: colors.icon }]}
+        >
+          <ThemedText type="defaultSemiBold">Edit profile</ThemedText>
+        </Pressable>
         <Pressable
           onPress={() => navigateToScreen("books", "my-books")}
           style={[styles.secondaryButton, { borderColor: colors.icon }]}
@@ -108,7 +147,12 @@ const styles = StyleSheet.create({
     height: 96,
     justifyContent: "center",
     marginBottom: 18,
+    overflow: "hidden",
     width: 96,
+  },
+  avatarImage: {
+    height: "100%",
+    width: "100%",
   },
   avatarText: {
     fontSize: 42,
@@ -122,6 +166,15 @@ const styles = StyleSheet.create({
   helperText: {
     marginBottom: 24,
     marginTop: 14,
+  },
+  statsBox: {
+    borderRadius: 8,
+    gap: 14,
+    marginBottom: 18,
+    padding: 14,
+  },
+  statItem: {
+    gap: 4,
   },
   primaryButton: {
     alignItems: "center",
@@ -141,5 +194,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     height: 48,
     justifyContent: "center",
+    marginBottom: 12,
   },
 });

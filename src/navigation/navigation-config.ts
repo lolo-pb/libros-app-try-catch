@@ -10,6 +10,7 @@ import { LoginScreen } from "@/src/screens/login";
 import { MyBooksScreen } from "@/src/screens/my-books";
 import { MyUserScreen } from "@/src/screens/my-user";
 import { NewBookScreen } from "@/src/screens/new-book";
+import { UserSettingsScreen } from "@/src/screens/user-settings";
 import { NavigationSection } from "./types";
 
 export const navigationSections: NavigationSection[] = [
@@ -85,6 +86,12 @@ export const navigationSections: NavigationSection[] = [
         name: "login",
         title: "Login",
         component: LoginScreen,
+      },
+      {
+        id: "user-settings",
+        name: "settings",
+        title: "User Settings",
+        component: UserSettingsScreen,
       },
     ],
   },
