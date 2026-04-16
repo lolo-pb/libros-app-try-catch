@@ -3,10 +3,12 @@
  * Define all sections and their screens here
  */
 
-import { ExploreScreen } from "@/src/screens/explore";
-import { SearchScreen } from "@/src/screens/explore/search";
+import { BookScreen } from "@/src/screens/book";
 import { HomeScreen } from "@/src/screens/home";
-import { HomeDetailsScreen } from "@/src/screens/home/details";
+import { LoginScreen } from "@/src/screens/login";
+import { MyBooksScreen } from "@/src/screens/my-books";
+import { MyUserScreen } from "@/src/screens/my-user";
+import { NewBookScreen } from "@/src/screens/new-book";
 import { NavigationSection } from "./types";
 
 export const navigationSections: NavigationSection[] = [
@@ -22,29 +24,48 @@ export const navigationSections: NavigationSection[] = [
         component: HomeScreen,
       },
       {
-        id: "home-details",
-        name: "details",
-        title: "Details",
-        component: HomeDetailsScreen,
+        id: "book",
+        name: "book",
+        title: "Book",
+        component: BookScreen,
       },
     ],
   },
   {
-    id: "explore",
-    name: "Explore",
-    icon: "paperplane.fill",
+    id: "books",
+    name: "My Books",
+    icon: "book.fill",
     screens: [
       {
-        id: "explore-main",
+        id: "my-books",
         name: "index",
-        title: "Explore",
-        component: ExploreScreen,
+        title: "My Books",
+        component: MyBooksScreen,
       },
       {
-        id: "explore-search",
-        name: "search",
-        title: "Search",
-        component: SearchScreen,
+        id: "new-book",
+        name: "new",
+        title: "New Book",
+        component: NewBookScreen,
+      },
+    ],
+  },
+  {
+    id: "user",
+    name: "My User",
+    icon: "person.fill",
+    screens: [
+      {
+        id: "my-user",
+        name: "index",
+        title: "My User",
+        component: MyUserScreen,
+      },
+      {
+        id: "login",
+        name: "login",
+        title: "Login",
+        component: LoginScreen,
       },
     ],
   },

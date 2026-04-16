@@ -19,4 +19,5 @@ export interface NavigationScreen {
 export interface NavigationState {
   currentSection: string;
   currentScreen: string;
+  params?: Record<string, string | undefined>;
 }

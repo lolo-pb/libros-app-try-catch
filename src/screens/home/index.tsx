@@ -1,6 +1,7 @@
 import { ThemedText } from "@/src/components/themed-text";
 import { ThemedView } from "@/src/components/themed-view";
 import { Colors } from "@/src/constants/theme";
+import { useAppNavigation } from "@/src/context/navigation-context";
 import { useColorScheme } from "@/src/hooks/use-color-scheme";
 import { supabase } from "@/src/lib/supabase";
 import type { Book } from "@/src/types/database";
@@ -24,6 +25,7 @@ const FALLBACK_COVERS = [
 export function HomeScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
+  const { navigateToScreen } = useAppNavigation();
   const [search, setSearch] = useState("");
   const [books, setBooks] = useState<Book[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -177,7 +179,13 @@ export function HomeScreen() {
             </ThemedView>
           ) : (
             filteredBooks.map((book, index) => (
-              <TouchableOpacity key={book.id} style={styles.bookCard}>
+              <TouchableOpacity
+                key={book.id}
+                onPress={() =>
+                  navigateToScreen("home", "book", { bookId: book.id })
+                }
+                style={styles.bookCard}
+              >
                 <Image
                   source={{ uri: getCoverSource(book, index) }}
                   style={styles.bookCover}
