@@ -6,8 +6,17 @@ import { useAppNavigation } from "@/src/context/navigation-context";
 import { useColorScheme } from "@/src/hooks/use-color-scheme";
 import { supabase } from "@/src/lib/supabase";
 import type { BookCondition } from "@/src/types/database";
+import { Image } from "expo-image";
+import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Switch, TextInput } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  TextInput,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const CONDITIONS: BookCondition[] = ["new", "like_new", "good", "fair", "poor"];
@@ -20,7 +29,8 @@ export function NewBookScreen() {
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [description, setDescription] = useState("");
-  const [coverPath, setCoverPath] = useState("");
+  const [coverAsset, setCoverAsset] =
+    useState<ImagePicker.ImagePickerAsset | null>(null);
   const [condition, setCondition] = useState<BookCondition>("good");
   const [isPublished, setIsPublished] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -33,6 +43,54 @@ export function NewBookScreen() {
       color: colors.text,
     },
   ];
+
+  const handleChooseCover = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permission.granted) {
+      setMessage("Allow photo access to choose a cover image.");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [2, 3],
+      mediaTypes: ["images"],
+      quality: 0.85,
+    });
+
+    if (!result.canceled) {
+      setCoverAsset(result.assets[0]);
+      setMessage(null);
+    }
+  };
+
+  const uploadCover = async (userId: string) => {
+    if (!coverAsset) {
+      return null;
+    }
+
+    const mimeType = coverAsset.mimeType ?? "image/jpeg";
+    const extension = mimeType.split("/")[1] ?? "jpg";
+    const normalizedExtension = extension === "jpeg" ? "jpg" : extension;
+    const filePath = `${userId}/${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2)}.${normalizedExtension}`;
+    const response = await fetch(coverAsset.uri);
+    const arrayBuffer = await response.arrayBuffer();
+    const { error } = await supabase.storage
+      .from("book-covers")
+      .upload(filePath, arrayBuffer, {
+        contentType: mimeType,
+        upsert: false,
+      });
+
+    if (error) {
+      throw error;
+    }
+
+    return filePath;
+  };
 
   const handleSave = async () => {
     if (!session) {
@@ -48,20 +106,27 @@ export function NewBookScreen() {
     setIsSubmitting(true);
     setMessage(null);
 
-    const { error } = await supabase.from("books").insert({
-      author: author.trim(),
-      condition,
-      cover_path: coverPath.trim() || null,
-      description: description.trim() || null,
-      is_published: isPublished,
-      owner_id: session.user.id,
-      title: title.trim(),
-    });
+    try {
+      const uploadedCoverPath = await uploadCover(session.user.id);
+      const { error } = await supabase.from("books").insert({
+        author: author.trim(),
+        condition,
+        cover_path: uploadedCoverPath,
+        description: description.trim() || null,
+        is_published: isPublished,
+        owner_id: session.user.id,
+        title: title.trim(),
+      });
 
-    if (error) {
-      setMessage(error.message);
-    } else {
-      navigateToScreen("books", "my-books");
+      if (error) {
+        setMessage(error.message);
+      } else {
+        navigateToScreen("books", "my-books");
+      }
+    } catch (error) {
+      setMessage(
+        error instanceof Error ? error.message : "Could not upload cover image.",
+      );
     }
 
     setIsSubmitting(false);
@@ -118,14 +183,49 @@ export function NewBookScreen() {
           onChangeText={setDescription}
           style={[inputStyle, styles.textArea]}
         />
-        <TextInput
-          autoCapitalize="none"
-          placeholder="Cover image URL for now"
-          placeholderTextColor={colors.tabIconDefault}
-          value={coverPath}
-          onChangeText={setCoverPath}
-          style={inputStyle}
-        />
+
+        <ThemedText type="defaultSemiBold" style={styles.label}>
+          Cover image
+        </ThemedText>
+        <ThemedView
+          style={[
+            styles.coverPicker,
+            {
+              backgroundColor: colorScheme === "dark" ? "#2c2c2e" : "#f0f0f0",
+              borderColor: colors.tint + "30",
+            },
+          ]}
+        >
+          {coverAsset ? (
+            <Image
+              source={{ uri: coverAsset.uri }}
+              style={styles.coverPreview}
+              contentFit="cover"
+            />
+          ) : (
+            <ThemedText style={{ color: colors.tabIconDefault }}>
+              No cover selected
+            </ThemedText>
+          )}
+        </ThemedView>
+        <ThemedView style={styles.coverActions}>
+          <Pressable
+            onPress={handleChooseCover}
+            style={[styles.secondaryButton, { borderColor: colors.icon }]}
+          >
+            <ThemedText type="defaultSemiBold">
+              {coverAsset ? "Change cover" : "Choose cover"}
+            </ThemedText>
+          </Pressable>
+          {coverAsset ? (
+            <Pressable
+              onPress={() => setCoverAsset(null)}
+              style={[styles.secondaryButton, { borderColor: colors.icon }]}
+            >
+              <ThemedText type="defaultSemiBold">Remove</ThemedText>
+            </Pressable>
+          ) : null}
+        </ThemedView>
 
         <ThemedText type="defaultSemiBold" style={styles.label}>
           Condition
@@ -220,6 +320,33 @@ const styles = StyleSheet.create({
   label: {
     marginBottom: 10,
     marginTop: 4,
+  },
+  coverPicker: {
+    alignItems: "center",
+    borderRadius: 8,
+    borderStyle: "dashed",
+    borderWidth: 1,
+    height: 180,
+    justifyContent: "center",
+    marginBottom: 10,
+    overflow: "hidden",
+  },
+  coverPreview: {
+    height: "100%",
+    width: "100%",
+  },
+  coverActions: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 18,
+  },
+  secondaryButton: {
+    alignItems: "center",
+    borderRadius: 8,
+    borderWidth: 1,
+    flex: 1,
+    height: 44,
+    justifyContent: "center",
   },
   conditionRow: {
     flexDirection: "row",
