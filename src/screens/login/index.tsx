@@ -44,7 +44,10 @@ export function LoginScreen() {
             emailRedirectTo: getEmailRedirectTo(),
           },
         })
-      : await supabase.auth.signInWithPassword({ email, password });
+      : await supabase.auth.signInWithPassword({
+          email: trimmedEmail,
+          password,
+        });
 
     if (result.error) {
       setMessage(result.error.message);

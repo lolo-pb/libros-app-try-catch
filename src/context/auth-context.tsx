@@ -9,6 +9,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
+import { AppState, Platform } from "react-native";
 
 interface AuthContextType {
   session: Session | null;
@@ -68,6 +69,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe();
     };
   }, [loadProfile]);
+
+  useEffect(() => {
+    if (Platform.OS === "web") {
+      return;
+    }
+
+    const subscription = AppState.addEventListener("change", (state) => {
+      if (state === "active") {
+        supabase.auth.startAutoRefresh();
+      } else {
+        supabase.auth.stopAutoRefresh();
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   const value = useMemo(
     () => ({
