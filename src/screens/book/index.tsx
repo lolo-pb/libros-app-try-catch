@@ -114,6 +114,26 @@ export function BookScreen() {
     setIsDeleting(false);
   };
 
+  const handleToggleAvailability = async () => {
+    if (!book || !isOwner) {
+      return;
+    }
+
+    const nextPublished = !book.is_published;
+    setBook({ ...book, is_published: nextPublished });
+    setErrorMessage(null);
+
+    const { error } = await supabase
+      .from("books")
+      .update({ is_published: nextPublished })
+      .eq("id", book.id);
+
+    if (error) {
+      setBook(book);
+      setErrorMessage(error.message);
+    }
+  };
+
   const handleDelete = () => {
     if (Platform.OS === "web" && typeof window.confirm === "function") {
       const confirmed = window.confirm("Delete this book from your shelf?");
@@ -184,13 +204,15 @@ export function BookScreen() {
                   {book.condition.replace("_", " ")} condition
                 </ThemedText>
               </ThemedView>
-              <ThemedView
+              <Pressable
+                disabled={!isOwner}
+                onPress={handleToggleAvailability}
                 style={[styles.badge, { backgroundColor: colors.tint + "15" }]}
               >
                 <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
                   {book.is_published ? "Available" : "Unavailable"}
                 </ThemedText>
-              </ThemedView>
+              </Pressable>
             </ThemedView>
 
             <ThemedText style={styles.description}>

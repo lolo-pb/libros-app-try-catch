@@ -14,7 +14,6 @@ import {
   TextInput,
   TouchableOpacity,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 const FALLBACK_COVERS = [
   "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=600",
@@ -97,29 +96,28 @@ export function HomeScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <SafeAreaView style={{ backgroundColor: colors.background }}>
-        <ThemedView style={styles.fixedHeader}>
-          <ThemedText type="title" style={styles.logoText}>
-            BookTrade
-          </ThemedText>
-          <ThemedView
-            style={[
-              styles.searchContainer,
-              {
-                backgroundColor: colorScheme === "dark" ? "#2c2c2e" : "#f0f0f0",
-              },
-            ]}
-          >
-            <TextInput
-              style={[styles.searchInput, { color: colors.text }]}
-              placeholder="Search published books..."
-              placeholderTextColor={colors.tabIconDefault}
-              value={search}
-              onChangeText={setSearch}
-            />
-          </ThemedView>
+
+      <ThemedView style={styles.fixedHeader}>
+        <ThemedText type="title" style={styles.logoText}>
+          BookTrade
+        </ThemedText>
+        <ThemedView
+          style={[
+            styles.searchContainer,
+            {
+              backgroundColor: colorScheme === "dark" ? "#2c2c2e" : "#f0f0f0",
+            },
+          ]}
+        >
+          <TextInput
+            style={[styles.searchInput, { color: colors.text }]}
+            placeholder="Search published books..."
+            placeholderTextColor={colors.tabIconDefault}
+            value={search}
+            onChangeText={setSearch}
+          />
         </ThemedView>
-      </SafeAreaView>
+      </ThemedView>
 
       <ScrollView stickyHeaderIndices={[1]} showsVerticalScrollIndicator={false}>
         <ThemedView style={styles.mapSection}>
@@ -232,10 +230,10 @@ const styles = StyleSheet.create({
   },
   fixedHeader: {
     paddingHorizontal: 20,
-    paddingBottom: 15,
     paddingTop: 40,
     gap: 12,
     alignItems: "center",
+    paddingBottom: 10,
   },
   logoText: {
     fontSize: 28,
@@ -278,8 +276,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 5,
     width: "100%",
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "rgba(0,0,0,0.1)",
   },
   sectionTitle: {
     marginBottom: 0,
