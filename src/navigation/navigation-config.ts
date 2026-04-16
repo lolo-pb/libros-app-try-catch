@@ -4,6 +4,7 @@
  */
 
 import { BookScreen } from "@/src/screens/book";
+import { EditBookScreen } from "@/src/screens/edit-book";
 import { HomeScreen } from "@/src/screens/home";
 import { LoginScreen } from "@/src/screens/login";
 import { MyBooksScreen } from "@/src/screens/my-books";
@@ -29,6 +30,12 @@ export const navigationSections: NavigationSection[] = [
         title: "Book",
         component: BookScreen,
       },
+      {
+        id: "edit-book",
+        name: "edit",
+        title: "Edit Book",
+        component: EditBookScreen,
+      },
     ],
   },
   {
@@ -53,6 +60,12 @@ export const navigationSections: NavigationSection[] = [
         name: "book",
         title: "Book",
         component: BookScreen,
+      },
+      {
+        id: "edit-book",
+        name: "edit",
+        title: "Edit Book",
+        component: EditBookScreen,
       },
     ],
   },

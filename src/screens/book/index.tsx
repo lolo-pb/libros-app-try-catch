@@ -1,17 +1,26 @@
 import { ThemedText } from "@/src/components/themed-text";
 import { ThemedView } from "@/src/components/themed-view";
 import { Colors } from "@/src/constants/theme";
+import { useAuth } from "@/src/context/auth-context";
 import { useAppNavigation } from "@/src/context/navigation-context";
 import { useColorScheme } from "@/src/hooks/use-color-scheme";
 import { supabase } from "@/src/lib/supabase";
-import type { Book } from "@/src/types/database";
+import type { Book, Profile } from "@/src/types/database";
 import { Image } from "expo-image";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export function BookScreen() {
   const { navigationState, navigateToScreen } = useAppNavigation();
+  const { session } = useAuth();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
   const bookId = navigationState.params?.bookId;
@@ -19,8 +28,11 @@ export function BookScreen() {
   const backScreen = backSection === "books" ? "my-books" : "home-main";
   const backLabel = backSection === "books" ? "Back to My Books" : "Back to Home";
   const [book, setBook] = useState<Book | null>(null);
+  const [owner, setOwner] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const isOwner = Boolean(session?.user.id && book?.owner_id === session.user.id);
 
   useEffect(() => {
     let isMounted = true;
@@ -49,6 +61,18 @@ export function BookScreen() {
         setErrorMessage(error.message);
       } else {
         setBook(data);
+
+        if (data?.owner_id) {
+          const { data: ownerData } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", data.owner_id)
+            .maybeSingle();
+
+          if (isMounted) {
+            setOwner(ownerData ?? null);
+          }
+        }
       }
 
       setIsLoading(false);
@@ -60,6 +84,51 @@ export function BookScreen() {
       isMounted = false;
     };
   }, [bookId]);
+
+  const removeStorageCover = async (path: string | null) => {
+    if (!path || path.startsWith("http")) {
+      return;
+    }
+
+    await supabase.storage.from("book-covers").remove([path]);
+  };
+
+  const deleteBook = async () => {
+    if (!book || !isOwner) {
+      return;
+    }
+
+    setIsDeleting(true);
+    setErrorMessage(null);
+
+    const { error } = await supabase.from("books").delete().eq("id", book.id);
+
+    if (error) {
+      setErrorMessage(error.message);
+      setIsDeleting(false);
+      return;
+    }
+
+    await removeStorageCover(book.cover_path);
+    navigateToScreen("books", "my-books");
+    setIsDeleting(false);
+  };
+
+  const handleDelete = () => {
+    if (Platform.OS === "web" && typeof window.confirm === "function") {
+      const confirmed = window.confirm("Delete this book from your shelf?");
+
+      if (confirmed) {
+        deleteBook();
+      }
+      return;
+    }
+
+    Alert.alert("Delete book?", "This removes the book from your shelf.", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Delete", style: "destructive", onPress: deleteBook },
+    ]);
+  };
 
   const coverUrl = book?.cover_path?.startsWith("http")
     ? book.cover_path
@@ -103,22 +172,67 @@ export function BookScreen() {
             <ThemedText style={[styles.author, { color: colors.tabIconDefault }]}>
               {book.author}
             </ThemedText>
+            <ThemedText style={[styles.metaText, { color: colors.tabIconDefault }]}>
+              Published by {owner?.display_name ?? "BookTrade reader"}
+            </ThemedText>
 
-            <ThemedView
-              style={[styles.badge, { backgroundColor: colors.tint + "15" }]}
-            >
-              <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
-                {book.condition.replace("_", " ")} condition
-              </ThemedText>
+            <ThemedView style={styles.badgeRow}>
+              <ThemedView
+                style={[styles.badge, { backgroundColor: colors.tint + "15" }]}
+              >
+                <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
+                  {book.condition.replace("_", " ")} condition
+                </ThemedText>
+              </ThemedView>
+              <ThemedView
+                style={[styles.badge, { backgroundColor: colors.tint + "15" }]}
+              >
+                <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
+                  {book.is_published ? "Available" : "Unavailable"}
+                </ThemedText>
+              </ThemedView>
             </ThemedView>
 
             <ThemedText style={styles.description}>
               {book.description || "No description yet."}
             </ThemedText>
 
-            <Pressable style={[styles.tradeButton, { backgroundColor: colors.tint }]}>
-              <ThemedText style={styles.tradeButtonText}>Request trade</ThemedText>
-            </Pressable>
+            {isOwner ? (
+              <ThemedView style={styles.ownerActions}>
+                <Pressable
+                  onPress={() =>
+                    navigateToScreen(backSection, "edit-book", {
+                      bookId: book.id,
+                      returnSection: backSection,
+                    })
+                  }
+                  style={[styles.ownerButton, { backgroundColor: colors.tint }]}
+                >
+                  <ThemedText style={styles.ownerButtonText}>Edit book</ThemedText>
+                </Pressable>
+                <Pressable
+                  disabled={isDeleting}
+                  onPress={handleDelete}
+                  style={[
+                    styles.ownerButton,
+                    styles.deleteButton,
+                    { borderColor: colors.icon },
+                  ]}
+                >
+                  {isDeleting ? (
+                    <ActivityIndicator color={colors.tint} />
+                  ) : (
+                    <ThemedText type="defaultSemiBold">Delete book</ThemedText>
+                  )}
+                </Pressable>
+              </ThemedView>
+            ) : (
+              <Pressable
+                style={[styles.tradeButton, { backgroundColor: colors.tint }]}
+              >
+                <ThemedText style={styles.tradeButtonText}>Request trade</ThemedText>
+              </Pressable>
+            )}
           </>
         )}
       </ScrollView>
@@ -161,10 +275,18 @@ const styles = StyleSheet.create({
     fontSize: 17,
     marginTop: 6,
   },
+  metaText: {
+    marginTop: 10,
+  },
+  badgeRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 18,
+  },
   badge: {
     alignSelf: "flex-start",
     borderRadius: 6,
-    marginTop: 18,
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
@@ -181,5 +303,23 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "700",
+  },
+  ownerActions: {
+    gap: 12,
+    marginTop: 28,
+  },
+  ownerButton: {
+    alignItems: "center",
+    borderRadius: 8,
+    paddingVertical: 14,
+  },
+  ownerButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  deleteButton: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
   },
 });
