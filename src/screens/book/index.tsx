@@ -15,6 +15,9 @@ export function BookScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
   const bookId = navigationState.params?.bookId;
+  const backSection = navigationState.currentSection === "books" ? "books" : "home";
+  const backScreen = backSection === "books" ? "my-books" : "home-main";
+  const backLabel = backSection === "books" ? "Back to My Books" : "Back to Home";
   const [book, setBook] = useState<Book | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -69,11 +72,11 @@ export function BookScreen() {
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.container}>
         <Pressable
-          onPress={() => navigateToScreen("home", "home-main")}
+          onPress={() => navigateToScreen(backSection, backScreen)}
           style={[styles.backButton, { backgroundColor: colors.tint + "15" }]}
         >
           <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
-            Back to Home
+            {backLabel}
           </ThemedText>
         </Pressable>
 

@@ -48,6 +48,12 @@ export const navigationSections: NavigationSection[] = [
         title: "New Book",
         component: NewBookScreen,
       },
+      {
+        id: "book",
+        name: "book",
+        title: "Book",
+        component: BookScreen,
+      },
     ],
   },
   {

@@ -107,6 +107,12 @@ export function LoginScreen() {
           ]}
         />
 
+        {message ? (
+          <ThemedText style={[styles.message, { color: colors.tabIconDefault }]}>
+            {message}
+          </ThemedText>
+        ) : null}
+
         <Pressable
           onPress={() => setShowPassword((value) => !value)}
           style={styles.checkboxRow}
@@ -121,19 +127,13 @@ export function LoginScreen() {
             ]}
           >
             {showPassword ? (
-              <ThemedText style={styles.checkboxMark}>x</ThemedText>
+              <ThemedText style={styles.checkboxMark}>✓</ThemedText>
             ) : null}
           </ThemedView>
-          <ThemedText style={{ color: colors.tabIconDefault }}>
-            Show password
+          <ThemedText style={{ color: colors.text, fontWeight: "600" }}>
+            {showPassword ? "Hide password" : "Show password"}
           </ThemedText>
         </Pressable>
-
-        {message ? (
-          <ThemedText style={[styles.message, { color: colors.tabIconDefault }]}>
-            {message}
-          </ThemedText>
-        ) : null}
 
         <Pressable
           disabled={isSubmitting}
@@ -197,9 +197,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 4,
     borderWidth: 1,
-    height: 20,
+    height: 22,
     justifyContent: "center",
-    width: 20,
+    width: 22,
   },
   checkboxMark: {
     color: "#fff",

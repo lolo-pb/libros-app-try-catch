@@ -146,7 +146,13 @@ export function MyBooksScreen() {
           </ThemedView>
         ) : (
           books.map((book) => (
-            <ThemedView key={book.id} style={styles.bookCard}>
+            <Pressable
+              key={book.id}
+              onPress={() =>
+                navigateToScreen("books", "book", { bookId: book.id })
+              }
+              style={styles.bookCard}
+            >
               <Image
                 source={{ uri: getCoverSource(book) }}
                 style={styles.bookCover}
@@ -171,7 +177,7 @@ export function MyBooksScreen() {
                   </ThemedText>
                 </Pressable>
               </ThemedView>
-            </ThemedView>
+            </Pressable>
           ))
         )}
       </ScrollView>
