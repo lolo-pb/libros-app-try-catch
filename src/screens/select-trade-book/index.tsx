@@ -182,13 +182,31 @@ export function SelectTradeBookScreen() {
 
             {hasPendingForTarget ? (
               <ThemedView
-                style={[styles.warningBox, { backgroundColor: colors.tint + "10" }]}
+                style={[
+                  styles.warningBox,
+                  {
+                    backgroundColor: "#FFF4CC",
+                    borderColor: "#F2C94C",
+                  },
+                ]}
               >
-                <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
+                <ThemedText style={{ color: "#7A4F00", fontWeight: "700" }}>
                   You already have a pending request for this book.
                 </ThemedText>
               </ThemedView>
             ) : null}
+
+            <ThemedView style={styles.dividerSection}>
+              <ThemedView
+                style={[styles.dividerLine, { backgroundColor: colors.icon }]}
+              />
+              <ThemedText type="subtitle" style={styles.offerTitle}>
+                My books
+              </ThemedText>
+              <ThemedText style={{ color: colors.tabIconDefault }}>
+                Select the book you want to offer.
+              </ThemedText>
+            </ThemedView>
 
             {ownedBooks.length === 0 ? (
               <ThemedView style={styles.centerState}>
@@ -325,8 +343,22 @@ const styles = StyleSheet.create({
   },
   warningBox: {
     borderRadius: 8,
+    borderWidth: 1,
     marginBottom: 14,
     padding: 12,
+  },
+  dividerSection: {
+    marginBottom: 14,
+    marginTop: 4,
+  },
+  dividerLine: {
+    height: StyleSheet.hairlineWidth,
+    marginBottom: 14,
+    opacity: 0.35,
+    width: "100%",
+  },
+  offerTitle: {
+    marginBottom: 4,
   },
   bookRow: {
     alignItems: "center",

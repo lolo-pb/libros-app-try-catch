@@ -29,13 +29,15 @@ export function SectionNavBar({
   };
 
   return (
-    <SafeAreaView edges={["bottom"]}>
+    <SafeAreaView
+      edges={["bottom"]}
+      style={{ backgroundColor: colors.background }}
+    >
       <View
         style={[
           styles.container,
           {
             backgroundColor: colors.background,
-            borderTopColor: colors.icon,
           },
         ]}
       >
@@ -75,7 +77,6 @@ export function SectionNavBar({
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    borderTopWidth: 1,
     backgroundColor: "#fff",
   },
   tabButton: {

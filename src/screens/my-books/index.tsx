@@ -107,7 +107,10 @@ export function MyBooksScreen() {
 
   if (!session) {
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <SafeAreaView
+        edges={["top", "left", "right"]}
+        style={[styles.safeArea, { backgroundColor: colors.background }]}
+      >
         <ThemedView style={styles.container}>
           <ThemedText type="title">My Books</ThemedText>
           <ThemedText style={[styles.helperText, { color: colors.tabIconDefault }]}>
@@ -125,8 +128,12 @@ export function MyBooksScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      edges={["top", "left", "right"]}
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
+    >
       <ScrollView
+        style={{ backgroundColor: colors.background }}
         contentContainerStyle={styles.container}
         refreshControl={
           <RefreshControl

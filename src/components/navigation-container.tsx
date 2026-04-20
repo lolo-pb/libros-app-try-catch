@@ -83,7 +83,9 @@ export function NavigationContainer({
       onNavigationChange={onNavigationChange}
     >
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={styles.content}>{children}</View>
+        <View style={[styles.content, { backgroundColor: colors.background }]}>
+          {children}
+        </View>
         <SectionNavBar
           sections={sections}
           currentSectionId={navigationState.currentSection}

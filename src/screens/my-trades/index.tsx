@@ -7,7 +7,7 @@ import { useColorScheme } from "@/src/hooks/use-color-scheme";
 import { supabase } from "@/src/lib/supabase";
 import type { Book, Profile, TradeRequest } from "@/src/types/database";
 import { Image } from "expo-image";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -19,7 +19,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 const NO_COVER_IMAGE = require("../../../assets/images/no-cover-available.png");
 
-type TradeTab = "sent" | "received";
 type TradeView = TradeRequest & {
   targetBook?: Book;
   offeredBook?: Book;
@@ -50,7 +49,6 @@ export function MyTradesScreen() {
   const { navigateToScreen } = useAppNavigation();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
-  const [activeTab, setActiveTab] = useState<TradeTab>("sent");
   const [sentTrades, setSentTrades] = useState<TradeView[]>([]);
   const [receivedTrades, setReceivedTrades] = useState<TradeView[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -58,7 +56,7 @@ export function MyTradesScreen() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const enrichTrades = useCallback(
-    async (requests: TradeRequest[], perspective: TradeTab) => {
+    async (requests: TradeRequest[], perspective: "sent" | "received") => {
       const bookIds = Array.from(
         new Set(
           requests.flatMap((request) => [
@@ -169,11 +167,6 @@ export function MyTradesScreen() {
     loadTrades();
   }, [loadTrades]);
 
-  const visibleTrades = useMemo(
-    () => (activeTab === "sent" ? sentTrades : receivedTrades),
-    [activeTab, receivedTrades, sentTrades],
-  );
-
   if (isAuthLoading) {
     return (
       <ThemedView style={styles.centerState}>
@@ -184,7 +177,10 @@ export function MyTradesScreen() {
 
   if (!session) {
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <SafeAreaView
+        edges={["top", "left", "right"]}
+        style={[styles.safeArea, { backgroundColor: colors.background }]}
+      >
         <ThemedView style={styles.container}>
           <ThemedText type="title">My Trades</ThemedText>
           <ThemedText style={[styles.helperText, { color: colors.tabIconDefault }]}>
@@ -202,8 +198,12 @@ export function MyTradesScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      edges={["top", "left", "right"]}
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
+    >
       <ScrollView
+        style={{ backgroundColor: colors.background }}
         contentContainerStyle={styles.container}
         refreshControl={
           <RefreshControl
@@ -223,33 +223,6 @@ export function MyTradesScreen() {
           Track sent and received trade requests.
         </ThemedText>
 
-        <ThemedView style={styles.tabRow}>
-          {(["sent", "received"] as TradeTab[]).map((tab) => {
-            const isActive = activeTab === tab;
-            return (
-              <Pressable
-                key={tab}
-                onPress={() => setActiveTab(tab)}
-                style={[
-                  styles.tabButton,
-                  {
-                    backgroundColor: isActive ? colors.tint : colors.tint + "15",
-                  },
-                ]}
-              >
-                <ThemedText
-                  style={{
-                    color: isActive ? "#fff" : colors.tint,
-                    fontWeight: "700",
-                  }}
-                >
-                  {tab === "sent" ? "Sent" : "Received"}
-                </ThemedText>
-              </Pressable>
-            );
-          })}
-        </ThemedView>
-
         {isLoading ? (
           <ThemedView style={styles.centerState}>
             <ActivityIndicator color={colors.tint} />
@@ -267,62 +240,104 @@ export function MyTradesScreen() {
               <ThemedText style={styles.primaryButtonText}>Try again</ThemedText>
             </Pressable>
           </ThemedView>
-        ) : visibleTrades.length === 0 ? (
-          <ThemedView style={styles.centerState}>
-            <ThemedText type="defaultSemiBold">
-              {activeTab === "sent" ? "No sent trades yet" : "No received trades yet"}
-            </ThemedText>
-            <ThemedText style={[styles.centerText, { color: colors.tabIconDefault }]}>
-              {activeTab === "sent"
-                ? "Request a trade from a book detail page."
-                : "Requests for your books will appear here."}
-            </ThemedText>
-          </ThemedView>
         ) : (
-          visibleTrades.map((trade) => (
-            <Pressable
-              key={trade.id}
-              onPress={() =>
+          <>
+            <TradeSection
+              title="Sent"
+              emptyText="Request a trade from a book detail page."
+              roleLabel="Owner"
+              trades={sentTrades}
+              colors={colors}
+              onOpenTrade={(tradeId) =>
                 navigateToScreen("trades", "trade-detail", {
-                  tradeRequestId: trade.id,
+                  tradeRequestId: tradeId,
                 })
               }
-              style={[styles.tradeRow, { borderColor: colors.icon }]}
-            >
-              <Image
-                source={getCoverSource(trade.targetBook)}
-                style={styles.cover}
-                contentFit="cover"
-              />
-              <Image
-                source={getCoverSource(trade.offeredBook)}
-                style={styles.cover}
-                contentFit="cover"
-              />
-              <ThemedView style={styles.tradeInfo}>
-                <ThemedText type="defaultSemiBold" style={styles.rowTitle}>
-                  {trade.targetBook?.title ?? "Requested book"}
-                </ThemedText>
-                <ThemedText style={{ color: colors.tabIconDefault }}>
-                  For {trade.offeredBook?.title ?? "offered book"}
-                </ThemedText>
-                <ThemedText style={{ color: colors.tabIconDefault }}>
-                  {activeTab === "sent" ? "Owner" : "Requester"}:{" "}
-                  {trade.otherProfile?.display_name ?? "BookTrade reader"}
-                </ThemedText>
-                <ThemedView
-                  style={[styles.statusBadge, { backgroundColor: colors.tint + "15" }]}
-                >
-                  <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
-                    {statusLabel(trade.status)}
-                  </ThemedText>
-                </ThemedView>
-              </ThemedView>
-            </Pressable>
-          ))
+            />
+            <TradeSection
+              title="Received"
+              emptyText="Requests for your books will appear here."
+              roleLabel="Requester"
+              trades={receivedTrades}
+              colors={colors}
+              onOpenTrade={(tradeId) =>
+                navigateToScreen("trades", "trade-detail", {
+                  tradeRequestId: tradeId,
+                })
+              }
+            />
+          </>
         )}
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+function TradeSection({
+  title,
+  emptyText,
+  roleLabel,
+  trades,
+  colors,
+  onOpenTrade,
+}: {
+  title: string;
+  emptyText: string;
+  roleLabel: string;
+  trades: TradeView[];
+  colors: (typeof Colors)["light"];
+  onOpenTrade: (tradeId: string) => void;
+}) {
+  return (
+    <ThemedView style={styles.section}>
+      <ThemedText type="subtitle" style={styles.sectionTitle}>
+        {title}
+      </ThemedText>
+      {trades.length === 0 ? (
+        <ThemedView style={styles.emptySection}>
+          <ThemedText style={[styles.centerText, { color: colors.tabIconDefault }]}>
+            {emptyText}
+          </ThemedText>
+        </ThemedView>
+      ) : (
+        trades.map((trade) => (
+          <Pressable
+            key={trade.id}
+            onPress={() => onOpenTrade(trade.id)}
+            style={[styles.tradeRow, { borderColor: colors.icon }]}
+          >
+            <Image
+              source={getCoverSource(trade.targetBook)}
+              style={styles.cover}
+              contentFit="cover"
+            />
+            <Image
+              source={getCoverSource(trade.offeredBook)}
+              style={styles.cover}
+              contentFit="cover"
+            />
+            <ThemedView style={styles.tradeInfo}>
+              <ThemedText type="defaultSemiBold" style={styles.rowTitle}>
+                {trade.targetBook?.title ?? "Requested book"}
+              </ThemedText>
+              <ThemedText style={{ color: colors.tabIconDefault }}>
+                For {trade.offeredBook?.title ?? "offered book"}
+              </ThemedText>
+              <ThemedText style={{ color: colors.tabIconDefault }}>
+                {roleLabel}: {trade.otherProfile?.display_name ?? "BookTrade reader"}
+              </ThemedText>
+              <ThemedView
+                style={[styles.statusBadge, { backgroundColor: colors.tint + "15" }]}
+              >
+                <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
+                  {statusLabel(trade.status)}
+                </ThemedText>
+              </ThemedView>
+            </ThemedView>
+          </Pressable>
+        ))
+      )}
+    </ThemedView>
   );
 }
 
@@ -349,16 +364,15 @@ const styles = StyleSheet.create({
   centerText: {
     textAlign: "center",
   },
-  tabRow: {
-    flexDirection: "row",
-    gap: 10,
-    marginBottom: 20,
+  section: {
+    marginBottom: 26,
   },
-  tabButton: {
+  sectionTitle: {
+    marginBottom: 12,
+  },
+  emptySection: {
     alignItems: "center",
-    borderRadius: 8,
-    flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 20,
   },
   tradeRow: {
     alignItems: "center",
