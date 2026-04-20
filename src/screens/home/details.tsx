@@ -18,8 +18,8 @@ export function HomeDetailsScreen() {
     <ThemedView style={styles.container}>
       <ThemedText type="title">Home Details</ThemedText>
       <ThemedText style={{ marginTop: 16 }}>
-        Esta es una pantalla secundaria dentro de la sección "Home". Puedes
-        navegar entre pantallas de la misma sección usando el hook{" "}
+        Esta es una pantalla secundaria dentro de la seccion &quot;Home&quot;. Puedes
+        navegar entre pantallas de la misma seccion usando el hook{" "}
         <ThemedText type="defaultSemiBold">useAppNavigation</ThemedText>.
       </ThemedText>
       <Pressable

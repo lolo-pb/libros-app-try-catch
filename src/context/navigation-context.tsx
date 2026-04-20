@@ -3,7 +3,11 @@ import React, { createContext, useCallback, useContext } from "react";
 
 interface NavigationContextType {
   navigationState: NavigationState;
-  navigateToScreen: (sectionId: string, screenId: string) => void;
+  navigateToScreen: (
+    sectionId: string,
+    screenId: string,
+    params?: NavigationState["params"],
+  ) => void;
   navigateToSection: (sectionId: string) => void;
 }
 
@@ -21,10 +25,15 @@ export function NavigationProvider({
   onNavigationChange: (state: NavigationState) => void;
 }) {
   const navigateToScreen = useCallback(
-    (sectionId: string, screenId: string) => {
+    (
+      sectionId: string,
+      screenId: string,
+      params?: NavigationState["params"],
+    ) => {
       onNavigationChange({
         currentSection: sectionId,
         currentScreen: screenId,
+        params,
       });
     },
     [onNavigationChange],
@@ -36,9 +45,10 @@ export function NavigationProvider({
       onNavigationChange({
         currentSection: sectionId,
         currentScreen: navigationState.currentScreen,
+        params: navigationState.params,
       });
     },
-    [onNavigationChange, navigationState.currentScreen],
+    [onNavigationChange, navigationState.currentScreen, navigationState.params],
   );
 
   return (

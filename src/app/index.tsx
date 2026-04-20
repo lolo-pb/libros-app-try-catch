@@ -1,5 +1,6 @@
 import { NavigationContainer } from "@/src/components/navigation-container";
 import { Colors } from "@/src/constants/theme";
+import { AuthProvider } from "@/src/context/auth-context";
 import { useColorScheme } from "@/src/hooks/use-color-scheme";
 import { navigationSections } from "@/src/navigation/navigation-config";
 import { NavigationState } from "@/src/navigation/types";
@@ -28,13 +29,15 @@ export default function RootLayout() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <NavigationContainer
-        sections={navigationSections}
-        navigationState={navigationState}
-        onNavigationChange={handleNavigationChange}
-      >
-        {ScreenComponent && <ScreenComponent />}
-      </NavigationContainer>
+      <AuthProvider>
+        <NavigationContainer
+          sections={navigationSections}
+          navigationState={navigationState}
+          onNavigationChange={handleNavigationChange}
+        >
+          {ScreenComponent && <ScreenComponent />}
+        </NavigationContainer>
+      </AuthProvider>
     </View>
   );
 }
