@@ -152,6 +152,21 @@ export function BookScreen() {
     ]);
   };
 
+  const handleRequestTrade = () => {
+    if (!session) {
+      navigateToScreen("user", "login");
+      return;
+    }
+
+    if (!book) {
+      return;
+    }
+
+    navigateToScreen("home", "select-trade-book", {
+      targetBookId: book.id,
+    });
+  };
+
   const coverSource = book?.cover_path?.startsWith("http")
     ? book.cover_path
     : book?.cover_path
@@ -260,6 +275,7 @@ export function BookScreen() {
               </ThemedView>
             ) : (
               <Pressable
+                onPress={handleRequestTrade}
                 style={[styles.tradeButton, { backgroundColor: colors.tint }]}
               >
                 <ThemedText style={styles.tradeButtonText}>Request trade</ThemedText>

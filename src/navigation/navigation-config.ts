@@ -4,12 +4,16 @@
  */
 
 import { BookScreen } from "@/src/screens/book";
+import { ConfirmTradeScreen } from "@/src/screens/confirm-trade";
 import { EditBookScreen } from "@/src/screens/edit-book";
 import { HomeScreen } from "@/src/screens/home";
 import { LoginScreen } from "@/src/screens/login";
 import { MyBooksScreen } from "@/src/screens/my-books";
+import { MyTradesScreen } from "@/src/screens/my-trades";
 import { MyUserScreen } from "@/src/screens/my-user";
 import { NewBookScreen } from "@/src/screens/new-book";
+import { SelectTradeBookScreen } from "@/src/screens/select-trade-book";
+import { TradeDetailScreen } from "@/src/screens/trade-detail";
 import { UserSettingsScreen } from "@/src/screens/user-settings";
 import { NavigationSection } from "./types";
 
@@ -36,6 +40,18 @@ export const navigationSections: NavigationSection[] = [
         name: "edit",
         title: "Edit Book",
         component: EditBookScreen,
+      },
+      {
+        id: "select-trade-book",
+        name: "select-trade",
+        title: "Select Trade Book",
+        component: SelectTradeBookScreen,
+      },
+      {
+        id: "confirm-trade",
+        name: "confirm-trade",
+        title: "Confirm Trade",
+        component: ConfirmTradeScreen,
       },
     ],
   },
@@ -67,6 +83,25 @@ export const navigationSections: NavigationSection[] = [
         name: "edit",
         title: "Edit Book",
         component: EditBookScreen,
+      },
+    ],
+  },
+  {
+    id: "trades",
+    name: "My Trades",
+    icon: "arrow.left.arrow.right",
+    screens: [
+      {
+        id: "my-trades",
+        name: "index",
+        title: "My Trades",
+        component: MyTradesScreen,
+      },
+      {
+        id: "trade-detail",
+        name: "detail",
+        title: "Trade Detail",
+        component: TradeDetailScreen,
       },
     ],
   },
