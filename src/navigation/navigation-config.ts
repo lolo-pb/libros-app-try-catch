@@ -3,10 +3,18 @@
  * Define all sections and their screens here
  */
 
-import { ExploreScreen } from "@/src/screens/explore";
-import { SearchScreen } from "@/src/screens/explore/search";
+import { BookScreen } from "@/src/screens/book";
+import { ConfirmTradeScreen } from "@/src/screens/confirm-trade";
+import { EditBookScreen } from "@/src/screens/edit-book";
 import { HomeScreen } from "@/src/screens/home";
-import { HomeDetailsScreen } from "@/src/screens/home/details";
+import { LoginScreen } from "@/src/screens/login";
+import { MyBooksScreen } from "@/src/screens/my-books";
+import { MyTradesScreen } from "@/src/screens/my-trades";
+import { MyUserScreen } from "@/src/screens/my-user";
+import { NewBookScreen } from "@/src/screens/new-book";
+import { SelectTradeBookScreen } from "@/src/screens/select-trade-book";
+import { TradeDetailScreen } from "@/src/screens/trade-detail";
+import { UserSettingsScreen } from "@/src/screens/user-settings";
 import { NavigationSection } from "./types";
 
 export const navigationSections: NavigationSection[] = [
@@ -22,29 +30,103 @@ export const navigationSections: NavigationSection[] = [
         component: HomeScreen,
       },
       {
-        id: "home-details",
-        name: "details",
-        title: "Details",
-        component: HomeDetailsScreen,
+        id: "book",
+        name: "book",
+        title: "Book",
+        component: BookScreen,
+      },
+      {
+        id: "edit-book",
+        name: "edit",
+        title: "Edit Book",
+        component: EditBookScreen,
+      },
+      {
+        id: "select-trade-book",
+        name: "select-trade",
+        title: "Select Trade Book",
+        component: SelectTradeBookScreen,
+      },
+      {
+        id: "confirm-trade",
+        name: "confirm-trade",
+        title: "Confirm Trade",
+        component: ConfirmTradeScreen,
       },
     ],
   },
   {
-    id: "explore",
-    name: "Explore",
-    icon: "paperplane.fill",
+    id: "books",
+    name: "My Books",
+    icon: "book.fill",
     screens: [
       {
-        id: "explore-main",
+        id: "my-books",
         name: "index",
-        title: "Explore",
-        component: ExploreScreen,
+        title: "My Books",
+        component: MyBooksScreen,
       },
       {
-        id: "explore-search",
-        name: "search",
-        title: "Search",
-        component: SearchScreen,
+        id: "new-book",
+        name: "new",
+        title: "New Book",
+        component: NewBookScreen,
+      },
+      {
+        id: "book",
+        name: "book",
+        title: "Book",
+        component: BookScreen,
+      },
+      {
+        id: "edit-book",
+        name: "edit",
+        title: "Edit Book",
+        component: EditBookScreen,
+      },
+    ],
+  },
+  {
+    id: "trades",
+    name: "My Trades",
+    icon: "arrow.left.arrow.right",
+    screens: [
+      {
+        id: "my-trades",
+        name: "index",
+        title: "My Trades",
+        component: MyTradesScreen,
+      },
+      {
+        id: "trade-detail",
+        name: "detail",
+        title: "Trade Detail",
+        component: TradeDetailScreen,
+      },
+    ],
+  },
+  {
+    id: "user",
+    name: "My User",
+    icon: "person.fill",
+    screens: [
+      {
+        id: "my-user",
+        name: "index",
+        title: "My User",
+        component: MyUserScreen,
+      },
+      {
+        id: "login",
+        name: "login",
+        title: "Login",
+        component: LoginScreen,
+      },
+      {
+        id: "user-settings",
+        name: "settings",
+        title: "User Settings",
+        component: UserSettingsScreen,
       },
     ],
   },
