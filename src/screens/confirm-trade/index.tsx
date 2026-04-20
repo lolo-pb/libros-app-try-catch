@@ -12,6 +12,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const NO_COVER_IMAGE = require("../../../assets/images/no-cover-available.png");
+const BOOKTRADE_PINK = "#e91e63";
 
 function getCoverSource(book?: Book | null) {
   if (!book?.cover_path) {
@@ -179,7 +180,7 @@ export function ConfirmTradeScreen() {
             <Pressable
               disabled={isSubmitting}
               onPress={handleConfirm}
-              style={[styles.primaryButton, { backgroundColor: colors.tint }]}
+              style={[styles.primaryButton, { backgroundColor: BOOKTRADE_PINK }]}
             >
               {isSubmitting ? (
                 <ActivityIndicator color="#fff" />
