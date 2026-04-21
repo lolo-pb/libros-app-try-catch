@@ -117,7 +117,10 @@ export function ConfirmTradeScreen() {
 
   if (!session) {
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <SafeAreaView
+        edges={["top", "left", "right"]}
+        style={[styles.safeArea, { backgroundColor: colors.background }]}
+      >
         <ThemedView style={styles.container}>
           <ThemedText type="title">Confirm Trade</ThemedText>
           <ThemedText style={[styles.helperText, { color: colors.tabIconDefault }]}>
@@ -135,7 +138,10 @@ export function ConfirmTradeScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      edges={["top", "left", "right"]}
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
+    >
       <ScrollView contentContainerStyle={styles.container}>
         <Pressable
           onPress={() =>

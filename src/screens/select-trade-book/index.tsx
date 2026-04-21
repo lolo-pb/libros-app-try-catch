@@ -105,7 +105,10 @@ export function SelectTradeBookScreen() {
 
   if (!session) {
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <SafeAreaView
+        edges={["top", "left", "right"]}
+        style={[styles.safeArea, { backgroundColor: colors.background }]}
+      >
         <ThemedView style={styles.container}>
           <ThemedText type="title">Request Trade</ThemedText>
           <ThemedText style={[styles.helperText, { color: colors.tabIconDefault }]}>
@@ -123,7 +126,10 @@ export function SelectTradeBookScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      edges={["top", "left", "right"]}
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
+    >
       <ScrollView contentContainerStyle={styles.container}>
         <Pressable
           onPress={() =>

@@ -225,7 +225,10 @@ export function EditBookScreen() {
 
   if (!session) {
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <SafeAreaView
+        edges={["top", "left", "right"]}
+        style={[styles.safeArea, { backgroundColor: colors.background }]}
+      >
         <ThemedView style={styles.container}>
           <ThemedText type="title">Edit Book</ThemedText>
           <ThemedText style={[styles.helperText, { color: colors.tabIconDefault }]}>
@@ -243,7 +246,10 @@ export function EditBookScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      edges={["top", "left", "right"]}
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
+    >
       <ScrollView contentContainerStyle={styles.container}>
         <Pressable
           onPress={() =>

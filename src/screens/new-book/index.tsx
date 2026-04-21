@@ -134,7 +134,10 @@ export function NewBookScreen() {
 
   if (!session) {
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <SafeAreaView
+        edges={["top", "left", "right"]}
+        style={[styles.safeArea, { backgroundColor: colors.background }]}
+      >
         <ThemedView style={styles.container}>
           <ThemedText type="title">New Book</ThemedText>
           <ThemedText style={[styles.helperText, { color: colors.tabIconDefault }]}>
@@ -152,7 +155,10 @@ export function NewBookScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      edges={["top", "left", "right"]}
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
+    >
       <ScrollView contentContainerStyle={styles.container}>
         <ThemedText type="title" style={styles.title}>
           New Book

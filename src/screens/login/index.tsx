@@ -71,7 +71,10 @@ export function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      edges={["top", "left", "right"]}
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
+    >
       <ThemedView style={styles.container}>
         <ThemedText type="title" style={styles.logoText}>
           BookTrade

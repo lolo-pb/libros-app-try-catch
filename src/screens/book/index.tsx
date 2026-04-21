@@ -175,7 +175,10 @@ export function BookScreen() {
       : NO_COVER_IMAGE;
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      edges={["top", "left", "right"]}
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
+    >
       <ScrollView contentContainerStyle={styles.container}>
         <Pressable
           onPress={() => navigateToScreen(backSection, backScreen)}
