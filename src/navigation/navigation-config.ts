@@ -6,6 +6,7 @@
 import { BookScreen } from "@/src/screens/book";
 import { ConfirmTradeScreen } from "@/src/screens/confirm-trade";
 import { EditBookScreen } from "@/src/screens/edit-book";
+import { GlobalBookScreen } from "@/src/screens/global-book";
 import { HomeScreen } from "@/src/screens/home";
 import { LoginScreen } from "@/src/screens/login";
 import { MyBooksScreen } from "@/src/screens/my-books";
@@ -28,6 +29,12 @@ export const navigationSections: NavigationSection[] = [
         name: "index",
         title: "Home",
         component: HomeScreen,
+      },
+      {
+        id: "global-book",
+        name: "global-book",
+        title: "Global Book",
+        component: GlobalBookScreen,
       },
       {
         id: "book",

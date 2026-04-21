@@ -4,11 +4,14 @@ import { Colors } from "@/src/constants/theme";
 import { useAuth } from "@/src/context/auth-context";
 import { useAppNavigation } from "@/src/context/navigation-context";
 import { useColorScheme } from "@/src/hooks/use-color-scheme";
+import { resolveCoverSource } from "@/src/lib/book-covers";
+import { createGlobalBook, loadGlobalBooks } from "@/src/lib/global-books";
+import { removeBookCover, uploadBookCover } from "@/src/lib/book-storage";
 import { supabase } from "@/src/lib/supabase";
-import type { Book, BookCondition } from "@/src/types/database";
+import type { Book, BookCondition, GlobalBook } from "@/src/types/database";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -27,8 +30,10 @@ export function EditBookScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
   const bookId = navigationState.params?.bookId;
+  const globalBookIdFromParams = navigationState.params?.globalBookId;
   const returnSection =
     navigationState.params?.returnSection === "home" ? "home" : "books";
+  const returnScreen = navigationState.params?.returnScreen;
   const [book, setBook] = useState<Book | null>(null);
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
@@ -42,6 +47,18 @@ export function EditBookScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [globalBooks, setGlobalBooks] = useState<GlobalBook[]>([]);
+  const [globalBookSearch, setGlobalBookSearch] = useState("");
+  const [selectedGlobalBook, setSelectedGlobalBook] = useState<GlobalBook | null>(
+    null,
+  );
+  const [isCreatingGlobalBook, setIsCreatingGlobalBook] = useState(false);
+  const [newGlobalBookTitle, setNewGlobalBookTitle] = useState("");
+  const [newGlobalBookAuthor, setNewGlobalBookAuthor] = useState("");
+  const [newGlobalBookEditorial, setNewGlobalBookEditorial] = useState("");
+  const [newGlobalBookDescription, setNewGlobalBookDescription] = useState("");
+  const [newGlobalBookCoverAsset, setNewGlobalBookCoverAsset] =
+    useState<ImagePicker.ImagePickerAsset | null>(null);
 
   const inputStyle = [
     styles.input,
@@ -54,7 +71,7 @@ export function EditBookScreen() {
   useEffect(() => {
     let isMounted = true;
 
-    async function loadBook() {
+    async function loadBookAndGlobalBooks() {
       if (!session) {
         setMessage("Sign in to edit your books.");
         setIsLoading(false);
@@ -67,54 +84,74 @@ export function EditBookScreen() {
         return;
       }
 
-      const { data, error } = await supabase
-        .from("books")
-        .select("*")
-        .eq("id", bookId)
-        .maybeSingle();
+      try {
+        const [bookResult, globalBookResult] = await Promise.all([
+          supabase.from("books").select("*").eq("id", bookId).maybeSingle(),
+          loadGlobalBooks(),
+        ]);
 
-      if (!isMounted) {
-        return;
+        if (!isMounted) {
+          return;
+        }
+
+        if (bookResult.error || !bookResult.data) {
+          setMessage(bookResult.error?.message ?? "Book could not be found.");
+        } else if (bookResult.data.owner_id !== session.user.id) {
+          setMessage("Only the owner can edit this book.");
+        } else {
+          const loadedBook = bookResult.data;
+          setBook(loadedBook);
+          setTitle(loadedBook.title);
+          setAuthor(loadedBook.author);
+          setDescription(loadedBook.description ?? "");
+          setCoverPath(loadedBook.cover_path);
+          setCondition(loadedBook.condition);
+          setIsPublished(loadedBook.is_published);
+          setGlobalBooks(globalBookResult);
+          const linkedGlobalBook =
+            globalBookResult.find(
+              (globalBook) => globalBook.id === loadedBook.global_book_id,
+            ) ?? null;
+          setSelectedGlobalBook(linkedGlobalBook);
+        }
+      } catch (error) {
+        if (isMounted) {
+          setMessage(
+            error instanceof Error ? error.message : "Could not load this book.",
+          );
+        }
       }
 
-      if (error || !data) {
-        setMessage(error?.message ?? "Book could not be found.");
-      } else if (data.owner_id !== session.user.id) {
-        setMessage("Only the owner can edit this book.");
-      } else {
-        setBook(data);
-        setTitle(data.title);
-        setAuthor(data.author);
-        setDescription(data.description ?? "");
-        setCoverPath(data.cover_path);
-        setCondition(data.condition);
-        setIsPublished(data.is_published);
+      if (isMounted) {
+        setIsLoading(false);
       }
-
-      setIsLoading(false);
     }
 
-    loadBook();
+    loadBookAndGlobalBooks();
 
     return () => {
       isMounted = false;
     };
   }, [bookId, session]);
 
-  const getExistingCoverUrl = () => {
-    if (!coverPath) {
-      return null;
+  const filteredGlobalBooks = useMemo(() => {
+    const query = globalBookSearch.trim().toLowerCase();
+
+    if (!query) {
+      return globalBooks;
     }
 
-    if (coverPath.startsWith("http")) {
-      return coverPath;
-    }
+    return globalBooks.filter((globalBook) => {
+      return (
+        globalBook.title.toLowerCase().includes(query) ||
+        globalBook.author.toLowerCase().includes(query)
+      );
+    });
+  }, [globalBookSearch, globalBooks]);
 
-    return supabase.storage.from("book-covers").getPublicUrl(coverPath).data
-      .publicUrl;
-  };
-
-  const handleChooseCover = async () => {
+  const handleChooseImage = async (
+    onSelect: (asset: ImagePicker.ImagePickerAsset) => void,
+  ) => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (!permission.granted) {
@@ -130,45 +167,9 @@ export function EditBookScreen() {
     });
 
     if (!result.canceled) {
-      setCoverAsset(result.assets[0]);
-      setShouldRemoveCover(false);
+      onSelect(result.assets[0]);
       setMessage(null);
     }
-  };
-
-  const uploadCover = async (userId: string) => {
-    if (!coverAsset) {
-      return null;
-    }
-
-    const mimeType = coverAsset.mimeType ?? "image/jpeg";
-    const extension = mimeType.split("/")[1] ?? "jpg";
-    const normalizedExtension = extension === "jpeg" ? "jpg" : extension;
-    const filePath = `${userId}/${Date.now()}-${Math.random()
-      .toString(36)
-      .slice(2)}.${normalizedExtension}`;
-    const response = await fetch(coverAsset.uri);
-    const arrayBuffer = await response.arrayBuffer();
-    const { error } = await supabase.storage
-      .from("book-covers")
-      .upload(filePath, arrayBuffer, {
-        contentType: mimeType,
-        upsert: false,
-      });
-
-    if (error) {
-      throw error;
-    }
-
-    return filePath;
-  };
-
-  const removeStorageCover = async (path: string | null) => {
-    if (!path || path.startsWith("http")) {
-      return;
-    }
-
-    await supabase.storage.from("book-covers").remove([path]);
   };
 
   const handleSave = async () => {
@@ -185,7 +186,38 @@ export function EditBookScreen() {
     setMessage(null);
 
     try {
-      const uploadedCoverPath = await uploadCover(session.user.id);
+      let globalBookId = selectedGlobalBook?.id ?? null;
+
+      if (isCreatingGlobalBook) {
+        if (!newGlobalBookTitle.trim() || !newGlobalBookAuthor.trim()) {
+          setMessage("New global books need a title and author.");
+          setIsSubmitting(false);
+          return;
+        }
+
+        const uploadedGlobalBookCoverPath = newGlobalBookCoverAsset
+          ? await uploadBookCover(
+              session.user.id,
+              newGlobalBookCoverAsset,
+              "global-book",
+            )
+          : null;
+
+        const createdGlobalBook = await createGlobalBook({
+          title: newGlobalBookTitle,
+          author: newGlobalBookAuthor,
+          editorial: newGlobalBookEditorial,
+          description: newGlobalBookDescription,
+          cover_path: uploadedGlobalBookCoverPath,
+          created_by: session.user.id,
+        });
+
+        globalBookId = createdGlobalBook?.id ?? null;
+      }
+
+      const uploadedCoverPath = coverAsset
+        ? await uploadBookCover(session.user.id, coverAsset)
+        : null;
       const nextCoverPath = uploadedCoverPath
         ? uploadedCoverPath
         : shouldRemoveCover
@@ -199,6 +231,7 @@ export function EditBookScreen() {
           condition,
           cover_path: nextCoverPath,
           description: description.trim() || null,
+          global_book_id: globalBookId,
           is_published: isPublished,
           title: title.trim(),
         })
@@ -208,9 +241,13 @@ export function EditBookScreen() {
         setMessage(error.message);
       } else {
         if (uploadedCoverPath || shouldRemoveCover) {
-          await removeStorageCover(coverPath);
+          await removeBookCover(coverPath);
         }
-        navigateToScreen(returnSection, "book", { bookId: book.id });
+        navigateToScreen(returnSection, "book", {
+          bookId: book.id,
+          globalBookId: globalBookId ?? globalBookIdFromParams,
+          returnScreen,
+        });
       }
     } catch (error) {
       setMessage(
@@ -221,7 +258,11 @@ export function EditBookScreen() {
     setIsSubmitting(false);
   };
 
-  const previewUrl = coverAsset?.uri ?? (shouldRemoveCover ? null : getExistingCoverUrl());
+  const previewSource = coverAsset
+    ? { uri: coverAsset.uri }
+    : shouldRemoveCover
+      ? null
+      : resolveCoverSource({ cover_path: coverPath });
 
   if (!session) {
     return (
@@ -253,15 +294,11 @@ export function EditBookScreen() {
       <ScrollView contentContainerStyle={styles.container}>
         <Pressable
           onPress={() =>
-            navigateToScreen(
-              returnSection,
-              bookId
-                ? "book"
-                : returnSection === "home"
-                  ? "home-main"
-                  : "my-books",
-              { bookId },
-            )
+            navigateToScreen(returnSection, "book", {
+              bookId,
+              globalBookId: globalBookIdFromParams,
+              returnScreen,
+            })
           }
           style={[styles.backButton, { backgroundColor: colors.tint + "15" }]}
         >
@@ -323,12 +360,8 @@ export function EditBookScreen() {
                 },
               ]}
             >
-              {previewUrl ? (
-                <Image
-                  source={{ uri: previewUrl }}
-                  style={styles.coverPreview}
-                  contentFit="cover"
-                />
+              {previewSource ? (
+                <Image source={previewSource} style={styles.coverPreview} contentFit="cover" />
               ) : (
                 <ThemedText style={{ color: colors.tabIconDefault }}>
                   No cover selected
@@ -337,14 +370,14 @@ export function EditBookScreen() {
             </ThemedView>
             <ThemedView style={styles.coverActions}>
               <Pressable
-                onPress={handleChooseCover}
+                onPress={() => handleChooseImage(setCoverAsset)}
                 style={[styles.secondaryButton, { borderColor: colors.icon }]}
               >
                 <ThemedText type="defaultSemiBold">
-                  {previewUrl ? "Change cover" : "Choose cover"}
+                  {previewSource ? "Change cover" : "Choose cover"}
                 </ThemedText>
               </Pressable>
-              {previewUrl ? (
+              {previewSource ? (
                 <Pressable
                   onPress={() => {
                     setCoverAsset(null);
@@ -356,6 +389,165 @@ export function EditBookScreen() {
                 </Pressable>
               ) : null}
             </ThemedView>
+
+            <ThemedText type="defaultSemiBold" style={styles.label}>
+              Link to global book
+            </ThemedText>
+            {selectedGlobalBook ? (
+              <ThemedView
+                style={[
+                  styles.linkedBox,
+                  {
+                    backgroundColor:
+                      colorScheme === "dark" ? "#2c2c2e" : "#f6f6f6",
+                  },
+                ]}
+              >
+                <ThemedText type="defaultSemiBold">
+                  {selectedGlobalBook.title}
+                </ThemedText>
+                <ThemedText style={{ color: colors.tabIconDefault }}>
+                  {selectedGlobalBook.author}
+                </ThemedText>
+                <Pressable onPress={() => setSelectedGlobalBook(null)}>
+                  <ThemedText type="link">Clear selection</ThemedText>
+                </Pressable>
+              </ThemedView>
+            ) : (
+              <>
+                <TextInput
+                  placeholder="Search global books"
+                  placeholderTextColor={colors.tabIconDefault}
+                  value={globalBookSearch}
+                  onChangeText={setGlobalBookSearch}
+                  style={inputStyle}
+                />
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.globalBookList}
+                >
+                  {filteredGlobalBooks.map((globalBook) => (
+                    <Pressable
+                      key={globalBook.id}
+                      onPress={() => {
+                        setSelectedGlobalBook(globalBook);
+                        setIsCreatingGlobalBook(false);
+                      }}
+                      style={[
+                        styles.globalBookCard,
+                        {
+                          backgroundColor:
+                            colorScheme === "dark" ? "#2c2c2e" : "#f6f6f6",
+                        },
+                      ]}
+                    >
+                      <Image
+                        source={resolveCoverSource(globalBook)}
+                        style={styles.globalBookCover}
+                        contentFit="cover"
+                      />
+                      <ThemedText type="defaultSemiBold" numberOfLines={2}>
+                        {globalBook.title}
+                      </ThemedText>
+                      <ThemedText
+                        numberOfLines={1}
+                        style={{ color: colors.tabIconDefault }}
+                      >
+                        {globalBook.author}
+                      </ThemedText>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+                <Pressable
+                  onPress={() => {
+                    setIsCreatingGlobalBook(true);
+                    setNewGlobalBookTitle(title);
+                    setNewGlobalBookAuthor(author);
+                  }}
+                >
+                  <ThemedText type="link">Create a new global book</ThemedText>
+                </Pressable>
+              </>
+            )}
+
+            {isCreatingGlobalBook ? (
+              <ThemedView style={styles.globalBookForm}>
+                <ThemedText type="defaultSemiBold">New global book</ThemedText>
+                <TextInput
+                  placeholder="Global book title"
+                  placeholderTextColor={colors.tabIconDefault}
+                  value={newGlobalBookTitle}
+                  onChangeText={setNewGlobalBookTitle}
+                  style={inputStyle}
+                />
+                <TextInput
+                  placeholder="Global book author"
+                  placeholderTextColor={colors.tabIconDefault}
+                  value={newGlobalBookAuthor}
+                  onChangeText={setNewGlobalBookAuthor}
+                  style={inputStyle}
+                />
+                <TextInput
+                  placeholder="Editorial"
+                  placeholderTextColor={colors.tabIconDefault}
+                  value={newGlobalBookEditorial}
+                  onChangeText={setNewGlobalBookEditorial}
+                  style={inputStyle}
+                />
+                <TextInput
+                  multiline
+                  placeholder="Global book description"
+                  placeholderTextColor={colors.tabIconDefault}
+                  value={newGlobalBookDescription}
+                  onChangeText={setNewGlobalBookDescription}
+                  style={[inputStyle, styles.textArea]}
+                />
+                <ThemedView
+                  style={[
+                    styles.coverPicker,
+                    {
+                      backgroundColor:
+                        colorScheme === "dark" ? "#2c2c2e" : "#f0f0f0",
+                      borderColor: colors.tint + "30",
+                    },
+                  ]}
+                >
+                  {newGlobalBookCoverAsset ? (
+                    <Image
+                      source={{ uri: newGlobalBookCoverAsset.uri }}
+                      style={styles.coverPreview}
+                      contentFit="cover"
+                    />
+                  ) : (
+                    <ThemedText style={{ color: colors.tabIconDefault }}>
+                      No global book cover selected
+                    </ThemedText>
+                  )}
+                </ThemedView>
+                <ThemedView style={styles.coverActions}>
+                  <Pressable
+                    onPress={() => handleChooseImage(setNewGlobalBookCoverAsset)}
+                    style={[styles.secondaryButton, { borderColor: colors.icon }]}
+                  >
+                    <ThemedText type="defaultSemiBold">
+                      {newGlobalBookCoverAsset ? "Change cover" : "Choose cover"}
+                    </ThemedText>
+                  </Pressable>
+                  {newGlobalBookCoverAsset ? (
+                    <Pressable
+                      onPress={() => setNewGlobalBookCoverAsset(null)}
+                      style={[styles.secondaryButton, { borderColor: colors.icon }]}
+                    >
+                      <ThemedText type="defaultSemiBold">Remove</ThemedText>
+                    </Pressable>
+                  ) : null}
+                </ThemedView>
+                <Pressable onPress={() => setIsCreatingGlobalBook(false)}>
+                  <ThemedText type="link">Cancel new global book</ThemedText>
+                </Pressable>
+              </ThemedView>
+            ) : null}
 
             <ThemedText type="defaultSemiBold" style={styles.label}>
               Condition
@@ -394,7 +586,7 @@ export function EditBookScreen() {
               <ThemedView style={styles.publishText}>
                 <ThemedText type="defaultSemiBold">Published</ThemedText>
                 <ThemedText style={{ color: colors.tabIconDefault }}>
-                  Published books appear on Home.
+                  Published books appear on their global book page.
                 </ThemedText>
               </ThemedView>
               <Switch value={isPublished} onValueChange={setIsPublished} />
@@ -492,6 +684,32 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 44,
     justifyContent: "center",
+  },
+  linkedBox: {
+    borderRadius: 10,
+    gap: 6,
+    marginBottom: 18,
+    padding: 14,
+  },
+  globalBookList: {
+    gap: 12,
+    paddingBottom: 8,
+    paddingRight: 20,
+  },
+  globalBookCard: {
+    borderRadius: 12,
+    gap: 8,
+    padding: 12,
+    width: 150,
+  },
+  globalBookCover: {
+    borderRadius: 10,
+    height: 150,
+    width: "100%",
+  },
+  globalBookForm: {
+    marginTop: 14,
+    marginBottom: 18,
   },
   conditionRow: {
     flexDirection: "row",

@@ -3,100 +3,77 @@ import { ThemedView } from "@/src/components/themed-view";
 import { Colors } from "@/src/constants/theme";
 import { useAppNavigation } from "@/src/context/navigation-context";
 import { useColorScheme } from "@/src/hooks/use-color-scheme";
-import { supabase } from "@/src/lib/supabase";
-import type { Book } from "@/src/types/database";
+import { resolveCoverSource } from "@/src/lib/book-covers";
+import { loadGlobalBooks } from "@/src/lib/global-books";
+import type { GlobalBookWithBooks } from "@/src/types/database";
 import { Image } from "expo-image";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  RefreshControl,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   TextInput,
   TouchableOpacity,
 } from "react-native";
 
-const NO_COVER_IMAGE = require("../../../assets/images/no-cover-available.png");
-
 export function HomeScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
   const { navigateToScreen } = useAppNavigation();
   const [search, setSearch] = useState("");
-  const [books, setBooks] = useState<Book[]>([]);
+  const [globalBooks, setGlobalBooks] = useState<GlobalBookWithBooks[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const loadPublishedBooks = React.useCallback(
-    async (showSpinner = true) => {
-      if (showSpinner) {
-        setIsLoading(true);
-      }
-      setErrorMessage(null);
+  const loadCatalog = React.useCallback(async (showSpinner = true) => {
+    if (showSpinner) {
+      setIsLoading(true);
+    }
+    setErrorMessage(null);
 
-      const { data, error } = await supabase
-        .from("books")
-        .select("*")
-        .eq("is_published", true)
-        .order("created_at", { ascending: false });
+    try {
+      const data = await loadGlobalBooks();
+      setGlobalBooks(data);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "Could not load global books.",
+      );
+      setGlobalBooks([]);
+    }
 
-      if (error) {
-        setErrorMessage(error.message);
-        setBooks([]);
-      } else {
-        setBooks(data ?? []);
-      }
-
-      setIsLoading(false);
-      setIsRefreshing(false);
-    },
-    [],
-  );
+    setIsLoading(false);
+    setIsRefreshing(false);
+  }, []);
 
   useEffect(() => {
-    loadPublishedBooks();
-  }, [loadPublishedBooks]);
+    loadCatalog();
+  }, [loadCatalog]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
-    loadPublishedBooks(false);
+    loadCatalog(false);
   };
 
-  const filteredBooks = useMemo(() => {
+  const filteredGlobalBooks = useMemo(() => {
     const query = search.trim().toLowerCase();
 
     if (!query) {
-      return books;
+      return globalBooks;
     }
 
-    return books.filter((book) => {
+    return globalBooks.filter((globalBook) => {
       return (
-        book.title.toLowerCase().includes(query) ||
-        book.author.toLowerCase().includes(query)
+        globalBook.title.toLowerCase().includes(query) ||
+        globalBook.author.toLowerCase().includes(query)
       );
     });
-  }, [books, search]);
-
-  const getCoverSource = (book: Book) => {
-    if (book.cover_path?.startsWith("http")) {
-      return book.cover_path;
-    }
-
-    if (book.cover_path) {
-      const { data } = supabase.storage
-        .from("book-covers")
-        .getPublicUrl(book.cover_path);
-      return data.publicUrl;
-    }
-
-    return NO_COVER_IMAGE;
-  };
+  }, [globalBooks, search]);
 
   return (
     <ThemedView style={styles.container}>
-
       <ThemedView style={styles.fixedHeader}>
         <ThemedText type="title" style={styles.logoText}>
           BookTrade
@@ -111,7 +88,7 @@ export function HomeScreen() {
         >
           <TextInput
             style={[styles.searchInput, { color: colors.text }]}
-            placeholder="Search published books..."
+            placeholder="Search global books..."
             placeholderTextColor={colors.tabIconDefault}
             value={search}
             onChangeText={setSearch}
@@ -141,9 +118,9 @@ export function HomeScreen() {
             ]}
           >
             <ThemedText style={styles.mapPin}>Pin</ThemedText>
-            <ThemedText type="subtitle">Books near you</ThemedText>
+            <ThemedText type="subtitle">Global books near you</ThemedText>
             <ThemedText style={{ color: colors.tabIconDefault }}>
-              Showing {books.length} active trades
+              Showing {globalBooks.length} catalog entries
             </ThemedText>
           </ThemedView>
         </ThemedView>
@@ -155,7 +132,7 @@ export function HomeScreen() {
           ]}
         >
           <ThemedText type="subtitle" style={styles.sectionTitle}>
-            Recommended for you
+            Catalog
           </ThemedText>
         </ThemedView>
 
@@ -164,67 +141,69 @@ export function HomeScreen() {
             <ThemedView style={styles.feedbackState}>
               <ActivityIndicator color={colors.tint} />
               <ThemedText style={{ color: colors.tabIconDefault }}>
-                Loading published books...
+                Loading global books...
               </ThemedText>
             </ThemedView>
           ) : errorMessage ? (
             <ThemedView style={styles.feedbackState}>
-              <ThemedText type="defaultSemiBold">Could not load books</ThemedText>
+              <ThemedText type="defaultSemiBold">
+                Could not load global books
+              </ThemedText>
               <ThemedText
                 style={[styles.feedbackText, { color: colors.tabIconDefault }]}
               >
                 {errorMessage}
               </ThemedText>
               <Pressable
-                onPress={() => loadPublishedBooks()}
+                onPress={() => loadCatalog()}
                 style={[styles.feedbackButton, { backgroundColor: colors.tint }]}
               >
                 <ThemedText style={styles.feedbackButtonText}>Try again</ThemedText>
               </Pressable>
             </ThemedView>
-          ) : filteredBooks.length === 0 ? (
+          ) : filteredGlobalBooks.length === 0 ? (
             <ThemedView style={styles.feedbackState}>
               <ThemedText type="defaultSemiBold">
-                {books.length === 0 ? "No books available yet" : "No matches found"}
+                {globalBooks.length === 0
+                  ? "No global books available yet"
+                  : "No matches found"}
               </ThemedText>
               <ThemedText
                 style={[styles.feedbackText, { color: colors.tabIconDefault }]}
               >
-                {books.length === 0
-                  ? "When people publish books, they will show up here."
+                {globalBooks.length === 0
+                  ? "Global books will show up here once readers create them."
                   : "Try another title or author."}
               </ThemedText>
             </ThemedView>
           ) : (
-            filteredBooks.map((book) => (
+            filteredGlobalBooks.map((globalBook) => (
               <TouchableOpacity
-                key={book.id}
+                key={globalBook.id}
                 onPress={() =>
-                  navigateToScreen("home", "book", { bookId: book.id })
+                  navigateToScreen("home", "global-book", {
+                    globalBookId: globalBook.id,
+                  })
                 }
                 style={styles.bookCard}
               >
-                {(() => {
-                  const coverSource = getCoverSource(book);
-                  return (
-                    <Image
-                      source={
-                        typeof coverSource === "string"
-                          ? { uri: coverSource }
-                          : coverSource
-                      }
-                      style={styles.bookCover}
-                      contentFit="cover"
-                      transition={400}
-                    />
-                  );
-                })()}
+                <Image
+                  source={resolveCoverSource({
+                    cover_path: globalBook.display_cover_path,
+                  })}
+                  style={styles.bookCover}
+                  contentFit="cover"
+                  transition={400}
+                />
                 <ThemedView style={styles.bookInfo}>
                   <ThemedText type="defaultSemiBold" style={styles.titleText}>
-                    {book.title}
+                    {globalBook.title}
                   </ThemedText>
                   <ThemedText style={{ color: colors.tabIconDefault }}>
-                    {book.author}
+                    {globalBook.author}
+                  </ThemedText>
+                  <ThemedText style={{ color: colors.tabIconDefault }}>
+                    {globalBook.editorial || "Editorial not added yet"}
                   </ThemedText>
 
                   <ThemedView
@@ -240,7 +219,8 @@ export function HomeScreen() {
                         fontWeight: "600",
                       }}
                     >
-                      Available for trade
+                      {globalBook.published_books_count} published
+                      {globalBook.published_books_count === 1 ? " book" : " books"}
                     </ThemedText>
                   </ThemedView>
                 </ThemedView>

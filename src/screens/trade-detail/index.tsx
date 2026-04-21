@@ -4,29 +4,13 @@ import { Colors } from "@/src/constants/theme";
 import { useAuth } from "@/src/context/auth-context";
 import { useAppNavigation } from "@/src/context/navigation-context";
 import { useColorScheme } from "@/src/hooks/use-color-scheme";
+import { resolveCoverSource } from "@/src/lib/book-covers";
 import { supabase } from "@/src/lib/supabase";
 import type { Book, Profile, TradeRequest } from "@/src/types/database";
 import { Image } from "expo-image";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-const NO_COVER_IMAGE = require("../../../assets/images/no-cover-available.png");
-
-function getCoverSource(book?: Book | null) {
-  if (!book?.cover_path) {
-    return NO_COVER_IMAGE;
-  }
-
-  if (book.cover_path.startsWith("http")) {
-    return { uri: book.cover_path };
-  }
-
-  return {
-    uri: supabase.storage.from("book-covers").getPublicUrl(book.cover_path).data
-      .publicUrl,
-  };
-}
 
 function statusLabel(status: TradeRequest["status"]) {
   return status[0].toUpperCase() + status.slice(1);
@@ -276,7 +260,11 @@ export function TradeDetailScreen() {
 function TradeBookCard({ label, book }: { label: string; book: Book | null }) {
   return (
     <ThemedView style={styles.tradeCard}>
-      <Image source={getCoverSource(book)} style={styles.tradeCover} contentFit="cover" />
+      <Image
+        source={resolveCoverSource(book)}
+        style={styles.tradeCover}
+        contentFit="cover"
+      />
       <ThemedView style={styles.tradeInfo}>
         <ThemedText type="defaultSemiBold">{label}</ThemedText>
         <ThemedText type="subtitle">{book?.title ?? "Book unavailable"}</ThemedText>

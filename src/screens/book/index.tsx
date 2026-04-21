@@ -4,8 +4,10 @@ import { Colors } from "@/src/constants/theme";
 import { useAuth } from "@/src/context/auth-context";
 import { useAppNavigation } from "@/src/context/navigation-context";
 import { useColorScheme } from "@/src/hooks/use-color-scheme";
+import { resolveCoverSource } from "@/src/lib/book-covers";
+import { removeBookCover } from "@/src/lib/book-storage";
 import { supabase } from "@/src/lib/supabase";
-import type { Book, Profile } from "@/src/types/database";
+import type { Book, GlobalBook, Profile } from "@/src/types/database";
 import { Image } from "expo-image";
 import React, { useEffect, useState } from "react";
 import {
@@ -18,19 +20,30 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const NO_COVER_IMAGE = require("../../../assets/images/no-cover-available.png");
-
 export function BookScreen() {
   const { navigationState, navigateToScreen } = useAppNavigation();
   const { session } = useAuth();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
   const bookId = navigationState.params?.bookId;
+  const relatedGlobalBookId = navigationState.params?.globalBookId;
+  const returnScreen = navigationState.params?.returnScreen;
   const backSection = navigationState.currentSection === "books" ? "books" : "home";
-  const backScreen = backSection === "books" ? "my-books" : "home-main";
-  const backLabel = backSection === "books" ? "Back to My Books" : "Back to Home";
+  const backScreen =
+    backSection === "books"
+      ? "my-books"
+      : returnScreen === "global-book" && relatedGlobalBookId
+        ? "global-book"
+        : "home-main";
+  const backLabel =
+    backSection === "books"
+      ? "Back to My Books"
+      : returnScreen === "global-book" && relatedGlobalBookId
+        ? "Back to Global Book"
+        : "Back to Home";
   const [book, setBook] = useState<Book | null>(null);
   const [owner, setOwner] = useState<Profile | null>(null);
+  const [globalBook, setGlobalBook] = useState<GlobalBook | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -61,22 +74,34 @@ export function BookScreen() {
 
       if (error) {
         setErrorMessage(error.message);
-      } else {
-        setBook(data);
-
-        if (data?.owner_id) {
-          const { data: ownerData } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", data.owner_id)
-            .maybeSingle();
-
-          if (isMounted) {
-            setOwner(ownerData ?? null);
-          }
-        }
+        setIsLoading(false);
+        return;
       }
 
+      setBook(data);
+
+      const ownerId = data?.owner_id;
+      const nextGlobalBookId = data?.global_book_id;
+
+      const [ownerResult, globalBookResult] = await Promise.all([
+        ownerId
+          ? supabase.from("profiles").select("*").eq("id", ownerId).maybeSingle()
+          : Promise.resolve({ data: null, error: null }),
+        nextGlobalBookId
+          ? supabase
+              .from("global_books")
+              .select("*")
+              .eq("id", nextGlobalBookId)
+              .maybeSingle()
+          : Promise.resolve({ data: null, error: null }),
+      ]);
+
+      if (!isMounted) {
+        return;
+      }
+
+      setOwner(ownerResult.data ?? null);
+      setGlobalBook(globalBookResult.data ?? null);
       setIsLoading(false);
     }
 
@@ -86,14 +111,6 @@ export function BookScreen() {
       isMounted = false;
     };
   }, [bookId]);
-
-  const removeStorageCover = async (path: string | null) => {
-    if (!path || path.startsWith("http")) {
-      return;
-    }
-
-    await supabase.storage.from("book-covers").remove([path]);
-  };
 
   const deleteBook = async () => {
     if (!book || !isOwner) {
@@ -111,7 +128,7 @@ export function BookScreen() {
       return;
     }
 
-    await removeStorageCover(book.cover_path);
+    await removeBookCover(book.cover_path);
     navigateToScreen("books", "my-books");
     setIsDeleting(false);
   };
@@ -121,6 +138,7 @@ export function BookScreen() {
       return;
     }
 
+    const previousBook = book;
     const nextPublished = !book.is_published;
     setBook({ ...book, is_published: nextPublished });
     setErrorMessage(null);
@@ -131,7 +149,7 @@ export function BookScreen() {
       .eq("id", book.id);
 
     if (error) {
-      setBook(book);
+      setBook(previousBook);
       setErrorMessage(error.message);
     }
   };
@@ -164,15 +182,9 @@ export function BookScreen() {
 
     navigateToScreen("home", "select-trade-book", {
       targetBookId: book.id,
+      globalBookId: book.global_book_id ?? undefined,
     });
   };
-
-  const coverSource = book?.cover_path?.startsWith("http")
-    ? book.cover_path
-    : book?.cover_path
-      ? supabase.storage.from("book-covers").getPublicUrl(book.cover_path).data
-          .publicUrl
-      : NO_COVER_IMAGE;
 
   return (
     <SafeAreaView
@@ -181,7 +193,11 @@ export function BookScreen() {
     >
       <ScrollView contentContainerStyle={styles.container}>
         <Pressable
-          onPress={() => navigateToScreen(backSection, backScreen)}
+          onPress={() =>
+            navigateToScreen(backSection, backScreen, {
+              globalBookId: relatedGlobalBookId,
+            })
+          }
           style={[styles.backButton, { backgroundColor: colors.tint + "15" }]}
         >
           <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
@@ -206,11 +222,7 @@ export function BookScreen() {
         ) : (
           <>
             <Image
-              source={
-                typeof coverSource === "string"
-                  ? { uri: coverSource }
-                  : coverSource
-              }
+              source={resolveCoverSource(book)}
               style={styles.cover}
               contentFit="cover"
             />
@@ -223,6 +235,24 @@ export function BookScreen() {
             <ThemedText style={[styles.metaText, { color: colors.tabIconDefault }]}>
               Published by {owner?.display_name ?? "BookTrade reader"}
             </ThemedText>
+
+            {globalBook ? (
+              <Pressable
+                onPress={() =>
+                  navigateToScreen("home", "global-book", {
+                    globalBookId: globalBook.id,
+                  })
+                }
+                style={[
+                  styles.globalBookLink,
+                  { backgroundColor: colors.tint + "12" },
+                ]}
+              >
+                <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
+                  View global book: {globalBook.title}
+                </ThemedText>
+              </Pressable>
+            ) : null}
 
             <ThemedView style={styles.badgeRow}>
               <ThemedView
@@ -254,6 +284,8 @@ export function BookScreen() {
                     navigateToScreen(backSection, "edit-book", {
                       bookId: book.id,
                       returnSection: backSection,
+                      returnScreen,
+                      globalBookId: globalBook?.id ?? relatedGlobalBookId,
                     })
                   }
                   style={[styles.ownerButton, { backgroundColor: colors.tint }]}
@@ -328,6 +360,13 @@ const styles = StyleSheet.create({
   },
   metaText: {
     marginTop: 10,
+  },
+  globalBookLink: {
+    alignSelf: "flex-start",
+    borderRadius: 8,
+    marginTop: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
   },
   badgeRow: {
     flexDirection: "row",

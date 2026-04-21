@@ -4,8 +4,10 @@ import { Colors } from "@/src/constants/theme";
 import { useAuth } from "@/src/context/auth-context";
 import { useAppNavigation } from "@/src/context/navigation-context";
 import { useColorScheme } from "@/src/hooks/use-color-scheme";
+import { resolveCoverSource } from "@/src/lib/book-covers";
+import { loadBooksWithGlobalBooks } from "@/src/lib/global-books";
 import { supabase } from "@/src/lib/supabase";
-import type { Book } from "@/src/types/database";
+import type { BookWithGlobalBook } from "@/src/types/database";
 import { Image } from "expo-image";
 import React, { useCallback, useEffect, useState } from "react";
 import {
@@ -17,14 +19,12 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const NO_COVER_IMAGE = require("../../../assets/images/no-cover-available.png");
-
 export function MyBooksScreen() {
   const { session, isLoading: isAuthLoading } = useAuth();
   const { navigateToScreen } = useAppNavigation();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
-  const [books, setBooks] = useState<Book[]>([]);
+  const [books, setBooks] = useState<BookWithGlobalBook[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -40,16 +40,13 @@ export function MyBooksScreen() {
     }
     setErrorMessage(null);
 
-    const { data, error } = await supabase
-      .from("books")
-      .select("*")
-      .eq("owner_id", session.user.id)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      setErrorMessage(error.message);
-    } else {
-      setBooks(data ?? []);
+    try {
+      const data = await loadBooksWithGlobalBooks(session.user.id);
+      setBooks(data);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "Could not load your books.",
+      );
     }
 
     setIsLoading(false);
@@ -65,7 +62,7 @@ export function MyBooksScreen() {
     loadBooks(false);
   };
 
-  const handleTogglePublished = async (book: Book) => {
+  const handleTogglePublished = async (book: BookWithGlobalBook) => {
     const { error } = await supabase
       .from("books")
       .update({ is_published: !book.is_published })
@@ -82,19 +79,6 @@ export function MyBooksScreen() {
         ),
       );
     }
-  };
-
-  const getCoverSource = (book: Book) => {
-    if (book.cover_path?.startsWith("http")) {
-      return book.cover_path;
-    }
-
-    if (book.cover_path) {
-      return supabase.storage.from("book-covers").getPublicUrl(book.cover_path)
-        .data.publicUrl;
-    }
-
-    return NO_COVER_IMAGE;
   };
 
   if (isAuthLoading) {
@@ -149,7 +133,7 @@ export function MyBooksScreen() {
               My Books
             </ThemedText>
             <ThemedText style={{ color: colors.tabIconDefault }}>
-              Your private shelf and published trades.
+              Your private shelf and the books you publish under global books.
             </ThemedText>
           </ThemedView>
           <Pressable
@@ -181,10 +165,10 @@ export function MyBooksScreen() {
           </ThemedView>
         ) : books.length === 0 ? (
           <ThemedView style={styles.emptyBox}>
-            <ThemedText type="defaultSemiBold">No books yet</ThemedText>
-            <ThemedText style={{ color: colors.tabIconDefault }}>
-              Add your first book to start trading.
-            </ThemedText>
+              <ThemedText type="defaultSemiBold">No books yet</ThemedText>
+              <ThemedText style={{ color: colors.tabIconDefault }}>
+              Add your first book and optionally link it to a global book.
+              </ThemedText>
             <Pressable
               onPress={() => navigateToScreen("books", "new-book")}
               style={[styles.emptyButton, { backgroundColor: colors.tint }]}
@@ -202,14 +186,9 @@ export function MyBooksScreen() {
               style={styles.bookCard}
             >
               {(() => {
-                const coverSource = getCoverSource(book);
                 return (
                   <Image
-                    source={
-                      typeof coverSource === "string"
-                        ? { uri: coverSource }
-                        : coverSource
-                    }
+                    source={resolveCoverSource(book)}
                     style={styles.bookCover}
                     contentFit="cover"
                   />
@@ -221,6 +200,11 @@ export function MyBooksScreen() {
                 </ThemedText>
                 <ThemedText style={{ color: colors.tabIconDefault }}>
                   {book.author}
+                </ThemedText>
+                <ThemedText style={{ color: colors.tabIconDefault }}>
+                  {book.global_book
+                    ? `Linked to ${book.global_book.title}`
+                    : "No global book linked"}
                 </ThemedText>
                 <ThemedText style={{ color: colors.tabIconDefault }}>
                   {book.is_published ? "Published" : "Private"}

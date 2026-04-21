@@ -52,6 +52,7 @@ export interface Database {
           description: string | null;
           condition: BookCondition;
           cover_path: string | null;
+          global_book_id: string | null;
           is_published: boolean;
           created_at: string;
           updated_at: string;
@@ -64,6 +65,7 @@ export interface Database {
           description?: string | null;
           condition?: BookCondition;
           cover_path?: string | null;
+          global_book_id?: string | null;
           is_published?: boolean;
           created_at?: string;
           updated_at?: string;
@@ -74,13 +76,61 @@ export interface Database {
           description?: string | null;
           condition?: BookCondition;
           cover_path?: string | null;
+          global_book_id?: string | null;
           is_published?: boolean;
           updated_at?: string;
         };
         Relationships: [
           {
+            foreignKeyName: "books_global_book_id_fkey";
+            columns: ["global_book_id"];
+            referencedRelation: "global_books";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "books_owner_id_fkey";
             columns: ["owner_id"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      global_books: {
+        Row: {
+          id: string;
+          title: string;
+          author: string;
+          editorial: string | null;
+          description: string | null;
+          cover_path: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          author: string;
+          editorial?: string | null;
+          description?: string | null;
+          cover_path?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          title?: string;
+          author?: string;
+          editorial?: string | null;
+          description?: string | null;
+          cover_path?: string | null;
+          created_by?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "global_books_created_by_fkey";
+            columns: ["created_by"];
             referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
@@ -153,5 +203,24 @@ export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type Book = Database["public"]["Tables"]["books"]["Row"];
 export type BookInsert = Database["public"]["Tables"]["books"]["Insert"];
 export type BookUpdate = Database["public"]["Tables"]["books"]["Update"];
+export type GlobalBook = Database["public"]["Tables"]["global_books"]["Row"];
+export type GlobalBookInsert =
+  Database["public"]["Tables"]["global_books"]["Insert"];
+export type GlobalBookUpdate =
+  Database["public"]["Tables"]["global_books"]["Update"];
 export type TradeRequest =
   Database["public"]["Tables"]["trade_requests"]["Row"];
+
+export type BookWithGlobalBook = Book & {
+  global_book?: GlobalBook | null;
+};
+
+export type PublishedBookWithOwner = Book & {
+  owner?: Profile | null;
+};
+
+export type GlobalBookWithBooks = GlobalBook & {
+  books: PublishedBookWithOwner[];
+  published_books_count: number;
+  display_cover_path: string | null;
+};
