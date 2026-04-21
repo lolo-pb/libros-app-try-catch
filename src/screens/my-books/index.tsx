@@ -136,12 +136,14 @@ export function MyBooksScreen() {
               Your private shelf and the books you publish under global books.
             </ThemedText>
           </ThemedView>
-          <Pressable
-            onPress={() => navigateToScreen("books", "new-book")}
-            style={[styles.addButton, { backgroundColor: colors.tint }]}
-          >
-            <ThemedText style={styles.addButtonText}>New</ThemedText>
-          </Pressable>
+          {books.length > 0 ? (
+            <Pressable
+              onPress={() => navigateToScreen("books", "new-book")}
+              style={[styles.addButton, { backgroundColor: colors.tint }]}
+            >
+              <ThemedText style={styles.addButtonText}>New</ThemedText>
+            </Pressable>
+          ) : null}
         </ThemedView>
 
         {errorMessage ? (

@@ -159,7 +159,7 @@ function buildGlobalBookWithBooks(
     ...globalBook,
     books,
     published_books_count: books.length,
-    display_cover_path: books[0]?.cover_path ?? globalBook.cover_path,
+    display_cover_path: globalBook.cover_path ?? books[0]?.cover_path ?? null,
   };
 }
 
@@ -186,6 +186,10 @@ export async function createGlobalBook(input: {
 
   if (error) {
     throw error;
+  }
+
+  if (!data) {
+    throw new Error("Global book was created, but no row was returned.");
   }
 
   return data;

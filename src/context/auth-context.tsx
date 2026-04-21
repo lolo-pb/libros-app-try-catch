@@ -1,3 +1,4 @@
+import { ensureProfileForUser } from "@/src/lib/profiles";
 import { supabase } from "@/src/lib/supabase";
 import type { Profile } from "@/src/types/database";
 import type { Session } from "@supabase/supabase-js";
@@ -25,24 +26,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadProfile = useCallback(async (userId?: string) => {
-    if (!userId) {
+  const loadProfile = useCallback(async (sessionUser?: Session["user"] | null) => {
+    if (!sessionUser?.id) {
       setProfile(null);
       return;
     }
 
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", userId)
-      .maybeSingle();
-
-    setProfile(data ?? null);
+    const nextProfile = await ensureProfileForUser(sessionUser);
+    setProfile(nextProfile ?? null);
   }, []);
 
   const refreshProfile = useCallback(async () => {
-    await loadProfile(session?.user.id);
-  }, [loadProfile, session?.user.id]);
+    await loadProfile(session?.user);
+  }, [loadProfile, session?.user]);
 
   useEffect(() => {
     let isMounted = true;
@@ -53,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       setSession(data.session);
-      await loadProfile(data.session?.user.id);
+      await loadProfile(data.session?.user);
       setIsLoading(false);
     });
 
@@ -61,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       setSession(nextSession);
-      loadProfile(nextSession?.user.id);
+      loadProfile(nextSession?.user);
     });
 
     return () => {

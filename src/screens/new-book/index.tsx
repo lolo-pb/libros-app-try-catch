@@ -5,8 +5,10 @@ import { useAuth } from "@/src/context/auth-context";
 import { useAppNavigation } from "@/src/context/navigation-context";
 import { useColorScheme } from "@/src/hooks/use-color-scheme";
 import { resolveCoverSource } from "@/src/lib/book-covers";
+import { getErrorMessage } from "@/src/lib/errors";
 import { createGlobalBook, loadGlobalBooks } from "@/src/lib/global-books";
 import { uploadBookCover } from "@/src/lib/book-storage";
+import { ensureProfileForUser } from "@/src/lib/profiles";
 import { supabase } from "@/src/lib/supabase";
 import type { BookCondition, GlobalBook } from "@/src/types/database";
 import { Image } from "expo-image";
@@ -150,6 +152,8 @@ export function NewBookScreen() {
     let uploadedGlobalBookCoverPath: string | null = null;
 
     try {
+      await ensureProfileForUser(session.user);
+
       let globalBookId = selectedGlobalBook?.id ?? null;
 
       if (isCreatingGlobalBook) {
@@ -176,7 +180,7 @@ export function NewBookScreen() {
           created_by: session.user.id,
         });
 
-        globalBookId = createdGlobalBook?.id ?? null;
+        globalBookId = createdGlobalBook.id;
       }
 
       uploadedBookCoverPath = coverAsset
@@ -200,9 +204,7 @@ export function NewBookScreen() {
         navigateToScreen("books", "my-books");
       }
     } catch (error) {
-      setMessage(
-        error instanceof Error ? error.message : "Could not save this book.",
-      );
+      setMessage(getErrorMessage(error, "Could not save this book."));
     }
 
     setIsSubmitting(false);
