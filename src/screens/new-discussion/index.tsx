@@ -174,7 +174,7 @@ export function NewDiscussionScreen() {
               placeholderTextColor={colors.tabIconDefault}
               value={title}
               onChangeText={setTitle}
-              style={inputStyle}
+              style={[inputStyle, styles.titleInput]}
             />
             <TextInput
               multiline
@@ -246,6 +246,9 @@ const styles = StyleSheet.create({
     minHeight: 48,
     paddingHorizontal: 14,
     paddingVertical: 12,
+  },
+  titleInput: {
+    marginBottom: 12,
   },
   textArea: {
     minHeight: 160,
