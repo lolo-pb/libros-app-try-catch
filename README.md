@@ -1,50 +1,109 @@
-# Welcome to your Expo app 👋
+# BookTrade
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Useful commands for local development, native builds, and Supabase pushes.
 
-## Get started
+## Install
 
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```powershell
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Run the app
 
-## Learn more
+Start Metro:
 
-To learn more about developing your project with Expo, look at the following resources:
+```powershell
+npm run start
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Start Android:
 
-## Join the community
+```powershell
+npm run android
+```
 
-Join our community of developers creating universal apps.
+Start iOS:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```powershell
+npm run ios
+```
+
+Start web:
+
+```powershell
+npm run web
+```
+
+## Checks
+
+Lint:
+
+```powershell
+npm run lint
+```
+
+TypeScript:
+
+```powershell
+npx tsc --noEmit
+```
+
+## Build mobile apps
+
+Log in to Expo EAS:
+
+```powershell
+npx eas-cli login --web
+```
+
+Build Android APK:
+
+```powershell
+npx eas-cli build --platform android --profile preview --non-interactive
+```
+
+Build Android development client:
+
+```powershell
+npx eas-cli build --platform android --profile development
+```
+
+Build iOS:
+
+```powershell
+npx eas-cli build --platform ios --profile production
+```
+
+Build iOS development client:
+
+```powershell
+npx eas-cli build --platform ios --profile development
+```
+
+## Supabase
+
+Check Supabase CLI:
+
+```powershell
+npx supabase --version
+```
+
+Link project:
+
+```powershell
+npx supabase link --project-ref bnkinypdvwhydbybohgk
+```
+
+Push database migrations:
+
+```powershell
+$env:SUPABASE_DB_PASSWORD="YOUR_DATABASE_PASSWORD"
+npx supabase db push
+```
+
+If PowerShell has trouble with `npx`, use:
+
+```powershell
+$env:SUPABASE_DB_PASSWORD="YOUR_DATABASE_PASSWORD"
+npx.cmd supabase db push
+```
