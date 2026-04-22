@@ -11,11 +11,12 @@ import { useColorScheme } from "@/src/hooks/use-color-scheme";
 
 export default function Layout() {
   const colorScheme = useColorScheme();
+  const statusBarStyle = colorScheme === "dark" ? "light" : "dark";
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <RootLayout />
-      <StatusBar style="auto" />
+      <StatusBar style={statusBarStyle} />
     </ThemeProvider>
   );
 }
