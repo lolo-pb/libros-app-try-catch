@@ -7,12 +7,21 @@ todo:
 -Mapa
 
 -Proper Home{
-    -
+    - top following horizontal scroll
+    - botom infinite scroll of recommended discussions
 }
 
+-Rework global_books page to add discussions and published books available
+
 -Discussions{
-    -Chats
-    -lista de ofertas
+/*
+ *  Inside each global book there will be a list of discussions
+ * These discussions will have an initial post with a title and a text body
+ * people will the comment under that initial discussion and comment on the  
+ * discussion, reddit style.(reply to and stuff)
+ */
+    -define how we will manage that
+
 }
 
 
