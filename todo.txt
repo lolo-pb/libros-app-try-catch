@@ -1,2 +1,25 @@
 Before production/deployment:
 - Re-enable Supabase email confirmation for signups after the deployed app URL is configured in Authentication > URL Configuration.
+
+
+todo:
+
+-Mapa
+
+-Proper Home{
+    -
+}
+
+-Discussions{
+    -Chats
+    -lista de ofertas
+}
+
+
+
+---Mk3
+
+-UI refactor
+
+-Better login
+
