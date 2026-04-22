@@ -13,25 +13,24 @@ todo:
         }
     }
 
-    -Global_books{
-    }
+    -Global_books{}
 
     -Discussions page{
         -the comment should move up when typing/ you cant see when typing
+        -drag down to refresh(maybe other screens have same problem)
     }
 
-    -Publication process{
-        -the crop thing for pictures
-        -add a camera option from the app to publish flow
-    }
-
-    -Old published books{
+    -Books{
         -borde al boton de available/ y cambio de color para q sea mas claro lo que es toggleable
     }
 
+    -trade{
+        -you shoiuld go to book details from trade request
+    }
     -old Requests{
         -que requests listos se puedan borrar y cancelar, limpiar historial ponele
     }
+
 
     -Login{
         -Better login
