@@ -4,31 +4,40 @@ Before production/deployment:
 
 todo:
 
+-UI refactor{
+    -Home{
+        - top following horizontal scroll   (*) needs following mechanics
+ 
+        - botom infinite scroll of recommended discussions{
+            -disscussion metadata
+        }
+    }
+
+    -Global_books{
+    }
+
+    -Discussions page{
+        -the comment should move up when typing/ you cant see when typing
+    }
+
+    -Publication process{
+        -the crop thing for pictures
+        -add a camera option from the app to publish flow
+    }
+
+    -Old published books{
+        -borde al boton de available/ y cambio de color para q sea mas claro lo que es toggleable
+    }
+
+    -old Requests{
+        -que requests listos se puedan borrar y cancelar, limpiar historial ponele
+    }
+
+    -Login{
+        -Better login
+    }
+}
+
+---Mk3-
+
 -Mapa
-
--Proper Home{
-    - top following horizontal scroll
-    - botom infinite scroll of recommended discussions
-}
-
--Rework global_books page to add discussions and published books available
-
--Discussions{
-/*
- *  Inside each global book there will be a list of discussions
- * These discussions will have an initial post with a title and a text body
- * people will the comment under that initial discussion and comment on the  
- * discussion, reddit style.(reply to and stuff)
- */
-    -define how we will manage that
-
-}
-
-
-
----Mk3
-
--UI refactor
-
--Better login
-
