@@ -8,6 +8,13 @@ export type Json =
 
 export type BookCondition = "new" | "like_new" | "good" | "fair" | "poor";
 export type TradeRequestStatus = "pending" | "accepted" | "declined";
+export type DiscussionCommentInsert = {
+  discussion_id: string;
+  body: string;
+  parent_comment_id?: string | null;
+  reply_to_comment_id?: string | null;
+  reply_to_user_id?: string | null;
+};
 
 export interface Database {
   public: {
@@ -136,6 +143,120 @@ export interface Database {
           },
         ];
       };
+      global_book_discussions: {
+        Row: {
+          id: string;
+          global_book_id: string;
+          author_id: string | null;
+          title: string | null;
+          body: string | null;
+          is_deleted: boolean;
+          deleted_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          global_book_id: string;
+          author_id?: string | null;
+          title: string;
+          body: string;
+          is_deleted?: boolean;
+          deleted_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          title?: string | null;
+          body?: string | null;
+          is_deleted?: boolean;
+          deleted_at?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "global_book_discussions_author_id_fkey";
+            columns: ["author_id"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "global_book_discussions_global_book_id_fkey";
+            columns: ["global_book_id"];
+            referencedRelation: "global_books";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      discussion_comments: {
+        Row: {
+          id: string;
+          discussion_id: string;
+          author_id: string | null;
+          parent_comment_id: string | null;
+          reply_to_comment_id: string | null;
+          reply_to_user_id: string | null;
+          body: string | null;
+          is_deleted: boolean;
+          deleted_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          discussion_id: string;
+          author_id?: string | null;
+          parent_comment_id?: string | null;
+          reply_to_comment_id?: string | null;
+          reply_to_user_id?: string | null;
+          body: string;
+          is_deleted?: boolean;
+          deleted_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          parent_comment_id?: string | null;
+          reply_to_comment_id?: string | null;
+          reply_to_user_id?: string | null;
+          body?: string | null;
+          is_deleted?: boolean;
+          deleted_at?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "discussion_comments_author_id_fkey";
+            columns: ["author_id"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "discussion_comments_discussion_id_fkey";
+            columns: ["discussion_id"];
+            referencedRelation: "global_book_discussions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "discussion_comments_parent_comment_id_fkey";
+            columns: ["parent_comment_id"];
+            referencedRelation: "discussion_comments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "discussion_comments_reply_to_comment_id_fkey";
+            columns: ["reply_to_comment_id"];
+            referencedRelation: "discussion_comments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "discussion_comments_reply_to_user_id_fkey";
+            columns: ["reply_to_user_id"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       trade_requests: {
         Row: {
           id: string;
@@ -208,6 +329,14 @@ export type GlobalBookInsert =
   Database["public"]["Tables"]["global_books"]["Insert"];
 export type GlobalBookUpdate =
   Database["public"]["Tables"]["global_books"]["Update"];
+export type GlobalBookDiscussion =
+  Database["public"]["Tables"]["global_book_discussions"]["Row"];
+export type GlobalBookDiscussionInsert =
+  Database["public"]["Tables"]["global_book_discussions"]["Insert"];
+export type GlobalBookDiscussionUpdate =
+  Database["public"]["Tables"]["global_book_discussions"]["Update"];
+export type DiscussionComment =
+  Database["public"]["Tables"]["discussion_comments"]["Row"];
 export type TradeRequest =
   Database["public"]["Tables"]["trade_requests"]["Row"];
 
@@ -223,4 +352,27 @@ export type GlobalBookWithBooks = GlobalBook & {
   books: PublishedBookWithOwner[];
   published_books_count: number;
   display_cover_path: string | null;
+};
+
+export type DiscussionCommentWithAuthor = DiscussionComment & {
+  author?: Profile | null;
+  reply_to_user?: Profile | null;
+};
+
+export type GlobalBookDiscussionPreview = GlobalBookDiscussion & {
+  author?: Profile | null;
+  comment_count: number;
+  latest_comment_at: string | null;
+};
+
+export type GlobalBookDiscussionWithComments = GlobalBookDiscussion & {
+  author?: Profile | null;
+  global_book?: GlobalBook | null;
+  comment_count: number;
+  top_level_comments: (
+    DiscussionCommentWithAuthor & {
+      replies: DiscussionCommentWithAuthor[];
+      reply_count: number;
+    }
+  )[];
 };

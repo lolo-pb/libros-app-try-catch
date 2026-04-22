@@ -1,11 +1,17 @@
 import { ThemedText } from "@/src/components/themed-text";
 import { ThemedView } from "@/src/components/themed-view";
 import { Colors } from "@/src/constants/theme";
+import { useAuth } from "@/src/context/auth-context";
 import { useAppNavigation } from "@/src/context/navigation-context";
 import { useColorScheme } from "@/src/hooks/use-color-scheme";
 import { resolveCoverSource } from "@/src/lib/book-covers";
+import { loadGlobalBookDiscussions } from "@/src/lib/discussions";
+import { getErrorMessage } from "@/src/lib/errors";
 import { loadGlobalBook } from "@/src/lib/global-books";
-import type { GlobalBookWithBooks } from "@/src/types/database";
+import type {
+  GlobalBookDiscussionPreview,
+  GlobalBookWithBooks,
+} from "@/src/types/database";
 import { Image } from "expo-image";
 import React, { useEffect, useState } from "react";
 import {
@@ -18,13 +24,18 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export function GlobalBookScreen() {
+  const { session } = useAuth();
   const { navigationState, navigateToScreen } = useAppNavigation();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
   const globalBookId = navigationState.params?.globalBookId;
   const [globalBook, setGlobalBook] = useState<GlobalBookWithBooks | null>(null);
+  const [discussions, setDiscussions] = useState<GlobalBookDiscussionPreview[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString();
 
   useEffect(() => {
     let isMounted = true;
@@ -40,7 +51,10 @@ export function GlobalBookScreen() {
       setErrorMessage(null);
 
       try {
-        const data = await loadGlobalBook(globalBookId);
+        const [data, loadedDiscussions] = await Promise.all([
+          loadGlobalBook(globalBookId),
+          loadGlobalBookDiscussions(globalBookId),
+        ]);
 
         if (!isMounted) {
           return;
@@ -50,14 +64,11 @@ export function GlobalBookScreen() {
           setErrorMessage("This global book could not be found.");
         } else {
           setGlobalBook(data);
+          setDiscussions(loadedDiscussions);
         }
       } catch (error) {
         if (isMounted) {
-          setErrorMessage(
-            error instanceof Error
-              ? error.message
-              : "Could not load this global book.",
-          );
+          setErrorMessage(getErrorMessage(error, "Could not load this global book."));
         }
       }
 
@@ -135,6 +146,83 @@ export function GlobalBookScreen() {
             <ThemedText style={styles.description}>
               {globalBook.description || "No description yet."}
             </ThemedText>
+
+            <View style={styles.discussionSection}>
+              <ThemedView style={styles.discussionHeader}>
+                <ThemedText type="subtitle">Discussions</ThemedText>
+                <Pressable
+                  onPress={() =>
+                    session
+                      ? navigateToScreen("home", "new-discussion", {
+                          globalBookId: globalBook.id,
+                        })
+                      : navigateToScreen("user", "login")
+                  }
+                  style={[styles.startButton, { backgroundColor: colors.tint }]}
+                >
+                  <ThemedText style={styles.startButtonText}>
+                    Start discussion
+                  </ThemedText>
+                </Pressable>
+              </ThemedView>
+
+              {discussions.length === 0 ? (
+                <ThemedView
+                  style={[
+                    styles.emptyBox,
+                    {
+                      backgroundColor:
+                        colorScheme === "dark" ? "#2c2c2e" : "#f6f6f6",
+                    },
+                  ]}
+                >
+                  <ThemedText type="defaultSemiBold">
+                    No discussions yet
+                  </ThemedText>
+                  <ThemedText style={{ color: colors.tabIconDefault }}>
+                    Be the first to talk about this global book.
+                  </ThemedText>
+                </ThemedView>
+              ) : (
+                discussions.map((discussion) => (
+                  <Pressable
+                    key={discussion.id}
+                    onPress={() =>
+                      navigateToScreen("home", "discussion-detail", {
+                        discussionId: discussion.id,
+                        globalBookId: globalBook.id,
+                      })
+                    }
+                    style={[
+                      styles.discussionCard,
+                      {
+                        backgroundColor:
+                          colorScheme === "dark" ? "#2c2c2e" : "#f8f8f8",
+                      },
+                    ]}
+                  >
+                    <ThemedText type="defaultSemiBold">
+                      {discussion.is_deleted
+                        ? "Deleted discussion"
+                        : discussion.title}
+                    </ThemedText>
+                    <ThemedText style={{ color: colors.tabIconDefault }}>
+                      {discussion.author?.display_name ?? "BookTrade reader"} ·{" "}
+                      {formatDate(discussion.created_at)}
+                    </ThemedText>
+                    <ThemedText numberOfLines={2} style={styles.previewText}>
+                      {discussion.is_deleted
+                        ? "This discussion was deleted."
+                        : discussion.body}
+                    </ThemedText>
+                    <ThemedText style={{ color: colors.tabIconDefault }}>
+                      {discussion.comment_count} comment
+                      {discussion.comment_count === 1 ? "" : "s"}
+                    </ThemedText>
+                  </Pressable>
+                ))
+              )}
+            </View>
 
             <View style={styles.publicationSection}>
               <ThemedText type="subtitle">Published books</ThemedText>
@@ -261,6 +349,34 @@ const styles = StyleSheet.create({
   publicationSection: {
     marginTop: 28,
     gap: 12,
+  },
+  discussionSection: {
+    gap: 12,
+    marginTop: 28,
+  },
+  discussionHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 12,
+  },
+  startButton: {
+    alignItems: "center",
+    borderRadius: 8,
+    height: 40,
+    justifyContent: "center",
+    paddingHorizontal: 14,
+  },
+  startButtonText: {
+    color: "#fff",
+    fontWeight: "700",
+  },
+  discussionCard: {
+    borderRadius: 12,
+    gap: 6,
+    padding: 14,
+  },
+  previewText: {
+    marginTop: 2,
   },
   emptyBox: {
     borderRadius: 12,
