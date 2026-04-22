@@ -174,6 +174,29 @@ export function EditBookScreen() {
     }
   };
 
+  const handleTakePhoto = async (
+    onSelect: (asset: ImagePicker.ImagePickerAsset) => void,
+  ) => {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+
+    if (!permission.granted) {
+      setMessage("Allow camera access to take a cover photo.");
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [2, 3],
+      mediaTypes: ["images"],
+      quality: 0.85,
+    });
+
+    if (!result.canceled) {
+      onSelect(result.assets[0]);
+      setMessage(null);
+    }
+  };
+
   const handleSave = async () => {
     if (!session || !book) {
       return;
@@ -375,8 +398,16 @@ export function EditBookScreen() {
                 onPress={() => handleChooseImage(setCoverAsset)}
                 style={[styles.secondaryButton, { borderColor: colors.icon }]}
               >
-                <ThemedText type="defaultSemiBold">
-                  {previewSource ? "Change cover" : "Choose cover"}
+                <ThemedText type="defaultSemiBold" style={styles.coverActionText}>
+                  {previewSource ? "Change\ncover" : "Choose\ncover"}
+                </ThemedText>
+              </Pressable>
+              <Pressable
+                onPress={() => handleTakePhoto(setCoverAsset)}
+                style={[styles.secondaryButton, { borderColor: colors.icon }]}
+              >
+                <ThemedText type="defaultSemiBold" style={styles.coverActionText}>
+                  Camera
                 </ThemedText>
               </Pressable>
               {previewSource ? (
@@ -387,7 +418,9 @@ export function EditBookScreen() {
                   }}
                   style={[styles.secondaryButton, { borderColor: colors.icon }]}
                 >
-                  <ThemedText type="defaultSemiBold">Remove</ThemedText>
+                  <ThemedText type="defaultSemiBold" style={styles.coverActionText}>
+                    Remove
+                  </ThemedText>
                 </Pressable>
               ) : null}
             </ThemedView>
@@ -532,8 +565,16 @@ export function EditBookScreen() {
                     onPress={() => handleChooseImage(setNewGlobalBookCoverAsset)}
                     style={[styles.secondaryButton, { borderColor: colors.icon }]}
                   >
-                    <ThemedText type="defaultSemiBold">
-                      {newGlobalBookCoverAsset ? "Change cover" : "Choose cover"}
+                    <ThemedText type="defaultSemiBold" style={styles.coverActionText}>
+                      {newGlobalBookCoverAsset ? "Change\ncover" : "Choose\ncover"}
+                    </ThemedText>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => handleTakePhoto(setNewGlobalBookCoverAsset)}
+                    style={[styles.secondaryButton, { borderColor: colors.icon }]}
+                  >
+                    <ThemedText type="defaultSemiBold" style={styles.coverActionText}>
+                      Camera
                     </ThemedText>
                   </Pressable>
                   {newGlobalBookCoverAsset ? (
@@ -541,7 +582,9 @@ export function EditBookScreen() {
                       onPress={() => setNewGlobalBookCoverAsset(null)}
                       style={[styles.secondaryButton, { borderColor: colors.icon }]}
                     >
-                      <ThemedText type="defaultSemiBold">Remove</ThemedText>
+                      <ThemedText type="defaultSemiBold" style={styles.coverActionText}>
+                        Remove
+                      </ThemedText>
                     </Pressable>
                   ) : null}
                 </ThemedView>
@@ -676,6 +719,7 @@ const styles = StyleSheet.create({
   },
   coverActions: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: 10,
     marginBottom: 18,
   },
@@ -686,6 +730,11 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 44,
     justifyContent: "center",
+    minWidth: 92,
+  },
+  coverActionText: {
+    lineHeight: 18,
+    textAlign: "center",
   },
   linkedBox: {
     borderRadius: 10,
