@@ -27,13 +27,22 @@ export function NavigationContainer({
       const section = sections.find((s) => s.id === sectionId);
       if (section) {
         const firstScreenId = section.screens[0]?.id || "";
+
+        if (
+          navigationState.currentSection === sectionId &&
+          navigationState.currentScreen === firstScreenId
+        ) {
+          return;
+        }
+
         onNavigationChange({
           currentSection: sectionId,
           currentScreen: firstScreenId,
+          history: [],
         });
       }
     },
-    [sections, onNavigationChange],
+    [navigationState, onNavigationChange, sections],
   );
 
   useEffect(() => {
@@ -44,6 +53,19 @@ export function NavigationContainer({
     const subscription = BackHandler.addEventListener(
       "hardwareBackPress",
       () => {
+        const history = navigationState.history ?? [];
+        const previousRoute = history[history.length - 1];
+
+        if (previousRoute) {
+          onNavigationChange({
+            currentSection: previousRoute.sectionId,
+            currentScreen: previousRoute.screenId,
+            params: previousRoute.params,
+            history: history.slice(0, -1),
+          });
+          return true;
+        }
+
         const currentSection = sections.find(
           (section) => section.id === navigationState.currentSection,
         );
@@ -56,6 +78,7 @@ export function NavigationContainer({
           onNavigationChange({
             currentSection: navigationState.currentSection,
             currentScreen: firstScreenId,
+            history: [],
           });
           return true;
         }
@@ -64,6 +87,7 @@ export function NavigationContainer({
           onNavigationChange({
             currentSection: "home",
             currentScreen: "home-main",
+            history: [],
           });
           return true;
         }

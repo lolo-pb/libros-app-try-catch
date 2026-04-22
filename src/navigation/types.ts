@@ -16,8 +16,15 @@ export interface NavigationScreen {
   component: React.ComponentType<any>;
 }
 
+export interface NavigationRoute {
+  sectionId: string;
+  screenId: string;
+  params?: Record<string, string | undefined>;
+}
+
 export interface NavigationState {
   currentSection: string;
   currentScreen: string;
   params?: Record<string, string | undefined>;
+  history?: NavigationRoute[];
 }

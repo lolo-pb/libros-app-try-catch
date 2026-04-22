@@ -30,25 +30,50 @@ export function NavigationProvider({
       screenId: string,
       params?: NavigationState["params"],
     ) => {
+      const isSameScreen =
+        navigationState.currentSection === sectionId &&
+        navigationState.currentScreen === screenId;
+
       onNavigationChange({
         currentSection: sectionId,
         currentScreen: screenId,
         params,
+        history: isSameScreen
+          ? navigationState.history ?? []
+          : [
+              ...(navigationState.history ?? []),
+              {
+                sectionId: navigationState.currentSection,
+                screenId: navigationState.currentScreen,
+                params: navigationState.params,
+              },
+            ],
       });
     },
-    [onNavigationChange],
+    [navigationState, onNavigationChange],
   );
 
   const navigateToSection = useCallback(
     (sectionId: string) => {
-      // This will be handled by the parent component
+      if (navigationState.currentSection === sectionId) {
+        return;
+      }
+
       onNavigationChange({
         currentSection: sectionId,
         currentScreen: navigationState.currentScreen,
         params: navigationState.params,
+        history: [
+          ...(navigationState.history ?? []),
+          {
+            sectionId: navigationState.currentSection,
+            screenId: navigationState.currentScreen,
+            params: navigationState.params,
+          },
+        ],
       });
     },
-    [onNavigationChange, navigationState.currentScreen, navigationState.params],
+    [navigationState, onNavigationChange],
   );
 
   return (
