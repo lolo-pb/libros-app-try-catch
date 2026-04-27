@@ -22,24 +22,50 @@ export function LoginScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
   const [email, setEmail] = useState("");
+  const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
   const handleSubmit = async () => {
+    const trimmedEmail = email.trim();
+    const trimmedNickname = nickname.trim();
+
+    if (!trimmedEmail || !password) {
+      setMessage("Email and password are required.");
+      return;
+    }
+
+    if (isSignUp) {
+      if (!trimmedNickname) {
+        setMessage("Pick a nickname so other readers know who you are.");
+        return;
+      }
+
+      if (password.length < 8) {
+        setMessage("Use at least 8 characters for your password.");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        setMessage("Your password confirmation does not match.");
+        return;
+      }
+    }
+
     setIsSubmitting(true);
     setMessage(null);
 
-    const trimmedEmail = email.trim();
     const result = isSignUp
       ? await supabase.auth.signUp({
           email: trimmedEmail,
           password,
           options: {
             data: {
-              display_name: trimmedEmail.split("@")[0],
+              display_name: trimmedNickname,
             },
             emailRedirectTo: getEmailRedirectTo(),
           },
@@ -80,8 +106,32 @@ export function LoginScreen() {
           BookTrade
         </ThemedText>
         <ThemedText style={[styles.intro, { color: colors.tabIconDefault }]}>
-          Sign in to publish books, manage your shelf, and start trades.
+          {isSignUp
+            ? "Create your account to start swapping books with the community."
+            : "Sign in to publish books, manage your shelf, and start trades."}
         </ThemedText>
+
+        {isSignUp ? (
+          <>
+            <TextInput
+              autoCapitalize="words"
+              placeholder="Nickname"
+              placeholderTextColor={colors.tabIconDefault}
+              value={nickname}
+              onChangeText={setNickname}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colorScheme === "dark" ? "#2c2c2e" : "#f0f0f0",
+                  color: colors.text,
+                },
+              ]}
+            />
+            <ThemedText style={[styles.helperText, { color: colors.tabIconDefault }]}>
+              This is the name other readers will see on your profile and discussions.
+            </ThemedText>
+          </>
+        ) : null}
 
         <TextInput
           autoCapitalize="none"
@@ -112,6 +162,27 @@ export function LoginScreen() {
             },
           ]}
         />
+        {isSignUp ? (
+          <>
+            <TextInput
+              placeholder="Confirm password"
+              placeholderTextColor={colors.tabIconDefault}
+              secureTextEntry={!showPassword}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colorScheme === "dark" ? "#2c2c2e" : "#f0f0f0",
+                  color: colors.text,
+                },
+              ]}
+            />
+            <ThemedText style={[styles.helperText, { color: colors.tabIconDefault }]}>
+              Use at least 8 characters so your account is easier to keep secure.
+            </ThemedText>
+          </>
+        ) : null}
 
         {message ? (
           <ThemedText style={[styles.message, { color: colors.tabIconDefault }]}>
@@ -155,7 +226,14 @@ export function LoginScreen() {
           )}
         </Pressable>
 
-        <Pressable onPress={() => setIsSignUp((value) => !value)}>
+        <Pressable
+          onPress={() => {
+            setIsSignUp((value) => !value);
+            setMessage(null);
+            setPassword("");
+            setConfirmPassword("");
+          }}
+        >
           <ThemedText type="link">
             {isSignUp ? "I already have an account" : "Create a new account"}
           </ThemedText>
@@ -184,6 +262,12 @@ const styles = StyleSheet.create({
   intro: {
     marginBottom: 26,
     textAlign: "center",
+  },
+  helperText: {
+    fontSize: 13,
+    lineHeight: 18,
+    marginBottom: 12,
+    marginTop: -4,
   },
   input: {
     borderRadius: 8,
