@@ -22,6 +22,7 @@ import {
   ScrollView,
   StyleSheet,
   TextInput,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -261,7 +262,7 @@ export function DiscussionDetailScreen() {
                 {discussion.comment_count} comment
                 {discussion.comment_count === 1 ? "" : "s"}
               </ThemedText>
-              <ThemedView style={styles.postActions}>
+              <View style={styles.postActions}>
                 {!discussion.is_deleted ? (
                   <Pressable
                     onPress={() => {
@@ -280,7 +281,7 @@ export function DiscussionDetailScreen() {
                     <ThemedText type="link">Delete discussion</ThemedText>
                   </Pressable>
                 ) : null}
-              </ThemedView>
+              </View>
             </ThemedView>
 
             <ThemedText type="subtitle" style={styles.sectionTitle}>
@@ -318,7 +319,7 @@ export function DiscussionDetailScreen() {
                         : comment.body}
                     </ThemedText>
 
-                    <ThemedView style={styles.commentActions}>
+                    <View style={styles.commentActions}>
                       {!comment.is_deleted ? (
                         <Pressable onPress={() => openReplyComposer(comment, comment)}>
                           <ThemedText type="link">Reply</ThemedText>
@@ -329,7 +330,7 @@ export function DiscussionDetailScreen() {
                           <ThemedText type="link">Delete</ThemedText>
                         </Pressable>
                       ) : null}
-                    </ThemedView>
+                    </View>
 
                     {comment.reply_count > 0 ? (
                       <>
@@ -383,7 +384,7 @@ export function DiscussionDetailScreen() {
                                       : ""}
                                     {reply.body ?? ""}
                                   </ThemedText>
-                                  <ThemedView style={styles.commentActions}>
+                                  <View style={styles.commentActions}>
                                     {!discussion.is_deleted ? (
                                       <Pressable
                                         onPress={() => openReplyComposer(comment, reply)}
@@ -398,7 +399,7 @@ export function DiscussionDetailScreen() {
                                         <ThemedText type="link">Delete</ThemedText>
                                       </Pressable>
                                     ) : null}
-                                  </ThemedView>
+                                  </View>
                                 </ThemedView>
                               );
                             })}

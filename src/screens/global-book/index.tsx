@@ -219,8 +219,8 @@ export function GlobalBookScreen() {
                         : discussion.body}
                     </ThemedText>
                     <ThemedText style={{ color: colors.tabIconDefault }}>
-                      {discussion.comment_count} comment
-                      {discussion.comment_count === 1 ? "" : "s"}
+                      {discussion.comment_count} Repl
+                      {discussion.comment_count === 1 ? "y" : "ies"}
                     </ThemedText>
                   </Pressable>
                 ))
