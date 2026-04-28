@@ -11,61 +11,29 @@ import {
   softDeleteGlobalBookDiscussion,
 } from "@/src/lib/discussions";
 import { getErrorMessage } from "@/src/lib/errors";
-import type {
-  DiscussionCommentWithAuthor,
-  GlobalBookDiscussionWithComments,
-} from "@/src/types/database";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  View,
-} from "react-native";
+import type { DiscussionCommentNode, GlobalBookDiscussionWithComments } from "@/src/types/database";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-type ReplyTarget =
-  | {
-      mode: "discussion";
-    }
-  | {
-      mode: "comment";
-      parentCommentId: string;
-      replyToCommentId: string;
-      replyToUserId?: string | null;
-      label: string;
-    };
-
-function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString();
-}
+import { CommentCard, ComposerSection, formatDate } from "./thread-ui";
 
 export function DiscussionDetailScreen() {
   const { session } = useAuth();
-  const { navigationState, navigateToScreen } = useAppNavigation();
+  const { navigationState, navigateToScreen, goBack } = useAppNavigation();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
   const discussionId = navigationState.params?.discussionId;
   const globalBookId = navigationState.params?.globalBookId;
-  const [discussion, setDiscussion] = useState<GlobalBookDiscussionWithComments | null>(
-    null,
-  );
+  const [discussion, setDiscussion] = useState<GlobalBookDiscussionWithComments | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [composerText, setComposerText] = useState("");
-  const [replyTarget, setReplyTarget] = useState<ReplyTarget>({ mode: "discussion" });
-  const [expandedReplies, setExpandedReplies] = useState<Record<string, boolean>>({});
+  const scrollViewRef = useRef<ScrollView | null>(null);
 
-  const inputStyle = [
-    styles.input,
-    {
-      backgroundColor: colorScheme === "dark" ? "#2c2c2e" : "#f0f0f0",
-      color: colors.text,
-    },
-  ];
+  const surfaceColor = colorScheme === "dark" ? "#222225" : "#f8f8f8";
+  const nestedSurfaceColor = colorScheme === "dark" ? "#202023" : "#f5f5f5";
+  const inputBackgroundColor = colorScheme === "dark" ? "#2c2c2e" : "#f0f0f0";
 
   const fetchDiscussion = useCallback(async () => {
     if (!discussionId) {
@@ -81,14 +49,14 @@ export function DiscussionDetailScreen() {
       const loaded = await loadGlobalBookDiscussion(discussionId);
 
       if (!loaded) {
-        setErrorMessage("This discussion could not be found.");
         setDiscussion(null);
+        setErrorMessage("This discussion could not be found.");
       } else {
         setDiscussion(loaded);
       }
     } catch (error) {
-      setErrorMessage(getErrorMessage(error, "Could not load this discussion."));
       setDiscussion(null);
+      setErrorMessage(getErrorMessage(error, "Could not load this discussion."));
     }
 
     setIsLoading(false);
@@ -101,13 +69,6 @@ export function DiscussionDetailScreen() {
   const canDeleteDiscussion = Boolean(
     session?.user.id && discussion?.author_id === session.user.id,
   );
-
-  const composerPlaceholder = useMemo(() => {
-    if (replyTarget.mode === "discussion") {
-      return "Add a comment";
-    }
-    return `Reply to ${replyTarget.label}`;
-  }, [replyTarget]);
 
   const handleSubmit = async () => {
     if (!session) {
@@ -133,27 +94,12 @@ export function DiscussionDetailScreen() {
     setErrorMessage(null);
 
     try {
-      if (replyTarget.mode === "discussion") {
-        await createDiscussionComment(session.user.id, {
-          discussion_id: discussion.id,
-          body: composerText,
-        });
-      } else {
-        await createDiscussionComment(session.user.id, {
-          discussion_id: discussion.id,
-          body: composerText,
-          parent_comment_id: replyTarget.parentCommentId,
-          reply_to_comment_id: replyTarget.replyToCommentId,
-          reply_to_user_id: replyTarget.replyToUserId ?? null,
-        });
-        setExpandedReplies((current) => ({
-          ...current,
-          [replyTarget.parentCommentId]: true,
-        }));
-      }
+      await createDiscussionComment(session.user.id, {
+        discussion_id: discussion.id,
+        body: composerText,
+      });
 
       setComposerText("");
-      setReplyTarget({ mode: "discussion" });
       await fetchDiscussion();
     } catch (error) {
       setErrorMessage(getErrorMessage(error, "Could not post this comment."));
@@ -184,28 +130,11 @@ export function DiscussionDetailScreen() {
     }
   };
 
-  const openReplyComposer = (
-    topLevelComment: DiscussionCommentWithAuthor,
-    targetComment: DiscussionCommentWithAuthor,
-  ) => {
-    if (discussion?.is_deleted) {
-      return;
-    }
-
-    if (!session) {
-      navigateToScreen("user", "login");
-      return;
-    }
-
-    setReplyTarget({
-      mode: "comment",
-      parentCommentId: topLevelComment.id,
-      replyToCommentId: targetComment.id,
-      replyToUserId: targetComment.author_id,
-      label:
-        targetComment.author?.display_name ??
-        targetComment.reply_to_user?.display_name ??
-        "this reader",
+  const openCommentThread = (comment: DiscussionCommentNode) => {
+    navigateToScreen("home", "comment-thread", {
+      discussionId: discussionId ?? undefined,
+      commentId: comment.id,
+      globalBookId,
     });
   };
 
@@ -214,9 +143,16 @@ export function DiscussionDetailScreen() {
       edges={["top", "left", "right"]}
       style={[styles.safeArea, { backgroundColor: colors.background }]}
     >
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView ref={scrollViewRef} contentContainerStyle={styles.container}>
         <Pressable
-          onPress={() => navigateToScreen("home", "global-book", { globalBookId })}
+          onPress={() => {
+            if (navigationState.history?.length) {
+              goBack();
+              return;
+            }
+
+            navigateToScreen("home", "global-book", { globalBookId });
+          }}
           style={[styles.backButton, { backgroundColor: colors.tint + "15" }]}
         >
           <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
@@ -241,8 +177,7 @@ export function DiscussionDetailScreen() {
               style={[
                 styles.discussionCard,
                 {
-                  backgroundColor:
-                    colorScheme === "dark" ? "#222225" : "#f8f8f8",
+                  backgroundColor: surfaceColor,
                 },
               ]}
             >
@@ -270,7 +205,8 @@ export function DiscussionDetailScreen() {
                         navigateToScreen("user", "login");
                         return;
                       }
-                      setReplyTarget({ mode: "discussion" });
+
+                      scrollViewRef.current?.scrollToEnd({ animated: true });
                     }}
                   >
                     <ThemedText type="link">Comment</ThemedText>
@@ -288,7 +224,7 @@ export function DiscussionDetailScreen() {
               Comments
             </ThemedText>
 
-            {discussion.top_level_comments.length === 0 ? (
+            {discussion.root_comments.length === 0 ? (
               <ThemedView style={styles.emptyBox}>
                 <ThemedText type="defaultSemiBold">No comments yet</ThemedText>
                 <ThemedText style={{ color: colors.tabIconDefault }}>
@@ -296,159 +232,44 @@ export function DiscussionDetailScreen() {
                 </ThemedText>
               </ThemedView>
             ) : (
-              discussion.top_level_comments.map((comment) => {
-                const isExpanded = expandedReplies[comment.id] ?? false;
+              discussion.root_comments.map((comment) => {
                 const canDeleteComment = Boolean(
                   session?.user.id && comment.author_id === session.user.id,
                 );
 
                 return (
-                  <ThemedView
+                  <CommentCard
                     key={comment.id}
-                    style={[styles.commentCard, { borderColor: colors.icon }]}
-                  >
-                    <ThemedText type="defaultSemiBold">
-                      {comment.author?.display_name ?? "BookTrade reader"}
-                    </ThemedText>
-                    <ThemedText style={{ color: colors.tabIconDefault }}>
-                      {formatDate(comment.created_at)}
-                    </ThemedText>
-                    <ThemedText style={styles.commentBody}>
-                      {comment.is_deleted
-                        ? "This comment was deleted."
-                        : comment.body}
-                    </ThemedText>
-
-                    <View style={styles.commentActions}>
-                      {!comment.is_deleted ? (
-                        <Pressable onPress={() => openReplyComposer(comment, comment)}>
-                          <ThemedText type="link">Reply</ThemedText>
-                        </Pressable>
-                      ) : null}
-                      {canDeleteComment ? (
-                        <Pressable onPress={() => handleDeleteComment(comment.id)}>
-                          <ThemedText type="link">Delete</ThemedText>
-                        </Pressable>
-                      ) : null}
-                    </View>
-
-                    {comment.reply_count > 0 ? (
-                      <>
-                        <Pressable
-                          onPress={() =>
-                            setExpandedReplies((current) => ({
-                              ...current,
-                              [comment.id]: !isExpanded,
-                            }))
-                          }
-                          style={styles.replyToggle}
-                        >
-                          <ThemedText type="link">
-                            {isExpanded
-                              ? "Hide replies"
-                              : `View replies (${comment.reply_count})`}
-                          </ThemedText>
-                        </Pressable>
-
-                        {isExpanded ? (
-                          <ThemedView style={styles.replyList}>
-                            {comment.replies.map((reply) => {
-                              const canDeleteReply = Boolean(
-                                session?.user.id && reply.author_id === session.user.id,
-                              );
-
-                              return (
-                                <ThemedView
-                                  key={reply.id}
-                                  style={[
-                                    styles.replyCard,
-                                    {
-                                      backgroundColor:
-                                        colorScheme === "dark"
-                                          ? "#202023"
-                                          : "#f5f5f5",
-                                    },
-                                  ]}
-                                >
-                                  <ThemedText type="defaultSemiBold">
-                                    {reply.author?.display_name ?? "BookTrade reader"}
-                                  </ThemedText>
-                                  <ThemedText
-                                    style={{ color: colors.tabIconDefault }}
-                                  >
-                                    {formatDate(reply.created_at)}
-                                  </ThemedText>
-                                  <ThemedText style={styles.commentBody}>
-                                    {reply.reply_to_user?.display_name
-                                      ? `@${reply.reply_to_user.display_name} `
-                                      : ""}
-                                    {reply.body ?? ""}
-                                  </ThemedText>
-                                  <View style={styles.commentActions}>
-                                    {!discussion.is_deleted ? (
-                                      <Pressable
-                                        onPress={() => openReplyComposer(comment, reply)}
-                                      >
-                                        <ThemedText type="link">Reply</ThemedText>
-                                      </Pressable>
-                                    ) : null}
-                                    {canDeleteReply ? (
-                                      <Pressable
-                                        onPress={() => handleDeleteComment(reply.id)}
-                                      >
-                                        <ThemedText type="link">Delete</ThemedText>
-                                      </Pressable>
-                                    ) : null}
-                                  </View>
-                                </ThemedView>
-                              );
-                            })}
-                          </ThemedView>
-                        ) : null}
-                      </>
-                    ) : null}
-                  </ThemedView>
+                    comment={comment}
+                    backgroundColor={nestedSurfaceColor}
+                    mutedTextColor={colors.tabIconDefault}
+                    onPressCard={() => openCommentThread(comment)}
+                    onPressReply={() => openCommentThread(comment)}
+                    onPressDelete={
+                      canDeleteComment ? () => handleDeleteComment(comment.id) : undefined
+                    }
+                    onPressReplies={
+                      comment.child_count > 0 ? () => openCommentThread(comment) : undefined
+                    }
+                  />
                 );
               })
             )}
 
             {!discussion.is_deleted ? (
-              <ThemedView style={styles.composerSection}>
-                <ThemedText type="defaultSemiBold">
-                  {replyTarget.mode === "discussion"
-                    ? "Add a comment"
-                    : `Replying to ${replyTarget.label}`}
-                </ThemedText>
-                {replyTarget.mode !== "discussion" ? (
-                  <Pressable onPress={() => setReplyTarget({ mode: "discussion" })}>
-                    <ThemedText type="link">Cancel reply</ThemedText>
-                  </Pressable>
-                ) : null}
-                <TextInput
-                  multiline
-                  placeholder={composerPlaceholder}
-                  placeholderTextColor={colors.tabIconDefault}
-                  value={composerText}
-                  onChangeText={setComposerText}
-                  style={[inputStyle, styles.textArea]}
-                />
-                {errorMessage ? (
-                  <ThemedText style={{ color: colors.tabIconDefault }}>
-                    {errorMessage}
-                  </ThemedText>
-                ) : null}
-                <Pressable
-                  disabled={isSubmitting}
-                  onPress={handleSubmit}
-                  style={[styles.primaryButton, { backgroundColor: colors.tint }]}
-                >
-                  {isSubmitting ? (
-                    <ActivityIndicator color="#fff" />
-                  ) : (
-                    <ThemedText style={styles.primaryButtonText}>Post</ThemedText>
-                  )}
-                </Pressable>
-              </ThemedView>
+              <ComposerSection
+                title="Add a comment"
+                placeholder="Add a comment"
+                value={composerText}
+                onChangeText={setComposerText}
+                errorMessage={errorMessage}
+                isSubmitting={isSubmitting}
+                onSubmit={handleSubmit}
+                inputBackgroundColor={inputBackgroundColor}
+                inputTextColor={colors.text}
+                mutedTextColor={colors.tabIconDefault}
+                buttonColor={colors.tint}
+              />
             ) : null}
           </>
         ) : null}
@@ -503,59 +324,5 @@ const styles = StyleSheet.create({
     gap: 6,
     marginBottom: 24,
     padding: 16,
-  },
-  commentCard: {
-    borderRadius: 10,
-    borderWidth: 1,
-    gap: 4,
-    marginBottom: 14,
-    padding: 14,
-  },
-  commentBody: {
-    marginTop: 4,
-  },
-  commentActions: {
-    flexDirection: "row",
-    gap: 16,
-    marginTop: 6,
-  },
-  replyToggle: {
-    marginTop: 8,
-  },
-  replyList: {
-    gap: 10,
-    marginTop: 10,
-    paddingLeft: 14,
-  },
-  replyCard: {
-    borderRadius: 10,
-    gap: 4,
-    padding: 12,
-  },
-  composerSection: {
-    gap: 10,
-    marginTop: 18,
-  },
-  input: {
-    borderRadius: 8,
-    fontSize: 16,
-    minHeight: 48,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  textArea: {
-    minHeight: 110,
-    textAlignVertical: "top",
-  },
-  primaryButton: {
-    alignItems: "center",
-    borderRadius: 8,
-    height: 48,
-    justifyContent: "center",
-  },
-  primaryButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "700",
   },
 });
