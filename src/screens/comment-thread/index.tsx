@@ -197,16 +197,26 @@ export function CommentThreadScreen() {
                 },
               ]}
             >
-              <ThemedText type="defaultSemiBold">Discussion</ThemedText>
-              <ThemedText style={{ color: colors.tabIconDefault }}>
-                {thread.discussion.author?.display_name ?? "BookTrade reader"} ·{" "}
-                {new Date(thread.discussion.created_at).toLocaleDateString()}
-              </ThemedText>
-              <ThemedText style={styles.discussionBody}>
-                {thread.discussion.is_deleted
-                  ? "This discussion was deleted."
-                  : thread.discussion.body}
-              </ThemedText>
+              <Pressable
+                onPress={() =>
+                  navigateToScreen("home", "discussion-detail", {
+                    discussionId: thread.discussion.id,
+                    globalBookId,
+                  })
+                }
+                style={styles.discussionTapArea}
+              >
+                <ThemedText type="defaultSemiBold">Discussion</ThemedText>
+                <ThemedText style={{ color: colors.tabIconDefault }}>
+                  {thread.discussion.author?.display_name ?? "BookTrade reader"} ·{" "}
+                  {new Date(thread.discussion.created_at).toLocaleDateString()}
+                </ThemedText>
+                <ThemedText style={styles.discussionBody}>
+                  {thread.discussion.is_deleted
+                    ? "This discussion was deleted."
+                    : thread.discussion.body}
+                </ThemedText>
+              </Pressable>
             </ThemedView>
 
             {thread.ancestor_comments.map((comment) => (
@@ -357,6 +367,9 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 14,
     padding: 16,
+  },
+  discussionTapArea: {
+    gap: 8,
   },
   discussionBody: {
     marginTop: 4,

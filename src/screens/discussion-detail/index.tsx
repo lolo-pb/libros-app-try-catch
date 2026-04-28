@@ -19,7 +19,7 @@ import { CommentCard, ComposerSection, formatDate } from "./thread-ui";
 
 export function DiscussionDetailScreen() {
   const { session } = useAuth();
-  const { navigationState, navigateToScreen, goBack } = useAppNavigation();
+  const { navigationState, navigateToScreen } = useAppNavigation();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
   const discussionId = navigationState.params?.discussionId;
@@ -145,14 +145,7 @@ export function DiscussionDetailScreen() {
     >
       <ScrollView ref={scrollViewRef} contentContainerStyle={styles.container}>
         <Pressable
-          onPress={() => {
-            if (navigationState.history?.length) {
-              goBack();
-              return;
-            }
-
-            navigateToScreen("home", "global-book", { globalBookId });
-          }}
+          onPress={() => navigateToScreen("home", "global-book", { globalBookId })}
           style={[styles.backButton, { backgroundColor: colors.tint + "15" }]}
         >
           <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
