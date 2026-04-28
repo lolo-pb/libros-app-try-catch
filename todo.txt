@@ -22,6 +22,8 @@ todo:
 
     -Books{
         -borde al boton de available/ y cambio de color para q sea mas claro lo que es toggleable
+
+        - y botones en general, estan medio feos 
     }
 
     -trade{
