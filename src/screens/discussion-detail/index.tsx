@@ -134,6 +134,8 @@ export function DiscussionDetailScreen() {
     navigateToScreen("home", "comment-thread", {
       discussionId: discussionId ?? undefined,
       commentId: comment.id,
+      parentCommentId: comment.parent_comment_id ?? undefined,
+      ancestorPath: undefined,
       globalBookId,
     });
   };

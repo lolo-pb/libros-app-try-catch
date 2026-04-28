@@ -34,6 +34,7 @@ export function CommentThreadScreen() {
   const colors = Colors[colorScheme ?? "light"];
   const discussionId = navigationState.params?.discussionId;
   const commentId = navigationState.params?.commentId;
+  const ancestorPath = navigationState.params?.ancestorPath;
   const globalBookId = navigationState.params?.globalBookId;
   const [thread, setThread] = useState<DiscussionCommentThread | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -140,10 +141,18 @@ export function CommentThreadScreen() {
     }
   };
 
-  const openCommentThread = (targetComment: DiscussionCommentNode) => {
+  const buildChildAncestorPath = () =>
+    ancestorPath ? `${ancestorPath},${thread?.focused_comment.id ?? ""}` : thread?.focused_comment.id;
+
+  const openCommentThread = (
+    targetComment: DiscussionCommentNode,
+    nextAncestorPath?: string,
+  ) => {
     navigateToScreen("home", "comment-thread", {
       discussionId: discussionId ?? undefined,
       commentId: targetComment.id,
+      parentCommentId: targetComment.parent_comment_id ?? undefined,
+      ancestorPath: nextAncestorPath,
       globalBookId,
     });
   };
@@ -219,15 +228,36 @@ export function CommentThreadScreen() {
               </Pressable>
             </ThemedView>
 
-            {thread.ancestor_comments.map((comment) => (
+            {thread.ancestor_comments.map((comment, index) => (
               <CommentCard
                 key={comment.id}
                 comment={comment}
                 backgroundColor={nestedSurfaceColor}
                 mutedTextColor={colors.tabIconDefault}
-                onPressCard={() => openCommentThread(comment)}
+                onPressCard={() =>
+                  openCommentThread(
+                    comment,
+                    index === 0
+                      ? undefined
+                      : thread.ancestor_comments
+                          .slice(0, index)
+                          .map((ancestor) => ancestor.id)
+                          .join(","),
+                  )
+                }
                 onPressReplies={
-                  comment.child_count > 0 ? () => openCommentThread(comment) : undefined
+                  comment.child_count > 0
+                    ? () =>
+                        openCommentThread(
+                          comment,
+                          index === 0
+                            ? undefined
+                            : thread.ancestor_comments
+                                .slice(0, index)
+                                .map((ancestor) => ancestor.id)
+                                .join(","),
+                        )
+                    : undefined
                 }
               />
             ))}
@@ -293,7 +323,7 @@ export function CommentThreadScreen() {
                     comment={comment}
                     backgroundColor={nestedSurfaceColor}
                     mutedTextColor={colors.tabIconDefault}
-                    onPressCard={() => openCommentThread(comment)}
+                    onPressCard={() => openCommentThread(comment, buildChildAncestorPath())}
                     onPressReply={() =>
                       setReplyTarget({
                         mode: "comment",
@@ -306,7 +336,9 @@ export function CommentThreadScreen() {
                       canDeleteComment ? () => handleDeleteComment(comment.id) : undefined
                     }
                     onPressReplies={
-                      comment.child_count > 0 ? () => openCommentThread(comment) : undefined
+                      comment.child_count > 0
+                        ? () => openCommentThread(comment, buildChildAncestorPath())
+                        : undefined
                     }
                   />
                 );
