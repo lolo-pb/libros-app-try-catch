@@ -115,21 +115,28 @@ export function GlobalBookScreen() {
           </ThemedView>
         ) : (
           <>
-            <Image
-              source={resolveCoverSource({
-                cover_path: globalBook.display_cover_path,
-              })}
-              style={styles.cover}
-              contentFit="cover"
-            />
-            <ThemedText type="title" style={styles.title}>
-              {globalBook.title}
-            </ThemedText>
-            <ThemedText style={[styles.author, { color: colors.tabIconDefault }]}>
-              {globalBook.author}
-            </ThemedText>
-            <ThemedText style={[styles.editorial, { color: colors.tabIconDefault }]}>
-              {globalBook.editorial || "Editorial not added yet"}
+            <View style={styles.headerRow}>
+              <Image
+                source={resolveCoverSource({
+                  cover_path: globalBook.display_cover_path,
+                })}
+                style={styles.cover}
+                contentFit="cover"
+              />
+              <View style={styles.headerContent}>
+                <ThemedText type="title" style={styles.title}>
+                  {globalBook.title}
+                </ThemedText>
+                <ThemedText style={[styles.author, { color: colors.tabIconDefault }]}>
+                  {globalBook.author}
+                </ThemedText>
+                <ThemedText style={[styles.editorial, { color: colors.tabIconDefault }]}>
+                  {globalBook.editorial || "Editorial not added yet"}
+                </ThemedText>
+              </View>
+            </View>
+            <ThemedText style={styles.description}>
+              {globalBook.description || "No description yet."}
             </ThemedText>
 
             <ThemedView style={styles.badgeRow}>
@@ -142,10 +149,6 @@ export function GlobalBookScreen() {
                 </ThemedText>
               </ThemedView>
             </ThemedView>
-
-            <ThemedText style={styles.description}>
-              {globalBook.description || "No description yet."}
-            </ThemedText>
 
             <View style={styles.discussionSection}>
               <ThemedView style={styles.discussionHeader}>
@@ -313,16 +316,22 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingTop: 80,
   },
+  headerRow: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    gap: 16,
+  },
   cover: {
-    alignSelf: "center",
     borderRadius: 12,
-    height: 310,
-    marginBottom: 22,
-    width: 210,
+    height: 188,
+    width: 128,
+  },
+  headerContent: {
+    flex: 1,
   },
   title: {
-    fontSize: 30,
-    lineHeight: 34,
+    fontSize: 28,
+    lineHeight: 32,
   },
   author: {
     fontSize: 17,
@@ -344,7 +353,8 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
   },
   description: {
-    marginTop: 20,
+    lineHeight: 21,
+    marginTop: 12,
   },
   publicationSection: {
     marginTop: 28,
@@ -357,7 +367,7 @@ const styles = StyleSheet.create({
   discussionHeader: {
     alignItems: "center",
     flexDirection: "row",
-    gap: 12,
+    justifyContent: "space-between",
   },
   startButton: {
     alignItems: "center",

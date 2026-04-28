@@ -17,6 +17,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -221,19 +222,26 @@ export function BookScreen() {
           </ThemedView>
         ) : (
           <>
-            <Image
-              source={resolveCoverSource(book)}
-              style={styles.cover}
-              contentFit="cover"
-            />
-            <ThemedText type="title" style={styles.title}>
-              {book.title}
-            </ThemedText>
-            <ThemedText style={[styles.author, { color: colors.tabIconDefault }]}>
-              {book.author}
-            </ThemedText>
-            <ThemedText style={[styles.metaText, { color: colors.tabIconDefault }]}>
-              Published by {owner?.display_name ?? "BookTrade reader"}
+            <View style={styles.headerRow}>
+              <Image
+                source={resolveCoverSource(book)}
+                style={styles.cover}
+                contentFit="cover"
+              />
+              <View style={styles.headerContent}>
+                <ThemedText type="title" style={styles.title}>
+                  {book.title}
+                </ThemedText>
+                <ThemedText style={[styles.author, { color: colors.tabIconDefault }]}>
+                  {book.author}
+                </ThemedText>
+                <ThemedText style={[styles.metaText, { color: colors.tabIconDefault }]}>
+                  Published by {owner?.display_name ?? "BookTrade reader"}
+                </ThemedText>
+              </View>
+            </View>
+            <ThemedText style={styles.description}>
+              {book.description || "No description yet."}
             </ThemedText>
 
             {globalBook ? (
@@ -272,10 +280,6 @@ export function BookScreen() {
                 </ThemedText>
               </Pressable>
             </ThemedView>
-
-            <ThemedText style={styles.description}>
-              {book.description || "No description yet."}
-            </ThemedText>
 
             {isOwner ? (
               <ThemedView style={styles.ownerActions}>
@@ -343,28 +347,34 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingTop: 80,
   },
+  headerRow: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    gap: 16,
+  },
   cover: {
-    alignSelf: "center",
     borderRadius: 12,
-    height: 310,
-    marginBottom: 22,
-    width: 210,
+    height: 188,
+    width: 128,
+  },
+  headerContent: {
+    flex: 1,
   },
   title: {
-    fontSize: 30,
-    lineHeight: 34,
+    fontSize: 28,
+    lineHeight: 32,
   },
   author: {
     fontSize: 17,
     marginTop: 6,
   },
   metaText: {
-    marginTop: 10,
+    marginTop: 8,
   },
   globalBookLink: {
     alignSelf: "flex-start",
     borderRadius: 8,
-    marginTop: 14,
+    marginTop: 18,
     paddingHorizontal: 12,
     paddingVertical: 9,
   },
@@ -381,7 +391,8 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
   },
   description: {
-    marginTop: 20,
+    lineHeight: 21,
+    marginTop: 12,
   },
   tradeButton: {
     alignItems: "center",
