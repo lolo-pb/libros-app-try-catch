@@ -71,11 +71,15 @@ export function CommentCard({
         content
       )}
 
-      {(onPressReply || onPressDelete) && !comment.is_deleted ? (
+      {(onPressReply || onPressDelete || comment.child_count > 0) && !comment.is_deleted ? (
         <View style={styles.commentActions}>
           {onPressReply ? (
             <Pressable onPress={onPressReply}>
-              <ThemedText type="link">Reply</ThemedText>
+              <ThemedText type="link">
+                {comment.child_count > 0
+                  ? `${comment.child_count} Repl${comment.child_count === 1 ? "y" : "ies"}`
+                  : "Reply"}
+              </ThemedText>
             </Pressable>
           ) : null}
           {onPressDelete ? (
@@ -84,15 +88,6 @@ export function CommentCard({
             </Pressable>
           ) : null}
         </View>
-      ) : null}
-
-      {comment.child_count > 0 && onPressReplies ? (
-        <Pressable onPress={onPressReplies} style={styles.replyToggle}>
-          <ThemedText type="link">
-            {comment.child_count} Repl
-            {comment.child_count === 1 ? "y" : "ies"}
-          </ThemedText>
-        </Pressable>
       ) : null}
 
       {children}
@@ -230,9 +225,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 16,
     marginTop: 6,
-  },
-  replyToggle: {
-    marginTop: 8,
   },
   composerSection: {
     gap: 8,
