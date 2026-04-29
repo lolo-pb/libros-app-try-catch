@@ -1,9 +1,12 @@
 import { ThemedText } from "@/src/components/themed-text";
 import { ThemedView } from "@/src/components/themed-view";
+import { IconSymbol } from "@/src/components/ui/icon-symbol";
 import type { DiscussionCommentNode } from "@/src/types/database";
-import React from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Platform,
+  type LayoutChangeEvent,
   Pressable,
   StyleSheet,
   TextInput,
@@ -98,9 +101,7 @@ export function CommentCard({
 }
 
 type ComposerSectionProps = {
-  title: string;
-  canCancel?: boolean;
-  cancelLabel?: string;
+  replyContextLabel?: string | null;
   onCancel?: () => void;
   placeholder: string;
   value: string;
@@ -112,12 +113,12 @@ type ComposerSectionProps = {
   inputTextColor: string;
   mutedTextColor: string;
   buttonColor: string;
+  surfaceColor?: string;
+  onLayout?: (event: LayoutChangeEvent) => void;
 };
 
 export function ComposerSection({
-  title,
-  canCancel = false,
-  cancelLabel = "Cancel reply",
+  replyContextLabel,
   onCancel,
   placeholder,
   value,
@@ -129,44 +130,82 @@ export function ComposerSection({
   inputTextColor,
   mutedTextColor,
   buttonColor,
+  surfaceColor,
+  onLayout,
 }: ComposerSectionProps) {
+  const [inputHeight, setInputHeight] = useState(38);
+
   return (
-    <ThemedView style={styles.composerSection}>
-      <ThemedText type="defaultSemiBold">{title}</ThemedText>
-      {canCancel && onCancel ? (
-        <Pressable onPress={onCancel}>
-          <ThemedText type="link">{cancelLabel}</ThemedText>
-        </Pressable>
-      ) : null}
-      <TextInput
-        multiline
-        placeholder={placeholder}
-        placeholderTextColor={mutedTextColor}
-        value={value}
-        onChangeText={onChangeText}
+    <ThemedView onLayout={onLayout} style={styles.composerSection}>
+      <View
         style={[
-          styles.input,
-          styles.textArea,
+          styles.composerBar,
           {
             backgroundColor: inputBackgroundColor,
-            color: inputTextColor,
           },
         ]}
-      />
-      {errorMessage ? (
-        <ThemedText style={{ color: mutedTextColor }}>{errorMessage}</ThemedText>
-      ) : null}
-      <Pressable
-        disabled={isSubmitting}
-        onPress={onSubmit}
-        style={[styles.primaryButton, { backgroundColor: buttonColor }]}
       >
-        {isSubmitting ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <ThemedText style={styles.primaryButtonText}>Post</ThemedText>
-        )}
-      </Pressable>
+        <View style={styles.inputColumn}>
+          {replyContextLabel ? (
+            <View style={styles.replyContextRow}>
+              <ThemedText
+                numberOfLines={1}
+                style={[styles.replyContextText, { color: mutedTextColor }]}
+              >
+                Replying to {replyContextLabel}
+              </ThemedText>
+              {onCancel ? (
+                <Pressable onPress={onCancel} hitSlop={8}>
+                  <ThemedText type="link" style={styles.cancelReplyText}>
+                    Cancel
+                  </ThemedText>
+                </Pressable>
+              ) : null}
+            </View>
+          ) : null}
+          <TextInput
+            multiline
+            placeholder={placeholder}
+            placeholderTextColor={mutedTextColor}
+            value={value}
+            onChangeText={onChangeText}
+            onContentSizeChange={(event) => {
+              const nextHeight = Math.max(
+                38,
+                Math.min(108, Math.ceil(event.nativeEvent.contentSize.height)),
+              );
+              setInputHeight(nextHeight);
+            }}
+            style={[
+              styles.input,
+              {
+                color: inputTextColor,
+                height: inputHeight,
+              },
+            ]}
+          />
+        </View>
+        <Pressable
+          disabled={isSubmitting}
+          onPress={onSubmit}
+          style={[
+            styles.sendButton,
+            { backgroundColor: buttonColor },
+            isSubmitting ? styles.sendButtonDisabled : null,
+          ]}
+        >
+          {isSubmitting ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <IconSymbol name="paperplane.fill" size={18} color="#fff" />
+          )}
+        </Pressable>
+      </View>
+      {errorMessage ? (
+        <ThemedText style={[styles.errorText, { color: mutedTextColor }]}>
+          {errorMessage}
+        </ThemedText>
+      ) : null}
     </ThemedView>
   );
 }
@@ -196,29 +235,61 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   composerSection: {
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingTop: 8,
+    paddingBottom: 6,
+  },
+  composerBar: {
+    alignItems: "flex-end",
+    borderRadius: 22,
+    flexDirection: "row",
     gap: 10,
-    marginTop: 18,
+    minHeight: 48,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  inputColumn: {
+    flex: 1,
+    gap: 6,
+  },
+  replyContextRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 10,
+    paddingHorizontal: 4,
+  },
+  replyContextText: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 16,
+  },
+  cancelReplyText: {
+    fontSize: 13,
+    lineHeight: 16,
   },
   input: {
-    borderRadius: 8,
+    borderRadius: 18,
     fontSize: 16,
-    minHeight: 48,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  textArea: {
-    minHeight: 110,
+    maxHeight: 108,
+    minHeight: 38,
+    paddingHorizontal: 4,
+    paddingVertical: Platform.OS === "ios" ? 8 : 6,
     textAlignVertical: "top",
   },
-  primaryButton: {
+  sendButton: {
     alignItems: "center",
-    borderRadius: 8,
-    height: 48,
+    borderRadius: 20,
+    height: 36,
     justifyContent: "center",
+    marginBottom: 2,
+    width: 36,
   },
-  primaryButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "700",
+  sendButtonDisabled: {
+    opacity: 0.7,
+  },
+  errorText: {
+    fontSize: 13,
+    lineHeight: 16,
   },
 });

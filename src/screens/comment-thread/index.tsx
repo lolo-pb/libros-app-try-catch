@@ -10,10 +10,21 @@ import {
   softDeleteDiscussionComment,
 } from "@/src/lib/discussions";
 import { getErrorMessage } from "@/src/lib/errors";
-import type { DiscussionCommentNode, DiscussionCommentThread } from "@/src/types/database";
+import type {
+  DiscussionCommentNode,
+  DiscussionCommentThread,
+} from "@/src/types/database";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { CommentCard, ComposerSection } from "../discussion-detail/thread-ui";
 
 type ReplyTarget =
@@ -32,6 +43,7 @@ export function CommentThreadScreen() {
   const { navigationState, navigateToScreen, goBack } = useAppNavigation();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
+  const insets = useSafeAreaInsets();
   const discussionId = navigationState.params?.discussionId;
   const commentId = navigationState.params?.commentId;
   const ancestorPath = navigationState.params?.ancestorPath;
@@ -43,11 +55,13 @@ export function CommentThreadScreen() {
   const [composerText, setComposerText] = useState("");
   const [replyTarget, setReplyTarget] = useState<ReplyTarget>({ mode: "focused" });
   const [hasAutoScrolled, setHasAutoScrolled] = useState(false);
+  const [composerHeight, setComposerHeight] = useState(190);
   const scrollViewRef = useRef<ScrollView | null>(null);
 
   const surfaceColor = colorScheme === "dark" ? "#222225" : "#f8f8f8";
   const nestedSurfaceColor = colorScheme === "dark" ? "#202023" : "#f5f5f5";
   const inputBackgroundColor = colorScheme === "dark" ? "#2c2c2e" : "#f0f0f0";
+  const composerSurfaceColor = colorScheme === "dark" ? "#18181a" : "#ffffff";
 
   const fetchThread = useCallback(async () => {
     if (!discussionId || !commentId) {
@@ -142,7 +156,9 @@ export function CommentThreadScreen() {
   };
 
   const buildChildAncestorPath = () =>
-    ancestorPath ? `${ancestorPath},${thread?.focused_comment.id ?? ""}` : thread?.focused_comment.id;
+    ancestorPath
+      ? `${ancestorPath},${thread?.focused_comment.id ?? ""}`
+      : thread?.focused_comment.id;
 
   const openCommentThread = (
     targetComment: DiscussionCommentNode,
@@ -166,193 +182,230 @@ export function CommentThreadScreen() {
       edges={["top", "left", "right"]}
       style={[styles.safeArea, { backgroundColor: colors.background }]}
     >
-      <ScrollView ref={scrollViewRef} contentContainerStyle={styles.container}>
-        <Pressable
-          onPress={() => {
-            if (navigationState.history?.length) {
-              goBack();
-              return;
-            }
-
-            navigateToScreen("home", "global-book", { globalBookId });
-          }}
-          style={[styles.backButton, { backgroundColor: colors.tint + "15" }]}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={insets.bottom}
+        style={styles.flex}
+      >
+        <ScrollView
+          ref={scrollViewRef}
+          contentContainerStyle={[
+            styles.container,
+            { paddingBottom: composerHeight + 20 },
+          ]}
+          style={styles.flex}
         >
-          <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
-            Back
-          </ThemedText>
-        </Pressable>
-
-        {isLoading ? (
-          <ThemedView style={styles.centerState}>
-            <ActivityIndicator color={colors.tint} />
-          </ThemedView>
-        ) : errorMessage && !thread ? (
-          <ThemedView style={styles.centerState}>
-            <ThemedText type="subtitle">Comment thread unavailable</ThemedText>
-            <ThemedText style={{ color: colors.tabIconDefault }}>{errorMessage}</ThemedText>
-          </ThemedView>
-        ) : thread ? (
-          <>
-            <ThemedText type="subtitle" style={styles.sectionTitle}>
-              Thread
-            </ThemedText>
-
-            <ThemedView
-              style={[
-                styles.discussionCard,
-                {
-                  backgroundColor: nestedSurfaceColor,
-                },
-              ]}
-            >
-              <Pressable
-                onPress={() =>
-                  navigateToScreen("home", "discussion-detail", {
-                    discussionId: thread.discussion.id,
-                    globalBookId,
-                  })
-                }
-                style={styles.discussionTapArea}
-              >
-                <ThemedText type="defaultSemiBold">Discussion</ThemedText>
-                <ThemedText style={{ color: colors.tabIconDefault }}>
-                  {thread.discussion.author?.display_name ?? "BookTrade reader"} ·{" "}
-                  {new Date(thread.discussion.created_at).toLocaleDateString()}
-                </ThemedText>
-                <ThemedText style={styles.discussionBody}>
-                  {thread.discussion.is_deleted
-                    ? "This discussion was deleted."
-                    : thread.discussion.body}
-                </ThemedText>
-              </Pressable>
-            </ThemedView>
-
-            {thread.ancestor_comments.map((comment, index) => (
-              <CommentCard
-                key={comment.id}
-                comment={comment}
-                backgroundColor={nestedSurfaceColor}
-                mutedTextColor={colors.tabIconDefault}
-                onPressCard={() =>
-                  openCommentThread(
-                    comment,
-                    index === 0
-                      ? undefined
-                      : thread.ancestor_comments
-                          .slice(0, index)
-                          .map((ancestor) => ancestor.id)
-                          .join(","),
-                  )
-                }
-                onPressReplies={
-                  comment.child_count > 0
-                    ? () =>
-                        openCommentThread(
-                          comment,
-                          index === 0
-                            ? undefined
-                            : thread.ancestor_comments
-                                .slice(0, index)
-                                .map((ancestor) => ancestor.id)
-                                .join(","),
-                        )
-                    : undefined
-                }
-              />
-            ))}
-
-            <View style={styles.focusDivider}>
-              <View
-                style={[styles.focusDividerLine, { backgroundColor: colors.icon + "88" }]}
-              />
-              <ThemedText style={{ color: colors.tabIconDefault, fontWeight: "600" }}>
-                Focused comment
-              </ThemedText>
-              <View
-                style={[styles.focusDividerLine, { backgroundColor: colors.icon + "88" }]}
-              />
-            </View>
-
-            <View
-              onLayout={(event) => {
-                if (hasAutoScrolled) {
-                  return;
-                }
-
-                scrollViewRef.current?.scrollTo({
-                  y: Math.max(0, event.nativeEvent.layout.y - 16),
-                  animated: false,
-                });
-                setHasAutoScrolled(true);
-              }}
-            >
-              <CommentCard
-                comment={thread.focused_comment}
-                backgroundColor={surfaceColor}
-                mutedTextColor={colors.tabIconDefault}
-                onPressDelete={
-                  canDeleteFocusedComment
-                    ? () => handleDeleteComment(thread.focused_comment.id)
-                    : undefined
-                }
-                highlight
-              />
-            </View>
-
-            <ThemedText type="subtitle" style={styles.sectionTitle}>
-              Replies
-            </ThemedText>
-
-            {thread.child_comments.length === 0 ? (
-              <ThemedView style={styles.emptyBox}>
-                <ThemedText type="defaultSemiBold">No replies yet</ThemedText>
-                <ThemedText style={{ color: colors.tabIconDefault }}>
-                  Start this branch of the conversation.
-                </ThemedText>
-              </ThemedView>
-            ) : (
-              thread.child_comments.map((comment) => {
-                const canDeleteComment = Boolean(
-                  session?.user.id && comment.author_id === session.user.id,
-                );
-
-                return (
-                  <CommentCard
-                    key={comment.id}
-                    comment={comment}
-                    backgroundColor={nestedSurfaceColor}
-                    mutedTextColor={colors.tabIconDefault}
-                    onPressCard={() => openCommentThread(comment, buildChildAncestorPath())}
-                    onPressReply={() =>
-                      setReplyTarget({
-                        mode: "comment",
-                        replyToCommentId: comment.id,
-                        replyToUserId: comment.author_id,
-                        label: comment.author?.display_name ?? "this reader",
-                      })
-                    }
-                    onPressDelete={
-                      canDeleteComment ? () => handleDeleteComment(comment.id) : undefined
-                    }
-                    onPressReplies={
-                      comment.child_count > 0
-                        ? () => openCommentThread(comment, buildChildAncestorPath())
-                        : undefined
-                    }
-                  />
-                );
-              })
-            )}
-
-            <ComposerSection
-              title={
-                replyTarget.mode === "focused"
-                  ? "Reply to this comment"
-                  : `Replying to ${replyTarget.label}`
+          <Pressable
+            onPress={() => {
+              if (navigationState.history?.length) {
+                goBack();
+                return;
               }
-              canCancel={replyTarget.mode !== "focused"}
-              onCancel={() => setReplyTarget({ mode: "focused" })}
+
+              navigateToScreen("home", "global-book", { globalBookId });
+            }}
+            style={[styles.backButton, { backgroundColor: colors.tint + "15" }]}
+          >
+            <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
+              Back
+            </ThemedText>
+          </Pressable>
+
+          {isLoading ? (
+            <ThemedView style={styles.centerState}>
+              <ActivityIndicator color={colors.tint} />
+            </ThemedView>
+          ) : errorMessage && !thread ? (
+            <ThemedView style={styles.centerState}>
+              <ThemedText type="subtitle">Comment thread unavailable</ThemedText>
+              <ThemedText style={{ color: colors.tabIconDefault }}>
+                {errorMessage}
+              </ThemedText>
+            </ThemedView>
+          ) : thread ? (
+            <>
+              <ThemedText type="subtitle" style={styles.sectionTitle}>
+                Thread
+              </ThemedText>
+
+              <ThemedView
+                style={[
+                  styles.discussionCard,
+                  {
+                    backgroundColor: nestedSurfaceColor,
+                  },
+                ]}
+              >
+                <Pressable
+                  onPress={() =>
+                    navigateToScreen("home", "discussion-detail", {
+                      discussionId: thread.discussion.id,
+                      globalBookId,
+                    })
+                  }
+                  style={styles.discussionTapArea}
+                >
+                  <ThemedText type="defaultSemiBold">Discussion</ThemedText>
+                  <ThemedText style={{ color: colors.tabIconDefault }}>
+                    {thread.discussion.author?.display_name ?? "BookTrade reader"} ·{" "}
+                    {new Date(thread.discussion.created_at).toLocaleDateString()}
+                  </ThemedText>
+                  <ThemedText style={styles.discussionBody}>
+                    {thread.discussion.is_deleted
+                      ? "This discussion was deleted."
+                      : thread.discussion.body}
+                  </ThemedText>
+                </Pressable>
+              </ThemedView>
+
+              {thread.ancestor_comments.map((comment, index) => (
+                <CommentCard
+                  key={comment.id}
+                  comment={comment}
+                  backgroundColor={nestedSurfaceColor}
+                  mutedTextColor={colors.tabIconDefault}
+                  onPressCard={() =>
+                    openCommentThread(
+                      comment,
+                      index === 0
+                        ? undefined
+                        : thread.ancestor_comments
+                            .slice(0, index)
+                            .map((ancestor) => ancestor.id)
+                            .join(","),
+                    )
+                  }
+                  onPressReplies={
+                    comment.child_count > 0
+                      ? () =>
+                          openCommentThread(
+                            comment,
+                            index === 0
+                              ? undefined
+                              : thread.ancestor_comments
+                                  .slice(0, index)
+                                  .map((ancestor) => ancestor.id)
+                                  .join(","),
+                          )
+                      : undefined
+                  }
+                />
+              ))}
+
+              <View style={styles.focusDivider}>
+                <View
+                  style={[
+                    styles.focusDividerLine,
+                    { backgroundColor: colors.icon + "88" },
+                  ]}
+                />
+                <ThemedText
+                  style={{ color: colors.tabIconDefault, fontWeight: "600" }}
+                >
+                  Focused comment
+                </ThemedText>
+                <View
+                  style={[
+                    styles.focusDividerLine,
+                    { backgroundColor: colors.icon + "88" },
+                  ]}
+                />
+              </View>
+
+              <View
+                onLayout={(event) => {
+                  if (hasAutoScrolled) {
+                    return;
+                  }
+
+                  scrollViewRef.current?.scrollTo({
+                    y: Math.max(0, event.nativeEvent.layout.y - 16),
+                    animated: false,
+                  });
+                  setHasAutoScrolled(true);
+                }}
+              >
+                <CommentCard
+                  comment={thread.focused_comment}
+                  backgroundColor={surfaceColor}
+                  mutedTextColor={colors.tabIconDefault}
+                  onPressDelete={
+                    canDeleteFocusedComment
+                      ? () => handleDeleteComment(thread.focused_comment.id)
+                      : undefined
+                  }
+                  highlight
+                />
+              </View>
+
+              <ThemedText type="subtitle" style={styles.sectionTitle}>
+                Replies
+              </ThemedText>
+
+              {thread.child_comments.length === 0 ? (
+                <ThemedView style={styles.emptyBox}>
+                  <ThemedText type="defaultSemiBold">No replies yet</ThemedText>
+                  <ThemedText style={{ color: colors.tabIconDefault }}>
+                    Start this branch of the conversation.
+                  </ThemedText>
+                </ThemedView>
+              ) : (
+                thread.child_comments.map((comment) => {
+                  const canDeleteComment = Boolean(
+                    session?.user.id && comment.author_id === session.user.id,
+                  );
+
+                  return (
+                    <CommentCard
+                      key={comment.id}
+                      comment={comment}
+                      backgroundColor={nestedSurfaceColor}
+                      mutedTextColor={colors.tabIconDefault}
+                      onPressCard={() =>
+                        openCommentThread(comment, buildChildAncestorPath())
+                      }
+                      onPressReply={() =>
+                        setReplyTarget({
+                          mode: "comment",
+                          replyToCommentId: comment.id,
+                          replyToUserId: comment.author_id,
+                          label: comment.author?.display_name ?? "this reader",
+                        })
+                      }
+                      onPressDelete={
+                        canDeleteComment ? () => handleDeleteComment(comment.id) : undefined
+                      }
+                      onPressReplies={
+                        comment.child_count > 0
+                          ? () => openCommentThread(comment, buildChildAncestorPath())
+                          : undefined
+                      }
+                    />
+                  );
+                })
+              )}
+            </>
+          ) : null}
+        </ScrollView>
+
+        {thread ? (
+          <View
+            style={[
+              styles.composerDock,
+              {
+                paddingBottom: 0,
+              },
+            ]}
+          >
+            <ComposerSection
+              replyContextLabel={
+                replyTarget.mode === "focused" ? null : replyTarget.label
+              }
+              onCancel={
+                replyTarget.mode === "focused"
+                  ? undefined
+                  : () => setReplyTarget({ mode: "focused" })
+              }
               placeholder={composerPlaceholder}
               value={composerText}
               onChangeText={setComposerText}
@@ -363,10 +416,11 @@ export function CommentThreadScreen() {
               inputTextColor={colors.text}
               mutedTextColor={colors.tabIconDefault}
               buttonColor={colors.tint}
+              onLayout={(event) => setComposerHeight(event.nativeEvent.layout.height)}
             />
-          </>
+          </View>
         ) : null}
-      </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -375,9 +429,11 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
+  flex: {
+    flex: 1,
+  },
   container: {
     padding: 20,
-    paddingBottom: 40,
   },
   backButton: {
     alignSelf: "flex-start",
@@ -422,5 +478,11 @@ const styles = StyleSheet.create({
     gap: 6,
     marginBottom: 24,
     padding: 16,
+  },
+  composerDock: {
+    bottom: 0,
+    left: 0,
+    position: "absolute",
+    right: 0,
   },
 });
