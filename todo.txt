@@ -13,11 +13,11 @@ todo:
         }
     }
 
-    -Global_books{}
-
     -Discussions page{
-        -the comment should move up when typing/ you cant see when typing
         -drag down to refresh(maybe other screens have same problem)
+
+        -the text bar spacing with the bottom is inconsistent, it gets taller after you open it
+        
     }
 
     -Books{
@@ -32,9 +32,6 @@ todo:
     -old Requests{
         -que requests listos se puedan borrar y cancelar, limpiar historial ponele
     }
-
-
-    -Login{}
 }
 
 ---Mk3-

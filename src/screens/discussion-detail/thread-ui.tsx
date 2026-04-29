@@ -40,11 +40,39 @@ export function CommentCard({
   highlight = false,
   children,
 }: CommentCardProps) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const content = (
     <>
-      <ThemedText type="defaultSemiBold">
-        {comment.author?.display_name ?? "BookTrade reader"}
-      </ThemedText>
+      <View style={styles.headerRow}>
+        <ThemedText type="defaultSemiBold">
+          {comment.author?.display_name ?? "BookTrade reader"}
+        </ThemedText>
+        {onPressDelete ? (
+          <View style={styles.menuWrapper}>
+            <Pressable
+              hitSlop={8}
+              onPress={() => setIsMenuOpen((currentValue) => !currentValue)}
+              style={styles.menuButton}
+            >
+              <ThemedText style={styles.menuDots}>...</ThemedText>
+            </Pressable>
+            {isMenuOpen ? (
+              <Pressable
+                onPress={() => {
+                  setIsMenuOpen(false);
+                  onPressDelete();
+                }}
+                style={styles.menuPanel}
+              >
+                <IconSymbol name="trash.fill" size={16} color="#d11a2a" />
+                <ThemedText numberOfLines={1} style={styles.menuDeleteText}>
+                  Delete
+                </ThemedText>
+              </Pressable>
+            ) : null}
+          </View>
+        ) : null}
+      </View>
       <ThemedText style={{ color: mutedTextColor }}>
         {formatDate(comment.created_at)}
       </ThemedText>
@@ -71,7 +99,7 @@ export function CommentCard({
         content
       )}
 
-      {(onPressReply || onPressDelete || comment.child_count > 0) && !comment.is_deleted ? (
+      {(onPressReply || comment.child_count > 0) && !comment.is_deleted ? (
         <View style={styles.commentActions}>
           {onPressReply ? (
             <Pressable onPress={onPressReply}>
@@ -80,11 +108,6 @@ export function CommentCard({
                   ? `${comment.child_count} Repl${comment.child_count === 1 ? "y" : "ies"}`
                   : "Reply"}
               </ThemedText>
-            </Pressable>
-          ) : null}
-          {onPressDelete ? (
-            <Pressable onPress={onPressDelete}>
-              <ThemedText type="link">Delete</ThemedText>
             </Pressable>
           ) : null}
         </View>
@@ -206,6 +229,11 @@ export function ComposerSection({
 }
 
 const styles = StyleSheet.create({
+  headerRow: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
   highlightCard: {
     borderWidth: 0,
   },
@@ -225,6 +253,44 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 16,
     marginTop: 6,
+  },
+  menuButton: {
+    alignItems: "center",
+    height: 24,
+    justifyContent: "center",
+    width: 24,
+  },
+  menuDots: {
+    fontSize: 18,
+    fontWeight: "700",
+    lineHeight: 18,
+  },
+  menuPanel: {
+    alignItems: "center",
+    backgroundColor: "#ffffff",
+    borderColor: "#d0d0d0",
+    borderRadius: 12,
+    borderWidth: 1,
+    flexDirection: "row",
+    flexWrap: "nowrap",
+    gap: 6,
+    minWidth: 78,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    position: "absolute",
+    right: 0,
+    top: 24,
+    zIndex: 10,
+  },
+  menuDeleteText: {
+    color: "#d11a2a",
+    flexShrink: 0,
+    includeFontPadding: false,
+  },
+  menuWrapper: {
+    alignItems: "flex-end",
+    minWidth: 24,
+    position: "relative",
   },
   composerSection: {
     gap: 8,
