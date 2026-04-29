@@ -61,7 +61,6 @@ export function CommentThreadScreen() {
   const surfaceColor = colorScheme === "dark" ? "#222225" : "#f8f8f8";
   const nestedSurfaceColor = colorScheme === "dark" ? "#202023" : "#f5f5f5";
   const inputBackgroundColor = colorScheme === "dark" ? "#2c2c2e" : "#f0f0f0";
-  const composerSurfaceColor = colorScheme === "dark" ? "#18181a" : "#ffffff";
 
   const fetchThread = useCallback(async () => {
     if (!discussionId || !commentId) {
@@ -103,6 +102,20 @@ export function CommentThreadScreen() {
     return `Reply to ${replyTarget.label}`;
   }, [replyTarget]);
 
+  const preloadReplyPrefix = useCallback((label: string) => {
+    const prefix = `@${label} `;
+
+    setComposerText((currentText) => {
+      const trimmedText = currentText.trim();
+
+      if (!trimmedText || trimmedText.startsWith("@")) {
+        return prefix;
+      }
+
+      return currentText;
+    });
+  }, []);
+
   const handleSubmit = async () => {
     if (!session) {
       navigateToScreen("user", "login");
@@ -125,7 +138,10 @@ export function CommentThreadScreen() {
       await createDiscussionComment(session.user.id, {
         discussion_id: thread.discussion.id,
         body: composerText,
-        parent_comment_id: thread.focused_comment.id,
+        parent_comment_id:
+          replyTarget.mode === "focused"
+            ? thread.focused_comment.id
+            : replyTarget.replyToCommentId,
         reply_to_comment_id:
           replyTarget.mode === "focused"
             ? thread.focused_comment.id
@@ -365,12 +381,18 @@ export function CommentThreadScreen() {
                         openCommentThread(comment, buildChildAncestorPath())
                       }
                       onPressReply={() =>
-                        setReplyTarget({
-                          mode: "comment",
-                          replyToCommentId: comment.id,
-                          replyToUserId: comment.author_id,
-                          label: comment.author?.display_name ?? "this reader",
-                        })
+                        {
+                          setReplyTarget({
+                            mode: "comment",
+                            replyToCommentId: comment.id,
+                            replyToUserId: comment.author_id,
+                            label: comment.author?.display_name ?? "this reader",
+                          });
+                          preloadReplyPrefix(
+                            comment.author?.display_name ?? "this reader",
+                          );
+                          scrollViewRef.current?.scrollToEnd({ animated: true });
+                        }
                       }
                       onPressDelete={
                         canDeleteComment ? () => handleDeleteComment(comment.id) : undefined

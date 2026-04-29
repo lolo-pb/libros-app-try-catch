@@ -28,6 +28,17 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { CommentCard, ComposerSection, formatDate } from "./thread-ui";
 
+type ReplyTarget =
+  | {
+      mode: "discussion";
+    }
+  | {
+      mode: "comment";
+      parentCommentId: string;
+      replyToUserId?: string | null;
+      label: string;
+    };
+
 export function DiscussionDetailScreen() {
   const { session } = useAuth();
   const { navigationState, navigateToScreen } = useAppNavigation();
@@ -41,13 +52,13 @@ export function DiscussionDetailScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [composerText, setComposerText] = useState("");
+  const [replyTarget, setReplyTarget] = useState<ReplyTarget>({ mode: "discussion" });
   const [composerHeight, setComposerHeight] = useState(190);
   const scrollViewRef = useRef<ScrollView | null>(null);
 
   const surfaceColor = colorScheme === "dark" ? "#222225" : "#f8f8f8";
   const nestedSurfaceColor = colorScheme === "dark" ? "#202023" : "#f5f5f5";
   const inputBackgroundColor = colorScheme === "dark" ? "#2c2c2e" : "#f0f0f0";
-  const composerSurfaceColor = colorScheme === "dark" ? "#18181a" : "#ffffff";
 
   const fetchDiscussion = useCallback(async () => {
     if (!discussionId) {
@@ -80,6 +91,20 @@ export function DiscussionDetailScreen() {
     fetchDiscussion();
   }, [fetchDiscussion]);
 
+  const preloadReplyPrefix = useCallback((label: string) => {
+    const prefix = `@${label} `;
+
+    setComposerText((currentText) => {
+      const trimmedText = currentText.trim();
+
+      if (!trimmedText || trimmedText.startsWith("@")) {
+        return prefix;
+      }
+
+      return currentText;
+    });
+  }, []);
+
   const canDeleteDiscussion = Boolean(
     session?.user.id && discussion?.author_id === session.user.id,
   );
@@ -111,9 +136,16 @@ export function DiscussionDetailScreen() {
       await createDiscussionComment(session.user.id, {
         discussion_id: discussion.id,
         body: composerText,
+        parent_comment_id:
+          replyTarget.mode === "discussion" ? null : replyTarget.parentCommentId,
+        reply_to_comment_id:
+          replyTarget.mode === "discussion" ? null : replyTarget.parentCommentId,
+        reply_to_user_id:
+          replyTarget.mode === "discussion" ? null : replyTarget.replyToUserId ?? null,
       });
 
       setComposerText("");
+      setReplyTarget({ mode: "discussion" });
       await fetchDiscussion();
     } catch (error) {
       setErrorMessage(getErrorMessage(error, "Could not post this comment."));
@@ -265,7 +297,18 @@ export function DiscussionDetailScreen() {
                       backgroundColor={nestedSurfaceColor}
                       mutedTextColor={colors.tabIconDefault}
                       onPressCard={() => openCommentThread(comment)}
-                      onPressReply={() => openCommentThread(comment)}
+                      onPressReply={() => {
+                        setReplyTarget({
+                          mode: "comment",
+                          parentCommentId: comment.id,
+                          replyToUserId: comment.author_id,
+                          label: comment.author?.display_name ?? "this reader",
+                        });
+                        preloadReplyPrefix(
+                          comment.author?.display_name ?? "this reader",
+                        );
+                        scrollViewRef.current?.scrollToEnd({ animated: true });
+                      }}
                       onPressDelete={
                         canDeleteComment ? () => handleDeleteComment(comment.id) : undefined
                       }
@@ -290,6 +333,14 @@ export function DiscussionDetailScreen() {
             ]}
           >
             <ComposerSection
+              replyContextLabel={
+                replyTarget.mode === "discussion" ? null : replyTarget.label
+              }
+              onCancel={
+                replyTarget.mode === "discussion"
+                  ? undefined
+                  : () => setReplyTarget({ mode: "discussion" })
+              }
               placeholder="Add a comment"
               value={composerText}
               onChangeText={setComposerText}
