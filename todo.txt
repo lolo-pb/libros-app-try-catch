@@ -14,10 +14,9 @@ todo:
     }
 
     -Discussions page{
-        -drag down to refresh(maybe other screens have same problem)
 
         -the text bar spacing with the bottom is inconsistent, it gets taller after you open it
-        
+
     }
 
     -Books{

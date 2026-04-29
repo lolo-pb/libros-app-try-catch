@@ -21,6 +21,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   View,
@@ -49,6 +50,7 @@ export function DiscussionDetailScreen() {
   const globalBookId = navigationState.params?.globalBookId;
   const [discussion, setDiscussion] = useState<GlobalBookDiscussionWithComments | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [composerText, setComposerText] = useState("");
@@ -89,6 +91,12 @@ export function DiscussionDetailScreen() {
 
   useEffect(() => {
     fetchDiscussion();
+  }, [fetchDiscussion]);
+
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await fetchDiscussion();
+    setIsRefreshing(false);
   }, [fetchDiscussion]);
 
   const preloadReplyPrefix = useCallback((label: string) => {
@@ -198,6 +206,14 @@ export function DiscussionDetailScreen() {
       >
         <ScrollView
           ref={scrollViewRef}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+              tintColor={colors.tint}
+              colors={[colors.tint]}
+            />
+          }
           contentContainerStyle={[
             styles.container,
             { paddingBottom: composerHeight + 20 },

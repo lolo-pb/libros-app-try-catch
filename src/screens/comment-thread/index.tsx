@@ -20,6 +20,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   View,
@@ -50,6 +51,7 @@ export function CommentThreadScreen() {
   const globalBookId = navigationState.params?.globalBookId;
   const [thread, setThread] = useState<DiscussionCommentThread | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [composerText, setComposerText] = useState("");
@@ -92,6 +94,12 @@ export function CommentThreadScreen() {
 
   useEffect(() => {
     fetchThread();
+  }, [fetchThread]);
+
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await fetchThread();
+    setIsRefreshing(false);
   }, [fetchThread]);
 
   const composerPlaceholder = useMemo(() => {
@@ -205,6 +213,14 @@ export function CommentThreadScreen() {
       >
         <ScrollView
           ref={scrollViewRef}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+              tintColor={colors.tint}
+              colors={[colors.tint]}
+            />
+          }
           contentContainerStyle={[
             styles.container,
             { paddingBottom: composerHeight + 20 },
