@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 12,
     paddingTop: 8,
-    paddingBottom: 6,
+    paddingBottom: 11,
   },
   composerBar: {
     alignItems: "flex-end",

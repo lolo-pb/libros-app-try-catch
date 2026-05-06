@@ -18,6 +18,7 @@ import type {
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -31,14 +32,14 @@ import { CommentCard, ComposerSection, formatDate } from "./thread-ui";
 
 type ReplyTarget =
   | {
-      mode: "discussion";
-    }
+    mode: "discussion";
+  }
   | {
-      mode: "comment";
-      parentCommentId: string;
-      replyToUserId?: string | null;
-      label: string;
-    };
+    mode: "comment";
+    parentCommentId: string;
+    replyToUserId?: string | null;
+    label: string;
+  };
 
 export function DiscussionDetailScreen() {
   const { session } = useAuth();
@@ -56,6 +57,7 @@ export function DiscussionDetailScreen() {
   const [composerText, setComposerText] = useState("");
   const [replyTarget, setReplyTarget] = useState<ReplyTarget>({ mode: "discussion" });
   const [composerHeight, setComposerHeight] = useState(190);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const scrollViewRef = useRef<ScrollView | null>(null);
 
   const surfaceColor = colorScheme === "dark" ? "#222225" : "#f8f8f8";
@@ -92,6 +94,24 @@ export function DiscussionDetailScreen() {
   useEffect(() => {
     fetchDiscussion();
   }, [fetchDiscussion]);
+
+  useEffect(() => {
+    if (Platform.OS !== "android") {
+      return;
+    }
+
+    const showSubscription = Keyboard.addListener("keyboardDidShow", (event) => {
+      setKeyboardHeight(event.endCoordinates.height);
+    });
+    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -200,8 +220,8 @@ export function DiscussionDetailScreen() {
       style={[styles.safeArea, { backgroundColor: colors.background }]}
     >
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={insets.bottom}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? insets.bottom : 0}
         style={styles.flex}
       >
         <ScrollView
@@ -216,7 +236,12 @@ export function DiscussionDetailScreen() {
           }
           contentContainerStyle={[
             styles.container,
-            { paddingBottom: composerHeight + 20 },
+            {
+              paddingBottom:
+                composerHeight +
+                20 +
+                (Platform.OS === "android" ? keyboardHeight : 0),
+            },
           ]}
           style={styles.flex}
         >
@@ -344,7 +369,7 @@ export function DiscussionDetailScreen() {
             style={[
               styles.composerDock,
               {
-                paddingBottom: 0,
+                bottom: Platform.OS === "android" ? Math.max(0, keyboardHeight - 55) : 0,
               },
             ]}
           >

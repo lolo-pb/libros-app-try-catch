@@ -17,6 +17,7 @@ import type {
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -30,14 +31,14 @@ import { CommentCard, ComposerSection } from "../discussion-detail/thread-ui";
 
 type ReplyTarget =
   | {
-      mode: "focused";
-    }
+    mode: "focused";
+  }
   | {
-      mode: "comment";
-      replyToCommentId: string;
-      replyToUserId?: string | null;
-      label: string;
-    };
+    mode: "comment";
+    replyToCommentId: string;
+    replyToUserId?: string | null;
+    label: string;
+  };
 
 export function CommentThreadScreen() {
   const { session } = useAuth();
@@ -58,6 +59,7 @@ export function CommentThreadScreen() {
   const [replyTarget, setReplyTarget] = useState<ReplyTarget>({ mode: "focused" });
   const [hasAutoScrolled, setHasAutoScrolled] = useState(false);
   const [composerHeight, setComposerHeight] = useState(190);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const scrollViewRef = useRef<ScrollView | null>(null);
 
   const surfaceColor = colorScheme === "dark" ? "#222225" : "#f8f8f8";
@@ -95,6 +97,24 @@ export function CommentThreadScreen() {
   useEffect(() => {
     fetchThread();
   }, [fetchThread]);
+
+  useEffect(() => {
+    if (Platform.OS !== "android") {
+      return;
+    }
+
+    const showSubscription = Keyboard.addListener("keyboardDidShow", (event) => {
+      setKeyboardHeight(event.endCoordinates.height);
+    });
+    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -207,8 +227,8 @@ export function CommentThreadScreen() {
       style={[styles.safeArea, { backgroundColor: colors.background }]}
     >
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={insets.bottom}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? insets.bottom : 0}
         style={styles.flex}
       >
         <ScrollView
@@ -223,7 +243,12 @@ export function CommentThreadScreen() {
           }
           contentContainerStyle={[
             styles.container,
-            { paddingBottom: composerHeight + 20 },
+            {
+              paddingBottom:
+                composerHeight +
+                20 +
+                (Platform.OS === "android" ? keyboardHeight : 0),
+            },
           ]}
           style={styles.flex}
         >
@@ -302,23 +327,23 @@ export function CommentThreadScreen() {
                       index === 0
                         ? undefined
                         : thread.ancestor_comments
-                            .slice(0, index)
-                            .map((ancestor) => ancestor.id)
-                            .join(","),
+                          .slice(0, index)
+                          .map((ancestor) => ancestor.id)
+                          .join(","),
                     )
                   }
                   onPressReplies={
                     comment.child_count > 0
                       ? () =>
-                          openCommentThread(
-                            comment,
-                            index === 0
-                              ? undefined
-                              : thread.ancestor_comments
-                                  .slice(0, index)
-                                  .map((ancestor) => ancestor.id)
-                                  .join(","),
-                          )
+                        openCommentThread(
+                          comment,
+                          index === 0
+                            ? undefined
+                            : thread.ancestor_comments
+                              .slice(0, index)
+                              .map((ancestor) => ancestor.id)
+                              .join(","),
+                        )
                       : undefined
                   }
                 />
@@ -396,19 +421,18 @@ export function CommentThreadScreen() {
                       onPressCard={() =>
                         openCommentThread(comment, buildChildAncestorPath())
                       }
-                      onPressReply={() =>
-                        {
-                          setReplyTarget({
-                            mode: "comment",
-                            replyToCommentId: comment.id,
-                            replyToUserId: comment.author_id,
-                            label: comment.author?.display_name ?? "this reader",
-                          });
-                          preloadReplyPrefix(
-                            comment.author?.display_name ?? "this reader",
-                          );
-                          scrollViewRef.current?.scrollToEnd({ animated: true });
-                        }
+                      onPressReply={() => {
+                        setReplyTarget({
+                          mode: "comment",
+                          replyToCommentId: comment.id,
+                          replyToUserId: comment.author_id,
+                          label: comment.author?.display_name ?? "this reader",
+                        });
+                        preloadReplyPrefix(
+                          comment.author?.display_name ?? "this reader",
+                        );
+                        scrollViewRef.current?.scrollToEnd({ animated: true });
+                      }
                       }
                       onPressDelete={
                         canDeleteComment ? () => handleDeleteComment(comment.id) : undefined
@@ -431,7 +455,7 @@ export function CommentThreadScreen() {
             style={[
               styles.composerDock,
               {
-                paddingBottom: 0,
+                bottom: Platform.OS === "android" ? Math.max(0, keyboardHeight - 55) : 0,
               },
             ]}
           >
