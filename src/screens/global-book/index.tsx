@@ -89,16 +89,19 @@ export function GlobalBookScreen() {
       edges={["top", "left", "right"]}
       style={[styles.safeArea, { backgroundColor: colors.background }]}
     >
-      <ScrollView contentContainerStyle={styles.container}>
-        <Pressable
-          onPress={() => navigateToScreen("home", "home-main")}
-          style={[styles.backButton, { backgroundColor: colors.tint + "15" }]}
-        >
-          <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
-            Back to Home
-          </ThemedText>
-        </Pressable>
+      <Pressable
+        onPress={() => navigateToScreen("home", "home-main")}
+        style={[
+          styles.backButton,
+          { backgroundColor: colorScheme === "dark" ? "#3a3a3acc" : "#e6e6e6cc" },
+        ]}
+      >
+        <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
+          Back to Home
+        </ThemedText>
+      </Pressable>
 
+      <ScrollView contentContainerStyle={styles.container}>
         {isLoading ? (
           <ThemedView style={styles.centerState}>
             <ActivityIndicator color={colors.tint} />
@@ -157,8 +160,8 @@ export function GlobalBookScreen() {
                   onPress={() =>
                     session
                       ? navigateToScreen("home", "new-discussion", {
-                          globalBookId: globalBook.id,
-                        })
+                        globalBookId: globalBook.id,
+                      })
                       : navigateToScreen("user", "login")
                   }
                   style={[styles.startButton, { backgroundColor: colors.tint }]}
@@ -303,13 +306,18 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     paddingBottom: 40,
+    paddingTop: 70,
   },
   backButton: {
-    alignSelf: "flex-start",
+    alignItems: "center",
     borderRadius: 8,
-    marginBottom: 18,
     paddingHorizontal: 12,
     paddingVertical: 8,
+    position: "absolute",
+    top: 40,
+    left: 20,
+    width: 128,
+    zIndex: 20,
   },
   centerState: {
     alignItems: "center",

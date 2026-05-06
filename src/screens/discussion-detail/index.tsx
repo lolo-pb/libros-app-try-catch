@@ -224,6 +224,18 @@ export function DiscussionDetailScreen() {
         keyboardVerticalOffset={Platform.OS === "ios" ? insets.bottom : 0}
         style={styles.flex}
       >
+        <Pressable
+          onPress={() => navigateToScreen("home", "global-book", { globalBookId })}
+          style={[
+            styles.backButton,
+            { backgroundColor: colorScheme === "dark" ? "#3a3a3acc" : "#e6e6e6cc" },
+          ]}
+        >
+          <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
+            Back to Topic
+          </ThemedText>
+        </Pressable>
+
         <ScrollView
           ref={scrollViewRef}
           refreshControl={
@@ -245,15 +257,6 @@ export function DiscussionDetailScreen() {
           ]}
           style={styles.flex}
         >
-          <Pressable
-            onPress={() => navigateToScreen("home", "global-book", { globalBookId })}
-            style={[styles.backButton, { backgroundColor: colors.tint + "15" }]}
-          >
-            <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
-              Back to Topic
-            </ThemedText>
-          </Pressable>
-
           {isLoading ? (
             <ThemedView style={styles.centerState}>
               <ActivityIndicator color={colors.tint} />
@@ -410,13 +413,16 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: 20,
+    paddingTop: 72,
   },
   backButton: {
-    alignSelf: "flex-start",
     borderRadius: 8,
-    marginBottom: 18,
+    left: 20,
     paddingHorizontal: 12,
     paddingVertical: 8,
+    position: "absolute",
+    top: 12,
+    zIndex: 20,
   },
   centerState: {
     alignItems: "center",
