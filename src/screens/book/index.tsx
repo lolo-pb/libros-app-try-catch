@@ -40,7 +40,7 @@ export function BookScreen() {
     backSection === "books"
       ? "Back to My Books"
       : returnScreen === "global-book" && relatedGlobalBookId
-        ? "Back to Global Book"
+        ? "Back to Topic"
         : "Back to Home";
   const [book, setBook] = useState<Book | null>(null);
   const [owner, setOwner] = useState<Profile | null>(null);
@@ -257,7 +257,7 @@ export function BookScreen() {
                 ]}
               >
                 <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
-                  View global book: {globalBook.title}
+                  View topic: {globalBook.title}
                 </ThemedText>
               </Pressable>
             ) : null}

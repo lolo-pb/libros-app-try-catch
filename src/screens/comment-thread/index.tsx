@@ -6,16 +6,15 @@ import { useAppNavigation } from "@/src/context/navigation-context";
 import { useColorScheme } from "@/src/hooks/use-color-scheme";
 import {
   createDiscussionComment,
-  loadGlobalBookDiscussion,
+  loadDiscussionCommentThread,
   softDeleteDiscussionComment,
-  softDeleteGlobalBookDiscussion,
 } from "@/src/lib/discussions";
 import { getErrorMessage } from "@/src/lib/errors";
 import type {
   DiscussionCommentNode,
-  GlobalBookDiscussionWithComments,
+  DiscussionCommentThread,
 } from "@/src/types/database";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Keyboard,
@@ -28,34 +27,37 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { CommentCard, ComposerSection, formatDate } from "./thread-ui";
+import { CommentCard, ComposerSection } from "../discussion-detail/thread-ui";
 
 type ReplyTarget =
   | {
-    mode: "discussion";
+    mode: "focused";
   }
   | {
     mode: "comment";
-    parentCommentId: string;
+    replyToCommentId: string;
     replyToUserId?: string | null;
     label: string;
   };
 
-export function DiscussionDetailScreen() {
+export function CommentThreadScreen() {
   const { session } = useAuth();
-  const { navigationState, navigateToScreen } = useAppNavigation();
+  const { navigationState, navigateToScreen, goBack } = useAppNavigation();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
   const insets = useSafeAreaInsets();
   const discussionId = navigationState.params?.discussionId;
+  const commentId = navigationState.params?.commentId;
+  const ancestorPath = navigationState.params?.ancestorPath;
   const globalBookId = navigationState.params?.globalBookId;
-  const [discussion, setDiscussion] = useState<GlobalBookDiscussionWithComments | null>(null);
+  const [thread, setThread] = useState<DiscussionCommentThread | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [composerText, setComposerText] = useState("");
-  const [replyTarget, setReplyTarget] = useState<ReplyTarget>({ mode: "discussion" });
+  const [replyTarget, setReplyTarget] = useState<ReplyTarget>({ mode: "focused" });
+  const [hasAutoScrolled, setHasAutoScrolled] = useState(false);
   const [composerHeight, setComposerHeight] = useState(190);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const scrollViewRef = useRef<ScrollView | null>(null);
@@ -64,9 +66,9 @@ export function DiscussionDetailScreen() {
   const nestedSurfaceColor = colorScheme === "dark" ? "#202023" : "#f5f5f5";
   const inputBackgroundColor = colorScheme === "dark" ? "#2c2c2e" : "#f0f0f0";
 
-  const fetchDiscussion = useCallback(async () => {
-    if (!discussionId) {
-      setErrorMessage("No discussion selected.");
+  const fetchThread = useCallback(async () => {
+    if (!discussionId || !commentId) {
+      setErrorMessage("No comment selected.");
       setIsLoading(false);
       return;
     }
@@ -75,25 +77,26 @@ export function DiscussionDetailScreen() {
     setErrorMessage(null);
 
     try {
-      const loaded = await loadGlobalBookDiscussion(discussionId);
+      const loaded = await loadDiscussionCommentThread(discussionId, commentId);
 
       if (!loaded) {
-        setDiscussion(null);
-        setErrorMessage("This discussion could not be found.");
+        setThread(null);
+        setErrorMessage("This comment thread could not be found.");
       } else {
-        setDiscussion(loaded);
+        setThread(loaded);
+        setHasAutoScrolled(false);
       }
     } catch (error) {
-      setDiscussion(null);
-      setErrorMessage(getErrorMessage(error, "Could not load this discussion."));
+      setThread(null);
+      setErrorMessage(getErrorMessage(error, "Could not load this comment thread."));
     }
 
     setIsLoading(false);
-  }, [discussionId]);
+  }, [commentId, discussionId]);
 
   useEffect(() => {
-    fetchDiscussion();
-  }, [fetchDiscussion]);
+    fetchThread();
+  }, [fetchThread]);
 
   useEffect(() => {
     if (Platform.OS !== "android") {
@@ -115,9 +118,17 @@ export function DiscussionDetailScreen() {
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
-    await fetchDiscussion();
+    await fetchThread();
     setIsRefreshing(false);
-  }, [fetchDiscussion]);
+  }, [fetchThread]);
+
+  const composerPlaceholder = useMemo(() => {
+    if (replyTarget.mode === "focused") {
+      return "Reply to this comment";
+    }
+
+    return `Reply to ${replyTarget.label}`;
+  }, [replyTarget]);
 
   const preloadReplyPrefix = useCallback((label: string) => {
     const prefix = `@${label} `;
@@ -133,22 +144,13 @@ export function DiscussionDetailScreen() {
     });
   }, []);
 
-  const canDeleteDiscussion = Boolean(
-    session?.user.id && discussion?.author_id === session.user.id,
-  );
-
   const handleSubmit = async () => {
     if (!session) {
       navigateToScreen("user", "login");
       return;
     }
 
-    if (!discussion) {
-      return;
-    }
-
-    if (discussion.is_deleted) {
-      setErrorMessage("Deleted discussions cannot receive new comments.");
+    if (!thread) {
       return;
     }
 
@@ -162,57 +164,62 @@ export function DiscussionDetailScreen() {
 
     try {
       await createDiscussionComment(session.user.id, {
-        discussion_id: discussion.id,
+        discussion_id: thread.discussion.id,
         body: composerText,
         parent_comment_id:
-          replyTarget.mode === "discussion" ? null : replyTarget.parentCommentId,
+          replyTarget.mode === "focused"
+            ? thread.focused_comment.id
+            : replyTarget.replyToCommentId,
         reply_to_comment_id:
-          replyTarget.mode === "discussion" ? null : replyTarget.parentCommentId,
+          replyTarget.mode === "focused"
+            ? thread.focused_comment.id
+            : replyTarget.replyToCommentId,
         reply_to_user_id:
-          replyTarget.mode === "discussion" ? null : replyTarget.replyToUserId ?? null,
+          replyTarget.mode === "focused"
+            ? thread.focused_comment.author_id
+            : replyTarget.replyToUserId ?? null,
       });
 
       setComposerText("");
-      setReplyTarget({ mode: "discussion" });
-      await fetchDiscussion();
+      setReplyTarget({ mode: "focused" });
+      await fetchThread();
     } catch (error) {
-      setErrorMessage(getErrorMessage(error, "Could not post this comment."));
+      setErrorMessage(getErrorMessage(error, "Could not post this reply."));
     }
 
     setIsSubmitting(false);
   };
 
-  const handleDeleteDiscussion = async () => {
-    if (!discussion || !canDeleteDiscussion) {
-      return;
-    }
-
+  const handleDeleteComment = async (targetCommentId: string) => {
     try {
-      await softDeleteGlobalBookDiscussion(discussion.id);
-      await fetchDiscussion();
-    } catch (error) {
-      setErrorMessage(getErrorMessage(error, "Could not delete this discussion."));
-    }
-  };
-
-  const handleDeleteComment = async (commentId: string) => {
-    try {
-      await softDeleteDiscussionComment(commentId);
-      await fetchDiscussion();
+      await softDeleteDiscussionComment(targetCommentId);
+      await fetchThread();
     } catch (error) {
       setErrorMessage(getErrorMessage(error, "Could not delete this comment."));
     }
   };
 
-  const openCommentThread = (comment: DiscussionCommentNode) => {
+  const buildChildAncestorPath = () =>
+    ancestorPath
+      ? `${ancestorPath},${thread?.focused_comment.id ?? ""}`
+      : thread?.focused_comment.id;
+
+  const openCommentThread = (
+    targetComment: DiscussionCommentNode,
+    nextAncestorPath?: string,
+  ) => {
     navigateToScreen("home", "comment-thread", {
       discussionId: discussionId ?? undefined,
-      commentId: comment.id,
-      parentCommentId: comment.parent_comment_id ?? undefined,
-      ancestorPath: undefined,
+      commentId: targetComment.id,
+      parentCommentId: targetComment.parent_comment_id ?? undefined,
+      ancestorPath: nextAncestorPath,
       globalBookId,
     });
   };
+
+  const canDeleteFocusedComment = Boolean(
+    session?.user.id && thread?.focused_comment.author_id === session.user.id,
+  );
 
   return (
     <SafeAreaView
@@ -225,14 +232,21 @@ export function DiscussionDetailScreen() {
         style={styles.flex}
       >
         <Pressable
-          onPress={() => navigateToScreen("home", "global-book", { globalBookId })}
+          onPress={() => {
+            if (navigationState.history?.length) {
+              goBack();
+              return;
+            }
+
+            navigateToScreen("home", "global-book", { globalBookId });
+          }}
           style={[
             styles.backButton,
             { backgroundColor: colorScheme === "dark" ? "#3a3a3acc" : "#e6e6e6cc" },
           ]}
         >
           <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
-            Back to Topic
+            Back
           </ThemedText>
         </Pressable>
 
@@ -261,75 +275,142 @@ export function DiscussionDetailScreen() {
             <ThemedView style={styles.centerState}>
               <ActivityIndicator color={colors.tint} />
             </ThemedView>
-          ) : errorMessage && !discussion ? (
+          ) : errorMessage && !thread ? (
             <ThemedView style={styles.centerState}>
-              <ThemedText type="subtitle">Discussion unavailable</ThemedText>
+              <ThemedText type="subtitle">Comment thread unavailable</ThemedText>
               <ThemedText style={{ color: colors.tabIconDefault }}>
                 {errorMessage}
               </ThemedText>
             </ThemedView>
-          ) : discussion ? (
+          ) : thread ? (
             <>
+              <ThemedText type="subtitle" style={styles.sectionTitle}>
+                Thread
+              </ThemedText>
+
               <ThemedView
                 style={[
                   styles.discussionCard,
                   {
-                    backgroundColor: surfaceColor,
+                    backgroundColor: nestedSurfaceColor,
                   },
                 ]}
               >
-                <ThemedText type="title" style={styles.title}>
-                  {discussion.is_deleted ? "Deleted discussion" : discussion.title}
-                </ThemedText>
-                <ThemedText style={{ color: colors.tabIconDefault }}>
-                  {discussion.author?.display_name ?? "BookTrade reader"} ·{" "}
-                  {formatDate(discussion.created_at)}
-                </ThemedText>
-                <ThemedText style={styles.bodyText}>
-                  {discussion.is_deleted
-                    ? "This discussion was deleted."
-                    : discussion.body}
-                </ThemedText>
-                <ThemedText style={{ color: colors.tabIconDefault }}>
-                  {discussion.comment_count} comment
-                  {discussion.comment_count === 1 ? "" : "s"}
-                </ThemedText>
-                <View style={styles.postActions}>
-                  {!discussion.is_deleted ? (
-                    <Pressable
-                      onPress={() => {
-                        if (!session) {
-                          navigateToScreen("user", "login");
-                          return;
-                        }
-
-                        scrollViewRef.current?.scrollToEnd({ animated: true });
-                      }}
-                    >
-                      <ThemedText type="link">Comment</ThemedText>
-                    </Pressable>
-                  ) : null}
-                  {canDeleteDiscussion ? (
-                    <Pressable onPress={handleDeleteDiscussion}>
-                      <ThemedText type="link">Delete discussion</ThemedText>
-                    </Pressable>
-                  ) : null}
-                </View>
+                <Pressable
+                  onPress={() =>
+                    navigateToScreen("home", "discussion-detail", {
+                      discussionId: thread.discussion.id,
+                      globalBookId,
+                    })
+                  }
+                  style={styles.discussionTapArea}
+                >
+                  <ThemedText type="defaultSemiBold">Discussion</ThemedText>
+                  <ThemedText style={{ color: colors.tabIconDefault }}>
+                    {thread.discussion.author?.display_name ?? "BookTrade reader"} ·{" "}
+                    {new Date(thread.discussion.created_at).toLocaleDateString()}
+                  </ThemedText>
+                  <ThemedText style={styles.discussionBody}>
+                    {thread.discussion.is_deleted
+                      ? "This discussion was deleted."
+                      : thread.discussion.body}
+                  </ThemedText>
+                </Pressable>
               </ThemedView>
 
+              {thread.ancestor_comments.map((comment, index) => (
+                <CommentCard
+                  key={comment.id}
+                  comment={comment}
+                  backgroundColor={nestedSurfaceColor}
+                  mutedTextColor={colors.tabIconDefault}
+                  onPressCard={() =>
+                    openCommentThread(
+                      comment,
+                      index === 0
+                        ? undefined
+                        : thread.ancestor_comments
+                          .slice(0, index)
+                          .map((ancestor) => ancestor.id)
+                          .join(","),
+                    )
+                  }
+                  onPressReplies={
+                    comment.child_count > 0
+                      ? () =>
+                        openCommentThread(
+                          comment,
+                          index === 0
+                            ? undefined
+                            : thread.ancestor_comments
+                              .slice(0, index)
+                              .map((ancestor) => ancestor.id)
+                              .join(","),
+                        )
+                      : undefined
+                  }
+                />
+              ))}
+
+              <View style={styles.focusDivider}>
+                <View
+                  style={[
+                    styles.focusDividerLine,
+                    { backgroundColor: colors.icon + "88" },
+                  ]}
+                />
+                <ThemedText
+                  style={{ color: colors.tabIconDefault, fontWeight: "600" }}
+                >
+                  Focused comment
+                </ThemedText>
+                <View
+                  style={[
+                    styles.focusDividerLine,
+                    { backgroundColor: colors.icon + "88" },
+                  ]}
+                />
+              </View>
+
+              <View
+                onLayout={(event) => {
+                  if (hasAutoScrolled) {
+                    return;
+                  }
+
+                  scrollViewRef.current?.scrollTo({
+                    y: Math.max(0, event.nativeEvent.layout.y - 16),
+                    animated: false,
+                  });
+                  setHasAutoScrolled(true);
+                }}
+              >
+                <CommentCard
+                  comment={thread.focused_comment}
+                  backgroundColor={surfaceColor}
+                  mutedTextColor={colors.tabIconDefault}
+                  onPressDelete={
+                    canDeleteFocusedComment
+                      ? () => handleDeleteComment(thread.focused_comment.id)
+                      : undefined
+                  }
+                  highlight
+                />
+              </View>
+
               <ThemedText type="subtitle" style={styles.sectionTitle}>
-                Comments
+                Replies
               </ThemedText>
 
-              {discussion.root_comments.length === 0 ? (
+              {thread.child_comments.length === 0 ? (
                 <ThemedView style={styles.emptyBox}>
-                  <ThemedText type="defaultSemiBold">No comments yet</ThemedText>
+                  <ThemedText type="defaultSemiBold">No replies yet</ThemedText>
                   <ThemedText style={{ color: colors.tabIconDefault }}>
-                    Start the conversation on this topic.
+                    Start this branch of the conversation.
                   </ThemedText>
                 </ThemedView>
               ) : (
-                discussion.root_comments.map((comment) => {
+                thread.child_comments.map((comment) => {
                   const canDeleteComment = Boolean(
                     session?.user.id && comment.author_id === session.user.id,
                   );
@@ -340,11 +421,13 @@ export function DiscussionDetailScreen() {
                       comment={comment}
                       backgroundColor={nestedSurfaceColor}
                       mutedTextColor={colors.tabIconDefault}
-                      onPressCard={() => openCommentThread(comment)}
+                      onPressCard={() =>
+                        openCommentThread(comment, buildChildAncestorPath())
+                      }
                       onPressReply={() => {
                         setReplyTarget({
                           mode: "comment",
-                          parentCommentId: comment.id,
+                          replyToCommentId: comment.id,
                           replyToUserId: comment.author_id,
                           label: comment.author?.display_name ?? "this reader",
                         });
@@ -352,12 +435,15 @@ export function DiscussionDetailScreen() {
                           comment.author?.display_name ?? "this reader",
                         );
                         scrollViewRef.current?.scrollToEnd({ animated: true });
-                      }}
+                      }
+                      }
                       onPressDelete={
                         canDeleteComment ? () => handleDeleteComment(comment.id) : undefined
                       }
                       onPressReplies={
-                        comment.child_count > 0 ? () => openCommentThread(comment) : undefined
+                        comment.child_count > 0
+                          ? () => openCommentThread(comment, buildChildAncestorPath())
+                          : undefined
                       }
                     />
                   );
@@ -367,7 +453,7 @@ export function DiscussionDetailScreen() {
           ) : null}
         </ScrollView>
 
-        {discussion && !discussion.is_deleted ? (
+        {thread ? (
           <View
             style={[
               styles.composerDock,
@@ -378,14 +464,14 @@ export function DiscussionDetailScreen() {
           >
             <ComposerSection
               replyContextLabel={
-                replyTarget.mode === "discussion" ? null : replyTarget.label
+                replyTarget.mode === "focused" ? null : replyTarget.label
               }
               onCancel={
-                replyTarget.mode === "discussion"
+                replyTarget.mode === "focused"
                   ? undefined
-                  : () => setReplyTarget({ mode: "discussion" })
+                  : () => setReplyTarget({ mode: "focused" })
               }
-              placeholder="Add a comment"
+              placeholder={composerPlaceholder}
               value={composerText}
               onChangeText={setComposerText}
               errorMessage={errorMessage}
@@ -429,26 +515,31 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingTop: 80,
   },
+  sectionTitle: {
+    marginBottom: 14,
+  },
   discussionCard: {
     borderRadius: 12,
     gap: 8,
-    marginBottom: 24,
+    marginBottom: 14,
     padding: 16,
   },
-  title: {
-    fontSize: 28,
-    lineHeight: 32,
+  discussionTapArea: {
+    gap: 8,
   },
-  bodyText: {
+  discussionBody: {
     marginTop: 4,
   },
-  postActions: {
+  focusDivider: {
+    alignItems: "center",
     flexDirection: "row",
-    gap: 18,
-    marginTop: 6,
-  },
-  sectionTitle: {
+    gap: 10,
     marginBottom: 14,
+    marginTop: 2,
+  },
+  focusDividerLine: {
+    flex: 1,
+    height: 1,
   },
   emptyBox: {
     borderRadius: 12,

@@ -12,6 +12,7 @@ const MAPPING = {
   "arrow.left.arrow.right": "swap-horiz",
   "chevron.left.forwardslash.chevron.right": "code",
   "chevron.right": "chevron-right",
+  "trash.fill": "delete",
 } as const satisfies Record<string, ComponentProps<typeof MaterialIcons>["name"]>;
 
 export function IconSymbol({

@@ -9,6 +9,7 @@ interface NavigationContextType {
     params?: NavigationState["params"],
   ) => void;
   navigateToSection: (sectionId: string) => void;
+  goBack: () => void;
 }
 
 const NavigationContext = createContext<NavigationContextType | undefined>(
@@ -76,12 +77,29 @@ export function NavigationProvider({
     [navigationState, onNavigationChange],
   );
 
+  const goBack = useCallback(() => {
+    const history = navigationState.history ?? [];
+    const previousRoute = history[history.length - 1];
+
+    if (!previousRoute) {
+      return;
+    }
+
+    onNavigationChange({
+      currentSection: previousRoute.sectionId,
+      currentScreen: previousRoute.screenId,
+      params: previousRoute.params,
+      history: history.slice(0, -1),
+    });
+  }, [navigationState.history, onNavigationChange]);
+
   return (
     <NavigationContext.Provider
       value={{
         navigationState,
         navigateToScreen,
         navigateToSection,
+        goBack,
       }}
     >
       {children}

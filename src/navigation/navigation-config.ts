@@ -4,6 +4,7 @@
  */
 
 import { BookScreen } from "@/src/screens/book";
+import { CommentThreadScreen } from "@/src/screens/comment-thread";
 import { ConfirmTradeScreen } from "@/src/screens/confirm-trade";
 import { DiscussionDetailScreen } from "@/src/screens/discussion-detail";
 import { EditBookScreen } from "@/src/screens/edit-book";
@@ -35,7 +36,7 @@ export const navigationSections: NavigationSection[] = [
       {
         id: "global-book",
         name: "global-book",
-        title: "Global Book",
+        title: "Topic",
         component: GlobalBookScreen,
       },
       {
@@ -49,6 +50,12 @@ export const navigationSections: NavigationSection[] = [
         name: "discussion-detail",
         title: "Discussion Detail",
         component: DiscussionDetailScreen,
+      },
+      {
+        id: "comment-thread",
+        name: "comment-thread",
+        title: "Comment Thread",
+        component: CommentThreadScreen,
       },
       {
         id: "book",

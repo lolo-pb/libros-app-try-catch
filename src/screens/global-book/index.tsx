@@ -42,7 +42,7 @@ export function GlobalBookScreen() {
 
     async function fetchGlobalBook() {
       if (!globalBookId) {
-        setErrorMessage("No global book selected.");
+        setErrorMessage("No topic selected.");
         setIsLoading(false);
         return;
       }
@@ -61,14 +61,14 @@ export function GlobalBookScreen() {
         }
 
         if (!data) {
-          setErrorMessage("This global book could not be found.");
+          setErrorMessage("This topic could not be found.");
         } else {
           setGlobalBook(data);
           setDiscussions(loadedDiscussions);
         }
       } catch (error) {
         if (isMounted) {
-          setErrorMessage(getErrorMessage(error, "Could not load this global book."));
+          setErrorMessage(getErrorMessage(error, "Could not load this topic."));
         }
       }
 
@@ -89,28 +89,31 @@ export function GlobalBookScreen() {
       edges={["top", "left", "right"]}
       style={[styles.safeArea, { backgroundColor: colors.background }]}
     >
-      <ScrollView contentContainerStyle={styles.container}>
-        <Pressable
-          onPress={() => navigateToScreen("home", "home-main")}
-          style={[styles.backButton, { backgroundColor: colors.tint + "15" }]}
-        >
-          <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
-            Back to Home
-          </ThemedText>
-        </Pressable>
+      <Pressable
+        onPress={() => navigateToScreen("home", "home-main")}
+        style={[
+          styles.backButton,
+          { backgroundColor: colorScheme === "dark" ? "#3a3a3acc" : "#e6e6e6cc" },
+        ]}
+      >
+        <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
+          Back to Home
+        </ThemedText>
+      </Pressable>
 
+      <ScrollView contentContainerStyle={styles.container}>
         {isLoading ? (
           <ThemedView style={styles.centerState}>
             <ActivityIndicator color={colors.tint} />
             <ThemedText style={{ color: colors.tabIconDefault }}>
-              Loading global book...
+              Loading topic...
             </ThemedText>
           </ThemedView>
         ) : errorMessage || !globalBook ? (
           <ThemedView style={styles.centerState}>
-            <ThemedText type="subtitle">Global book unavailable</ThemedText>
+            <ThemedText type="subtitle">Topic unavailable</ThemedText>
             <ThemedText style={{ color: colors.tabIconDefault }}>
-              {errorMessage ?? "This global book could not be found."}
+              {errorMessage ?? "This topic could not be found."}
             </ThemedText>
           </ThemedView>
         ) : (
@@ -157,8 +160,8 @@ export function GlobalBookScreen() {
                   onPress={() =>
                     session
                       ? navigateToScreen("home", "new-discussion", {
-                          globalBookId: globalBook.id,
-                        })
+                        globalBookId: globalBook.id,
+                      })
                       : navigateToScreen("user", "login")
                   }
                   style={[styles.startButton, { backgroundColor: colors.tint }]}
@@ -183,7 +186,7 @@ export function GlobalBookScreen() {
                     No discussions yet
                   </ThemedText>
                   <ThemedText style={{ color: colors.tabIconDefault }}>
-                    Be the first to talk about this global book.
+                    Be the first to talk about this topic.
                   </ThemedText>
                 </ThemedView>
               ) : (
@@ -243,7 +246,7 @@ export function GlobalBookScreen() {
                     No published books yet
                   </ThemedText>
                   <ThemedText style={{ color: colors.tabIconDefault }}>
-                    Readers can still link new books to this global book later.
+                    Readers can still link new books to this topic later.
                   </ThemedText>
                 </ThemedView>
               ) : (
@@ -303,13 +306,18 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     paddingBottom: 40,
+    paddingTop: 70,
   },
   backButton: {
-    alignSelf: "flex-start",
+    alignItems: "center",
     borderRadius: 8,
-    marginBottom: 18,
     paddingHorizontal: 12,
     paddingVertical: 8,
+    position: "absolute",
+    top: 40,
+    left: 20,
+    width: 128,
+    zIndex: 20,
   },
   centerState: {
     alignItems: "center",

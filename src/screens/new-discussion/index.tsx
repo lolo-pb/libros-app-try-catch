@@ -44,7 +44,7 @@ export function NewDiscussionScreen() {
 
     async function fetchGlobalBook() {
       if (!globalBookId) {
-        setMessage("No global book selected.");
+        setMessage("No topic selected.");
         setIsLoading(false);
         return;
       }
@@ -57,13 +57,13 @@ export function NewDiscussionScreen() {
         }
 
         if (!loaded) {
-          setMessage("This global book could not be found.");
+          setMessage("This topic could not be found.");
         } else {
           setGlobalBook(loaded);
         }
       } catch (error) {
         if (isMounted) {
-          setMessage(getErrorMessage(error, "Could not load this global book."));
+          setMessage(getErrorMessage(error, "Could not load this topic."));
         }
       }
 
@@ -86,7 +86,7 @@ export function NewDiscussionScreen() {
     }
 
     if (!globalBookId) {
-      setMessage("No global book selected.");
+      setMessage("No topic selected.");
       return;
     }
 
@@ -144,16 +144,19 @@ export function NewDiscussionScreen() {
       edges={["top", "left", "right"]}
       style={[styles.safeArea, { backgroundColor: colors.background }]}
     >
-      <ScrollView contentContainerStyle={styles.container}>
-        <Pressable
-          onPress={() => navigateToScreen("home", "global-book", { globalBookId })}
-          style={[styles.backButton, { backgroundColor: colors.tint + "15" }]}
-        >
-          <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
-            Back to Global Book
-          </ThemedText>
-        </Pressable>
+      <Pressable
+        onPress={() => navigateToScreen("home", "global-book", { globalBookId })}
+        style={[
+          styles.backButton,
+          { backgroundColor: colorScheme === "dark" ? "#3a3a3acc" : "#e6e6e6cc" },
+        ]}
+      >
+        <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
+          Back to Topic
+        </ThemedText>
+      </Pressable>
 
+      <ScrollView contentContainerStyle={styles.container}>
         {isLoading ? (
           <ThemedView style={styles.centerState}>
             <ActivityIndicator color={colors.tint} />
@@ -166,7 +169,7 @@ export function NewDiscussionScreen() {
             <ThemedText style={[styles.helperText, { color: colors.tabIconDefault }]}>
               {globalBook
                 ? `Starting a discussion for ${globalBook.title}.`
-                : "Start a discussion for this global book."}
+                : "Start a discussion for this topic."}
             </ThemedText>
 
             <TextInput
@@ -218,6 +221,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     paddingBottom: 40,
+    paddingTop: 72,
   },
   centerState: {
     alignItems: "center",
@@ -227,11 +231,13 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   backButton: {
-    alignSelf: "flex-start",
     borderRadius: 8,
-    marginBottom: 18,
+    left: 20,
     paddingHorizontal: 12,
     paddingVertical: 8,
+    position: "absolute",
+    top: 12,
+    zIndex: 20,
   },
   title: {
     fontSize: 30,

@@ -53,6 +53,66 @@ export function NavigationContainer({
     const subscription = BackHandler.addEventListener(
       "hardwareBackPress",
       () => {
+        if (
+          navigationState.currentSection === "home" &&
+          navigationState.currentScreen === "discussion-detail"
+        ) {
+          const discussionId = navigationState.params?.discussionId;
+          const globalBookId = navigationState.params?.globalBookId;
+
+          if (discussionId) {
+            onNavigationChange({
+              currentSection: "home",
+              currentScreen: "global-book",
+              params: {
+                globalBookId,
+              },
+              history: [],
+            });
+            return true;
+          }
+        }
+
+        if (navigationState.currentSection === "home" && navigationState.currentScreen === "comment-thread") {
+          const discussionId = navigationState.params?.discussionId;
+          const globalBookId = navigationState.params?.globalBookId;
+          const ancestorPath = navigationState.params?.ancestorPath;
+          const ancestorIds = ancestorPath
+            ? ancestorPath.split(",").filter(Boolean)
+            : [];
+          const parentCommentId = ancestorIds[ancestorIds.length - 1];
+
+          if (parentCommentId && discussionId) {
+            const nextAncestorIds = ancestorIds.slice(0, -1);
+            onNavigationChange({
+              currentSection: "home",
+              currentScreen: "comment-thread",
+              params: {
+                discussionId,
+                commentId: parentCommentId,
+                parentCommentId: nextAncestorIds[nextAncestorIds.length - 1],
+                ancestorPath: nextAncestorIds.length ? nextAncestorIds.join(",") : undefined,
+                globalBookId,
+              },
+              history: navigationState.history ?? [],
+            });
+            return true;
+          }
+
+          if (discussionId) {
+            onNavigationChange({
+              currentSection: "home",
+              currentScreen: "discussion-detail",
+              params: {
+                discussionId,
+                globalBookId,
+              },
+              history: navigationState.history ?? [],
+            });
+            return true;
+          }
+        }
+
         const history = navigationState.history ?? [];
         const previousRoute = history[history.length - 1];
 

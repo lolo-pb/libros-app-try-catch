@@ -2,10 +2,11 @@ import { supabase } from "@/src/lib/supabase";
 import type {
   DiscussionComment,
   DiscussionCommentInsert,
-  DiscussionCommentWithAuthor,
+  DiscussionCommentNode,
   GlobalBook,
   GlobalBookDiscussion,
   GlobalBookDiscussionPreview,
+  DiscussionCommentThread,
   GlobalBookDiscussionWithComments,
   Profile,
 } from "@/src/types/database";
@@ -30,43 +31,83 @@ async function loadProfilesById(profileIds: string[]) {
 function buildCommentWithAuthors(
   comment: DiscussionComment,
   profilesById: Map<string, Profile>,
-): DiscussionCommentWithAuthor {
+): DiscussionCommentNode {
   return {
     ...comment,
     author: comment.author_id ? profilesById.get(comment.author_id) ?? null : null,
     reply_to_user: comment.reply_to_user_id
       ? profilesById.get(comment.reply_to_user_id) ?? null
       : null,
+    child_count: 0,
   };
 }
 
-function buildTopLevelComments(
-  comments: DiscussionComment[],
-  profilesById: Map<string, Profile>,
-): GlobalBookDiscussionWithComments["top_level_comments"] {
-  const topLevel = comments.filter((comment) => comment.parent_comment_id === null);
-  const repliesByParentId = new Map<string, DiscussionCommentWithAuthor[]>();
+function buildCommentMaps(comments: DiscussionComment[]) {
+  const commentsById = new Map(comments.map((comment) => [comment.id, comment]));
+  const childrenByParentId = new Map<string | null, DiscussionComment[]>();
 
-  for (const reply of comments.filter((comment) => comment.parent_comment_id !== null)) {
-    const parentId = reply.parent_comment_id!;
-    if (reply.is_deleted) {
-      continue;
-    }
-    const entry = repliesByParentId.get(parentId) ?? [];
-    entry.push(buildCommentWithAuthors(reply, profilesById));
-    repliesByParentId.set(parentId, entry);
+  for (const comment of comments) {
+    const key = comment.parent_comment_id;
+    const entry = childrenByParentId.get(key) ?? [];
+    entry.push(comment);
+    childrenByParentId.set(key, entry);
   }
 
-  return topLevel
-    .filter((comment) => !comment.is_deleted || (repliesByParentId.get(comment.id)?.length ?? 0) > 0)
-    .map((comment) => {
-      const replies = repliesByParentId.get(comment.id) ?? [];
-      return {
-        ...buildCommentWithAuthors(comment, profilesById),
-        replies,
-        reply_count: replies.length,
-      };
-    });
+  for (const entry of childrenByParentId.values()) {
+    entry.sort((left, right) => left.created_at.localeCompare(right.created_at));
+  }
+
+  return {
+    commentsById,
+    childrenByParentId,
+  };
+}
+
+function createVisibilityChecker(childrenByParentId: Map<string | null, DiscussionComment[]>) {
+  const visibleById = new Map<string, boolean>();
+
+  const isVisible = (comment: DiscussionComment): boolean => {
+    const cached = visibleById.get(comment.id);
+    if (cached !== undefined) {
+      return cached;
+    }
+
+    const children = childrenByParentId.get(comment.id) ?? [];
+    const nextVisible = !comment.is_deleted || children.some(isVisible);
+    visibleById.set(comment.id, nextVisible);
+    return nextVisible;
+  };
+
+  return isVisible;
+}
+
+function buildCommentNode(
+  comment: DiscussionComment,
+  profilesById: Map<string, Profile>,
+  childrenByParentId: Map<string | null, DiscussionComment[]>,
+  isVisible: (comment: DiscussionComment) => boolean,
+): DiscussionCommentNode {
+  const visibleChildren = (childrenByParentId.get(comment.id) ?? []).filter(isVisible);
+
+  return {
+    ...buildCommentWithAuthors(comment, profilesById),
+    child_count: visibleChildren.length,
+  };
+}
+
+function buildCommentList(
+  parentCommentId: string | null,
+  comments: DiscussionComment[],
+  profilesById: Map<string, Profile>,
+): DiscussionCommentNode[] {
+  const { childrenByParentId } = buildCommentMaps(comments);
+  const isVisible = createVisibilityChecker(childrenByParentId);
+
+  return (childrenByParentId.get(parentCommentId) ?? [])
+    .filter(isVisible)
+    .map((comment) =>
+      buildCommentNode(comment, profilesById, childrenByParentId, isVisible),
+    );
 }
 
 function countVisibleComments(comments: DiscussionComment[]) {
@@ -192,7 +233,7 @@ export async function loadGlobalBookDiscussion(discussionId: string) {
   );
 
   const profilesById = await loadProfilesById(profileIds);
-  const topLevelComments = buildTopLevelComments(comments ?? [], profilesById);
+  const rootComments = buildCommentList(null, comments ?? [], profilesById);
 
   return {
     ...discussion,
@@ -201,8 +242,82 @@ export async function loadGlobalBookDiscussion(discussionId: string) {
       : null,
     global_book: globalBookResult.data as GlobalBook | null,
     comment_count: countVisibleComments(comments ?? []),
-    top_level_comments: topLevelComments,
+    root_comments: rootComments,
   } satisfies GlobalBookDiscussionWithComments;
+}
+
+export async function loadDiscussionCommentThread(
+  discussionId: string,
+  commentId: string,
+) {
+  const discussion = await loadGlobalBookDiscussion(discussionId);
+
+  if (!discussion) {
+    return null;
+  }
+
+  const { data: comments, error } = await supabase
+    .from("discussion_comments")
+    .select("*")
+    .eq("discussion_id", discussionId)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  const allComments = comments ?? [];
+  const { commentsById, childrenByParentId } = buildCommentMaps(allComments);
+  const focusedComment = commentsById.get(commentId);
+
+  if (!focusedComment) {
+    return null;
+  }
+
+  const profileIds = Array.from(
+    new Set(
+      allComments
+        .flatMap((comment) => [comment.author_id, comment.reply_to_user_id])
+        .filter((profileId): profileId is string => Boolean(profileId)),
+    ),
+  );
+  const profilesById = await loadProfilesById(profileIds);
+  const isVisible = createVisibilityChecker(childrenByParentId);
+
+  if (!isVisible(focusedComment)) {
+    return null;
+  }
+
+  const ancestorComments: DiscussionCommentNode[] = [];
+  let currentParentId = focusedComment.parent_comment_id;
+
+  while (currentParentId) {
+    const ancestor = commentsById.get(currentParentId);
+    if (!ancestor) {
+      break;
+    }
+
+    ancestorComments.unshift(
+      buildCommentNode(ancestor, profilesById, childrenByParentId, isVisible),
+    );
+    currentParentId = ancestor.parent_comment_id;
+  }
+
+  return {
+    discussion,
+    ancestor_comments: ancestorComments,
+    focused_comment: buildCommentNode(
+      focusedComment,
+      profilesById,
+      childrenByParentId,
+      isVisible,
+    ),
+    child_comments: (childrenByParentId.get(focusedComment.id) ?? [])
+      .filter(isVisible)
+      .map((comment) =>
+        buildCommentNode(comment, profilesById, childrenByParentId, isVisible),
+      ),
+  } satisfies DiscussionCommentThread;
 }
 
 export async function createGlobalBookDiscussion(input: {

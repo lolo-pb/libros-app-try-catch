@@ -359,6 +359,10 @@ export type DiscussionCommentWithAuthor = DiscussionComment & {
   reply_to_user?: Profile | null;
 };
 
+export type DiscussionCommentNode = DiscussionCommentWithAuthor & {
+  child_count: number;
+};
+
 export type GlobalBookDiscussionPreview = GlobalBookDiscussion & {
   author?: Profile | null;
   comment_count: number;
@@ -369,10 +373,12 @@ export type GlobalBookDiscussionWithComments = GlobalBookDiscussion & {
   author?: Profile | null;
   global_book?: GlobalBook | null;
   comment_count: number;
-  top_level_comments: (
-    DiscussionCommentWithAuthor & {
-      replies: DiscussionCommentWithAuthor[];
-      reply_count: number;
-    }
-  )[];
+  root_comments: DiscussionCommentNode[];
+};
+
+export type DiscussionCommentThread = {
+  discussion: GlobalBookDiscussionWithComments;
+  ancestor_comments: DiscussionCommentNode[];
+  focused_comment: DiscussionCommentNode;
+  child_comments: DiscussionCommentNode[];
 };

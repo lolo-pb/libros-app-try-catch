@@ -10,14 +10,15 @@ todo:
  
         - botom infinite scroll of recommended discussions{
             -disscussion metadata
+
+            -make pinterest style
         }
     }
 
-    -Global_books{}
+    -Discussions page{}
 
-    -Discussions page{
-        -the comment should move up when typing/ you cant see when typing
-        -drag down to refresh(maybe other screens have same problem)
+    -GlobalBook{
+        -discussion y coment dates no tiene que salir el año si son de este año
     }
 
     -Books{
@@ -29,12 +30,10 @@ todo:
     -trade{
         -you shoiuld go to book details from trade request
     }
+    
     -old Requests{
         -que requests listos se puedan borrar y cancelar, limpiar historial ponele
     }
-
-
-    -Login{}
 }
 
 ---Mk3-
