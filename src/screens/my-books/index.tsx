@@ -133,7 +133,7 @@ export function MyBooksScreen() {
               My Books
             </ThemedText>
             <ThemedText style={{ color: colors.tabIconDefault }}>
-              Your private shelf and the books you publish under global books.
+              Your private shelf and the books you publish under topics.
             </ThemedText>
           </ThemedView>
           {books.length > 0 ? (
@@ -169,7 +169,7 @@ export function MyBooksScreen() {
           <ThemedView style={styles.emptyBox}>
               <ThemedText type="defaultSemiBold">No books yet</ThemedText>
               <ThemedText style={{ color: colors.tabIconDefault }}>
-              Add your first book and optionally link it to a global book.
+              Add your first book and optionally link it to a topic.
               </ThemedText>
             <Pressable
               onPress={() => navigateToScreen("books", "new-book")}
@@ -206,7 +206,7 @@ export function MyBooksScreen() {
                 <ThemedText style={{ color: colors.tabIconDefault }}>
                   {book.global_book
                     ? `Linked to ${book.global_book.title}`
-                    : "No global book linked"}
+                    : "No topic linked"}
                 </ThemedText>
                 <ThemedText style={{ color: colors.tabIconDefault }}>
                   {book.is_published ? "Published" : "Private"}

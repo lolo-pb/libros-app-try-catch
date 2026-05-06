@@ -189,7 +189,7 @@ export async function createGlobalBook(input: {
   }
 
   if (!data) {
-    throw new Error("Global book was created, but no row was returned.");
+    throw new Error("Topic was created, but no row was returned.");
   }
 
   return data;

@@ -250,7 +250,7 @@ export function DiscussionDetailScreen() {
             style={[styles.backButton, { backgroundColor: colors.tint + "15" }]}
           >
             <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
-              Back to Global Book
+              Back to Topic
             </ThemedText>
           </Pressable>
 
@@ -322,7 +322,7 @@ export function DiscussionDetailScreen() {
                 <ThemedView style={styles.emptyBox}>
                   <ThemedText type="defaultSemiBold">No comments yet</ThemedText>
                   <ThemedText style={{ color: colors.tabIconDefault }}>
-                    Start the conversation on this global book.
+                    Start the conversation on this topic.
                   </ThemedText>
                 </ThemedView>
               ) : (

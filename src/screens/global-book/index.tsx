@@ -42,7 +42,7 @@ export function GlobalBookScreen() {
 
     async function fetchGlobalBook() {
       if (!globalBookId) {
-        setErrorMessage("No global book selected.");
+        setErrorMessage("No topic selected.");
         setIsLoading(false);
         return;
       }
@@ -61,14 +61,14 @@ export function GlobalBookScreen() {
         }
 
         if (!data) {
-          setErrorMessage("This global book could not be found.");
+          setErrorMessage("This topic could not be found.");
         } else {
           setGlobalBook(data);
           setDiscussions(loadedDiscussions);
         }
       } catch (error) {
         if (isMounted) {
-          setErrorMessage(getErrorMessage(error, "Could not load this global book."));
+          setErrorMessage(getErrorMessage(error, "Could not load this topic."));
         }
       }
 
@@ -103,14 +103,14 @@ export function GlobalBookScreen() {
           <ThemedView style={styles.centerState}>
             <ActivityIndicator color={colors.tint} />
             <ThemedText style={{ color: colors.tabIconDefault }}>
-              Loading global book...
+              Loading topic...
             </ThemedText>
           </ThemedView>
         ) : errorMessage || !globalBook ? (
           <ThemedView style={styles.centerState}>
-            <ThemedText type="subtitle">Global book unavailable</ThemedText>
+            <ThemedText type="subtitle">Topic unavailable</ThemedText>
             <ThemedText style={{ color: colors.tabIconDefault }}>
-              {errorMessage ?? "This global book could not be found."}
+              {errorMessage ?? "This topic could not be found."}
             </ThemedText>
           </ThemedView>
         ) : (
@@ -183,7 +183,7 @@ export function GlobalBookScreen() {
                     No discussions yet
                   </ThemedText>
                   <ThemedText style={{ color: colors.tabIconDefault }}>
-                    Be the first to talk about this global book.
+                    Be the first to talk about this topic.
                   </ThemedText>
                 </ThemedView>
               ) : (
@@ -243,7 +243,7 @@ export function GlobalBookScreen() {
                     No published books yet
                   </ThemedText>
                   <ThemedText style={{ color: colors.tabIconDefault }}>
-                    Readers can still link new books to this global book later.
+                    Readers can still link new books to this topic later.
                   </ThemedText>
                 </ThemedView>
               ) : (

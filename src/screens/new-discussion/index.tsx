@@ -44,7 +44,7 @@ export function NewDiscussionScreen() {
 
     async function fetchGlobalBook() {
       if (!globalBookId) {
-        setMessage("No global book selected.");
+        setMessage("No topic selected.");
         setIsLoading(false);
         return;
       }
@@ -57,13 +57,13 @@ export function NewDiscussionScreen() {
         }
 
         if (!loaded) {
-          setMessage("This global book could not be found.");
+          setMessage("This topic could not be found.");
         } else {
           setGlobalBook(loaded);
         }
       } catch (error) {
         if (isMounted) {
-          setMessage(getErrorMessage(error, "Could not load this global book."));
+          setMessage(getErrorMessage(error, "Could not load this topic."));
         }
       }
 
@@ -86,7 +86,7 @@ export function NewDiscussionScreen() {
     }
 
     if (!globalBookId) {
-      setMessage("No global book selected.");
+      setMessage("No topic selected.");
       return;
     }
 
@@ -150,7 +150,7 @@ export function NewDiscussionScreen() {
           style={[styles.backButton, { backgroundColor: colors.tint + "15" }]}
         >
           <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
-            Back to Global Book
+            Back to Topic
           </ThemedText>
         </Pressable>
 
@@ -166,7 +166,7 @@ export function NewDiscussionScreen() {
             <ThemedText style={[styles.helperText, { color: colors.tabIconDefault }]}>
               {globalBook
                 ? `Starting a discussion for ${globalBook.title}.`
-                : "Start a discussion for this global book."}
+                : "Start a discussion for this topic."}
             </ThemedText>
 
             <TextInput

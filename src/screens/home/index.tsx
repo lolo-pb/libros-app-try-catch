@@ -39,7 +39,7 @@ export function HomeScreen() {
       setGlobalBooks(data);
     } catch (error) {
       setErrorMessage(
-        error instanceof Error ? error.message : "Could not load global books.",
+        error instanceof Error ? error.message : "Could not load topics.",
       );
       setGlobalBooks([]);
     }
@@ -88,7 +88,7 @@ export function HomeScreen() {
         >
           <TextInput
             style={[styles.searchInput, { color: colors.text }]}
-            placeholder="Search global books..."
+            placeholder="Search topics..."
             placeholderTextColor={colors.tabIconDefault}
             value={search}
             onChangeText={setSearch}
@@ -118,7 +118,7 @@ export function HomeScreen() {
             ]}
           >
             <ThemedText style={styles.mapPin}>Pin</ThemedText>
-            <ThemedText type="subtitle">Global books near you</ThemedText>
+            <ThemedText type="subtitle">Topics near you</ThemedText>
             <ThemedText style={{ color: colors.tabIconDefault }}>
               Showing {globalBooks.length} catalog entries
             </ThemedText>
@@ -141,13 +141,13 @@ export function HomeScreen() {
             <ThemedView style={styles.feedbackState}>
               <ActivityIndicator color={colors.tint} />
               <ThemedText style={{ color: colors.tabIconDefault }}>
-                Loading global books...
+                Loading topics...
               </ThemedText>
             </ThemedView>
           ) : errorMessage ? (
             <ThemedView style={styles.feedbackState}>
               <ThemedText type="defaultSemiBold">
-                Could not load global books
+                Could not load topics
               </ThemedText>
               <ThemedText
                 style={[styles.feedbackText, { color: colors.tabIconDefault }]}
@@ -165,14 +165,14 @@ export function HomeScreen() {
             <ThemedView style={styles.feedbackState}>
               <ThemedText type="defaultSemiBold">
                 {globalBooks.length === 0
-                  ? "No global books available yet"
+                  ? "No topics available yet"
                   : "No matches found"}
               </ThemedText>
               <ThemedText
                 style={[styles.feedbackText, { color: colors.tabIconDefault }]}
               >
                 {globalBooks.length === 0
-                  ? "Global books will show up here once readers create them."
+                  ? "Topics will show up here once readers create them."
                   : "Try another title or author."}
               </ThemedText>
             </ThemedView>

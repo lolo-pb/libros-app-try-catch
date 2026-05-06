@@ -36,7 +36,7 @@ export const navigationSections: NavigationSection[] = [
       {
         id: "global-book",
         name: "global-book",
-        title: "Global Book",
+        title: "Topic",
         component: GlobalBookScreen,
       },
       {

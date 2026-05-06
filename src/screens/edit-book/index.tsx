@@ -217,7 +217,7 @@ export function EditBookScreen() {
 
       if (isCreatingGlobalBook) {
         if (!newGlobalBookTitle.trim() || !newGlobalBookAuthor.trim()) {
-          setMessage("New global books need a title and author.");
+          setMessage("New topics need a title and author.");
           setIsSubmitting(false);
           return;
         }
@@ -426,7 +426,7 @@ export function EditBookScreen() {
             </ThemedView>
 
             <ThemedText type="defaultSemiBold" style={styles.label}>
-              Link to global book
+              Link to topic
             </ThemedText>
             {selectedGlobalBook ? (
               <ThemedView
@@ -451,7 +451,7 @@ export function EditBookScreen() {
             ) : (
               <>
                 <TextInput
-                  placeholder="Search global books"
+                  placeholder="Search topics"
                   placeholderTextColor={colors.tabIconDefault}
                   value={globalBookSearch}
                   onChangeText={setGlobalBookSearch}
@@ -501,23 +501,23 @@ export function EditBookScreen() {
                     setNewGlobalBookAuthor(author);
                   }}
                 >
-                  <ThemedText type="link">Create a new global book</ThemedText>
+                  <ThemedText type="link">Create a new topic</ThemedText>
                 </Pressable>
               </>
             )}
 
             {isCreatingGlobalBook ? (
               <ThemedView style={styles.globalBookForm}>
-                <ThemedText type="defaultSemiBold">New global book</ThemedText>
+                <ThemedText type="defaultSemiBold">New topic</ThemedText>
                 <TextInput
-                  placeholder="Global book title"
+                  placeholder="Topic title"
                   placeholderTextColor={colors.tabIconDefault}
                   value={newGlobalBookTitle}
                   onChangeText={setNewGlobalBookTitle}
                   style={inputStyle}
                 />
                 <TextInput
-                  placeholder="Global book author"
+                  placeholder="Topic author"
                   placeholderTextColor={colors.tabIconDefault}
                   value={newGlobalBookAuthor}
                   onChangeText={setNewGlobalBookAuthor}
@@ -532,7 +532,7 @@ export function EditBookScreen() {
                 />
                 <TextInput
                   multiline
-                  placeholder="Global book description"
+                  placeholder="Topic description"
                   placeholderTextColor={colors.tabIconDefault}
                   value={newGlobalBookDescription}
                   onChangeText={setNewGlobalBookDescription}
@@ -556,7 +556,7 @@ export function EditBookScreen() {
                     />
                   ) : (
                     <ThemedText style={{ color: colors.tabIconDefault }}>
-                      No global book cover selected
+                      No topic cover selected
                     </ThemedText>
                   )}
                 </ThemedView>
@@ -589,7 +589,7 @@ export function EditBookScreen() {
                   ) : null}
                 </ThemedView>
                 <Pressable onPress={() => setIsCreatingGlobalBook(false)}>
-                  <ThemedText type="link">Cancel new global book</ThemedText>
+                  <ThemedText type="link">Cancel new topic</ThemedText>
                 </Pressable>
               </ThemedView>
             ) : null}
@@ -631,7 +631,7 @@ export function EditBookScreen() {
               <ThemedView style={styles.publishText}>
                 <ThemedText type="defaultSemiBold">Published</ThemedText>
                 <ThemedText style={{ color: colors.tabIconDefault }}>
-                  Published books appear on their global book page.
+                  Published books appear on their topic page.
                 </ThemedText>
               </ThemedView>
               <Switch value={isPublished} onValueChange={setIsPublished} />
