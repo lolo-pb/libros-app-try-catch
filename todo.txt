@@ -15,9 +15,10 @@ todo:
         }
     }
 
-    -Discussions page{
+    -Discussions page{}
 
-        -back button should hover on top left corner
+    -GlobalBook{
+        -discussion y coment dates no tiene que salir el año si son de este año
     }
 
     -Books{
@@ -29,6 +30,7 @@ todo:
     -trade{
         -you shoiuld go to book details from trade request
     }
+    
     -old Requests{
         -que requests listos se puedan borrar y cancelar, limpiar historial ponele
     }
