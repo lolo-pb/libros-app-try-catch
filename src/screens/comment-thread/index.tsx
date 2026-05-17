@@ -284,10 +284,6 @@ export function CommentThreadScreen() {
             </ThemedView>
           ) : thread ? (
             <>
-              <ThemedText type="subtitle" style={styles.sectionTitle}>
-                Thread
-              </ThemedText>
-
               <ThemedView
                 style={[
                   styles.discussionCard,
