@@ -15,8 +15,27 @@ import {
   ScrollView,
   StyleSheet,
   TextInput,
-  TouchableOpacity,
+  View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+type FeedCardVariant = "tall" | "medium" | "compact";
+
+const CARD_VARIANTS: FeedCardVariant[] = ["tall", "medium", "compact"];
+
+function getCardVariant(index: number, columnIndex: number): FeedCardVariant {
+  return CARD_VARIANTS[(index + columnIndex) % CARD_VARIANTS.length];
+}
+
+function splitIntoColumns(items: GlobalBookWithBooks[]) {
+  return items.reduce<[GlobalBookWithBooks[], GlobalBookWithBooks[]]>(
+    (columns, item, index) => {
+      columns[index % 2].push(item);
+      return columns;
+    },
+    [[], []],
+  );
+}
 
 export function HomeScreen() {
   const colorScheme = useColorScheme();
@@ -68,13 +87,86 @@ export function HomeScreen() {
       return (
         globalBook.title.toLowerCase().includes(query) ||
         globalBook.author.toLowerCase().includes(query)
-      );
+        );
     });
   }, [globalBooks, search]);
 
+  const [leftColumnBooks, rightColumnBooks] = useMemo(
+    () => splitIntoColumns(filteredGlobalBooks),
+    [filteredGlobalBooks],
+  );
+
+  const renderBookCard = (
+    globalBook: GlobalBookWithBooks,
+    columnIndex: number,
+    itemIndex: number,
+  ) => {
+    const variant = getCardVariant(itemIndex, columnIndex);
+    const coverHeightStyle =
+      variant === "tall"
+        ? styles.coverTall
+        : variant === "medium"
+          ? styles.coverMedium
+          : styles.coverCompact;
+
+    return (
+      <Pressable
+        key={globalBook.id}
+        onPress={() =>
+          navigateToScreen("home", "global-book", {
+            globalBookId: globalBook.id,
+          })
+        }
+        style={({ pressed }) => [
+          styles.feedCard,
+          {
+            backgroundColor: colorScheme === "dark" ? "#232426" : "#f7f2ec",
+            borderColor: colorScheme === "dark" ? "#2f3235" : "#eadfd1",
+            opacity: pressed ? 0.92 : 1,
+            transform: [{ scale: pressed ? 0.985 : 1 }],
+          },
+        ]}
+      >
+        <Image
+          source={resolveCoverSource({
+            cover_path: globalBook.display_cover_path,
+          })}
+          style={[styles.feedCardImage, coverHeightStyle]}
+          contentFit="cover"
+          transition={400}
+        />
+        <View style={styles.feedCardContent}>
+          <ThemedText
+            type="defaultSemiBold"
+            style={styles.feedCardTitle}
+            numberOfLines={2}
+          >
+            {globalBook.title}
+          </ThemedText>
+          <ThemedText
+            style={[styles.feedCardAuthor, { color: colors.tabIconDefault }]}
+            numberOfLines={1}
+          >
+            {globalBook.author}
+          </ThemedText>
+          <ThemedText
+            style={[styles.feedCardEditorial, { color: colors.tabIconDefault }]}
+            numberOfLines={2}
+          >
+            {globalBook.editorial || "Editorial not added yet"}
+          </ThemedText>
+        </View>
+      </Pressable>
+    );
+  };
+
   return (
-    <ThemedView style={styles.container}>
-      <ThemedView style={styles.fixedHeader}>
+    <SafeAreaView
+      edges={["top", "left", "right"]}
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
+    >
+      <ThemedView style={styles.container}>
+        <ThemedView style={styles.fixedHeader}>
         <ThemedText type="title" style={styles.logoText}>
           BookTrade
         </ThemedText>
@@ -94,49 +186,32 @@ export function HomeScreen() {
             onChangeText={setSearch}
           />
         </ThemedView>
-      </ThemedView>
-
-      <ScrollView
-        stickyHeaderIndices={[1]}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            tintColor={colors.tint}
-            onRefresh={handleRefresh}
-          />
-        }
-      >
-        <ThemedView style={styles.mapSection}>
-          <ThemedView
-            style={[
-              styles.mapPlaceholder,
-              {
-                backgroundColor: colors.tint + "10",
-                borderColor: colors.tint + "30",
-              },
-            ]}
-          >
-            <ThemedText style={styles.mapPin}>Pin</ThemedText>
-            <ThemedText type="subtitle">Topics near you</ThemedText>
-            <ThemedText style={{ color: colors.tabIconDefault }}>
-              Showing {globalBooks.length} catalog entries
-            </ThemedText>
-          </ThemedView>
         </ThemedView>
 
-        <ThemedView
-          style={[
-            styles.stickyHeaderWrapper,
-            { backgroundColor: colors.background },
-          ]}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              tintColor={colors.tint}
+              onRefresh={handleRefresh}
+            />
+          }
         >
-          <ThemedText type="subtitle" style={styles.sectionTitle}>
-            Catalog
-          </ThemedText>
-        </ThemedView>
+          <ThemedView style={styles.sectionHeader}>
+            <View>
+              <ThemedText type="subtitle" style={styles.sectionTitle}>
+                Catalog
+              </ThemedText>
+              <ThemedText
+                style={[styles.sectionCaption, { color: colors.tabIconDefault }]}
+              >
+                {filteredGlobalBooks.length} of {globalBooks.length} topics showing
+              </ThemedText>
+            </View>
+          </ThemedView>
 
-        <ThemedView style={styles.cardsContainer}>
           {isLoading ? (
             <ThemedView style={styles.feedbackState}>
               <ActivityIndicator color={colors.tint} />
@@ -177,72 +252,38 @@ export function HomeScreen() {
               </ThemedText>
             </ThemedView>
           ) : (
-            filteredGlobalBooks.map((globalBook) => (
-              <TouchableOpacity
-                key={globalBook.id}
-                onPress={() =>
-                  navigateToScreen("home", "global-book", {
-                    globalBookId: globalBook.id,
-                  })
-                }
-                style={styles.bookCard}
-              >
-                <Image
-                  source={resolveCoverSource({
-                    cover_path: globalBook.display_cover_path,
-                  })}
-                  style={styles.bookCover}
-                  contentFit="cover"
-                  transition={400}
-                />
-                <ThemedView style={styles.bookInfo}>
-                  <ThemedText type="defaultSemiBold" style={styles.titleText}>
-                    {globalBook.title}
-                  </ThemedText>
-                  <ThemedText style={{ color: colors.tabIconDefault }}>
-                    {globalBook.author}
-                  </ThemedText>
-                  <ThemedText style={{ color: colors.tabIconDefault }}>
-                    {globalBook.editorial || "Editorial not added yet"}
-                  </ThemedText>
-
-                  <ThemedView
-                    style={[
-                      styles.badge,
-                      { backgroundColor: colors.tint + "15" },
-                    ]}
-                  >
-                    <ThemedText
-                      style={{
-                        color: colors.tint,
-                        fontSize: 12,
-                        fontWeight: "600",
-                      }}
-                    >
-                      {globalBook.published_books_count} published
-                      {globalBook.published_books_count === 1 ? " book" : " books"}
-                    </ThemedText>
-                  </ThemedView>
-                </ThemedView>
-              </TouchableOpacity>
-            ))
+            <View style={styles.columnsWrapper}>
+              <View style={styles.feedColumn}>
+                {leftColumnBooks.map((globalBook, itemIndex) =>
+                  renderBookCard(globalBook, 0, itemIndex),
+                )}
+              </View>
+              <View style={styles.feedColumn}>
+                {rightColumnBooks.map((globalBook, itemIndex) =>
+                  renderBookCard(globalBook, 1, itemIndex),
+                )}
+              </View>
+            </View>
           )}
-        </ThemedView>
-      </ScrollView>
-    </ThemedView>
+        </ScrollView>
+      </ThemedView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
   container: {
     flex: 1,
   },
   fixedHeader: {
     paddingHorizontal: 20,
-    paddingTop: 40,
-    gap: 12,
+    paddingTop: 12,
+    gap: 10,
     alignItems: "center",
-    paddingBottom: 10,
+    paddingBottom: 6,
   },
   logoText: {
     fontSize: 28,
@@ -255,84 +296,93 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     justifyContent: "center",
     alignSelf: "stretch",
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.04)",
   },
-  cardsContainer: {
-    width: "100%",
-    alignItems: "center",
+  scrollContent: {
     paddingHorizontal: 20,
     paddingBottom: 40,
   },
   searchInput: {
     fontSize: 16,
   },
-  mapSection: {
-    padding: 20,
-  },
-  mapPlaceholder: {
-    height: 200,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 2,
-    borderStyle: "dashed",
-  },
-  mapPin: {
-    fontSize: 18,
-    lineHeight: 28,
-    marginBottom: 5,
-  },
-  stickyHeaderWrapper: {
-    paddingHorizontal: 20,
-    paddingBottom: 5,
+  sectionHeader: {
+    paddingTop: 8,
+    paddingBottom: 18,
     width: "100%",
   },
   sectionTitle: {
     marginBottom: 0,
   },
-  bookCard: {
+  sectionCaption: {
+    marginTop: 4,
+    fontSize: 13,
+  },
+  columnsWrapper: {
     flexDirection: "row",
-    marginBottom: 20,
-    alignItems: "center",
-    gap: 15,
+    alignItems: "flex-start",
+    gap: 14,
   },
-  bookCover: {
-    width: 90,
-    height: 130,
-    borderRadius: 12,
-  },
-  bookInfo: {
+  feedColumn: {
     flex: 1,
-    gap: 2,
+    gap: 14,
+  },
+  feedCard: {
+    borderRadius: 22,
+    overflow: "hidden",
+    borderWidth: 1,
+  },
+  feedCardImage: {
+    width: "100%",
+  },
+  coverTall: {
+    height: 236,
+  },
+  coverMedium: {
+    height: 210,
+  },
+  coverCompact: {
+    height: 184,
+  },
+  feedCardContent: {
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: 14,
+    gap: 4,
+  },
+  feedCardTitle: {
+    fontSize: 16,
+    lineHeight: 20,
+  },
+  feedCardAuthor: {
+    fontSize: 13,
+  },
+  feedCardEditorial: {
+    fontSize: 13,
+    lineHeight: 18,
   },
   feedbackState: {
     alignItems: "center",
     gap: 10,
-    paddingHorizontal: 20,
-    paddingVertical: 36,
+    justifyContent: "center",
+    minHeight: 360,
+    paddingHorizontal: 28,
+    paddingVertical: 48,
     width: "100%",
   },
   feedbackText: {
     textAlign: "center",
+    lineHeight: 20,
   },
   feedbackButton: {
     alignItems: "center",
-    borderRadius: 8,
+    borderRadius: 999,
     marginTop: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: 18,
+    paddingVertical: 11,
   },
   feedbackButtonText: {
     color: "#fff",
     fontWeight: "700",
-  },
-  titleText: {
-    fontSize: 18,
-  },
-  badge: {
-    marginTop: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
-    alignSelf: "flex-start",
   },
 });

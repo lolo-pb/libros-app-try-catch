@@ -17,7 +17,8 @@ insert into auth.users (
   created_at,
   updated_at
 )
-values (
+values
+(
   '00000000-0000-0000-0000-000000000000',
   '44444444-4444-4444-4444-444444444444',
   'authenticated',
@@ -29,6 +30,45 @@ values (
   '{"display_name":"Demo Reader"}'::jsonb,
   now(),
   now()
+),
+(
+  '00000000-0000-0000-0000-000000000000',
+  '55555555-5555-5555-5555-555555555555',
+  'authenticated',
+  'authenticated',
+  'lena.club@booktrade.local',
+  '',
+  now(),
+  '{"provider":"email","providers":["email"]}'::jsonb,
+  '{"display_name":"Lena Costa"}'::jsonb,
+  now(),
+  now()
+),
+(
+  '00000000-0000-0000-0000-000000000000',
+  '66666666-6666-6666-6666-666666666666',
+  'authenticated',
+  'authenticated',
+  'omar.pages@booktrade.local',
+  '',
+  now(),
+  '{"provider":"email","providers":["email"]}'::jsonb,
+  '{"display_name":"Omar Flores"}'::jsonb,
+  now(),
+  now()
+),
+(
+  '00000000-0000-0000-0000-000000000000',
+  '77777777-7777-7777-7777-777777777777',
+  'authenticated',
+  'authenticated',
+  'ines.notes@booktrade.local',
+  '',
+  now(),
+  '{"provider":"email","providers":["email"]}'::jsonb,
+  '{"display_name":"Ines Rojas"}'::jsonb,
+  now(),
+  now()
 )
 on conflict (id) do update
 set
@@ -37,12 +77,34 @@ set
   updated_at = now();
 
 insert into public.profiles (id, display_name, city, latitude, longitude)
-values (
+values
+(
   '44444444-4444-4444-4444-444444444444',
   'Demo Reader',
   'Buenos Aires, AR',
   -34.603722,
   -58.381592
+),
+(
+  '55555555-5555-5555-5555-555555555555',
+  'Lena Costa',
+  'Buenos Aires, AR',
+  -34.590104,
+  -58.408912
+),
+(
+  '66666666-6666-6666-6666-666666666666',
+  'Omar Flores',
+  'Buenos Aires, AR',
+  -34.611214,
+  -58.389511
+),
+(
+  '77777777-7777-7777-7777-777777777777',
+  'Ines Rojas',
+  'Buenos Aires, AR',
+  -34.596411,
+  -58.430982
 )
 on conflict (id) do update
 set
@@ -141,7 +203,7 @@ values
   ),
   (
     'cccccccc-cccc-cccc-cccc-ccccccccccc2',
-    '44444444-4444-4444-4444-444444444444',
+    '55555555-5555-5555-5555-555555555555',
     'Beloved',
     'Toni Morrison',
     'Paperback edition with lightly worn corners.',
@@ -152,7 +214,7 @@ values
   ),
   (
     'cccccccc-cccc-cccc-cccc-ccccccccccc3',
-    '44444444-4444-4444-4444-444444444444',
+    '66666666-6666-6666-6666-666666666666',
     'The Name of the Rose',
     'Umberto Eco',
     'Hardcover with dust jacket in excellent shape.',
@@ -163,7 +225,7 @@ values
   ),
   (
     'cccccccc-cccc-cccc-cccc-ccccccccccc4',
-    '44444444-4444-4444-4444-444444444444',
+    '77777777-7777-7777-7777-777777777777',
     'Parable of the Sower',
     'Octavia E. Butler',
     'Private shelf copy kept for a future trade.',
