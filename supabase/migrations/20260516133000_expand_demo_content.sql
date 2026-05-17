@@ -1,9 +1,3 @@
-delete from public.trade_requests;
-delete from public.books;
-delete from public.global_books;
-delete from public.profiles;
-delete from auth.users where email like '%@booktrade.local';
-
 insert into auth.users (
   instance_id,
   id,
@@ -18,58 +12,6 @@ insert into auth.users (
   updated_at
 )
 values
-(
-  '00000000-0000-0000-0000-000000000000',
-  '44444444-4444-4444-4444-444444444444',
-  'authenticated',
-  'authenticated',
-  'demo.reader@booktrade.local',
-  '',
-  now(),
-  '{"provider":"email","providers":["email"]}'::jsonb,
-  '{"display_name":"Demo Reader"}'::jsonb,
-  now(),
-  now()
-),
-(
-  '00000000-0000-0000-0000-000000000000',
-  '55555555-5555-5555-5555-555555555555',
-  'authenticated',
-  'authenticated',
-  'lena.club@booktrade.local',
-  '',
-  now(),
-  '{"provider":"email","providers":["email"]}'::jsonb,
-  '{"display_name":"Lena Costa"}'::jsonb,
-  now(),
-  now()
-),
-(
-  '00000000-0000-0000-0000-000000000000',
-  '66666666-6666-6666-6666-666666666666',
-  'authenticated',
-  'authenticated',
-  'omar.pages@booktrade.local',
-  '',
-  now(),
-  '{"provider":"email","providers":["email"]}'::jsonb,
-  '{"display_name":"Omar Flores"}'::jsonb,
-  now(),
-  now()
-),
-(
-  '00000000-0000-0000-0000-000000000000',
-  '77777777-7777-7777-7777-777777777777',
-  'authenticated',
-  'authenticated',
-  'ines.notes@booktrade.local',
-  '',
-  now(),
-  '{"provider":"email","providers":["email"]}'::jsonb,
-  '{"display_name":"Ines Rojas"}'::jsonb,
-  now(),
-  now()
-),
 (
   '00000000-0000-0000-0000-000000000000',
   '88888888-8888-8888-8888-888888888888',
@@ -105,34 +47,6 @@ set
 insert into public.profiles (id, display_name, city, latitude, longitude)
 values
 (
-  '44444444-4444-4444-4444-444444444444',
-  'Demo Reader',
-  'Buenos Aires, AR',
-  -34.603722,
-  -58.381592
-),
-(
-  '55555555-5555-5555-5555-555555555555',
-  'Lena Costa',
-  'Buenos Aires, AR',
-  -34.590104,
-  -58.408912
-),
-(
-  '66666666-6666-6666-6666-666666666666',
-  'Omar Flores',
-  'Buenos Aires, AR',
-  -34.611214,
-  -58.389511
-),
-(
-  '77777777-7777-7777-7777-777777777777',
-  'Ines Rojas',
-  'Buenos Aires, AR',
-  -34.596411,
-  -58.430982
-),
-(
   '88888888-8888-8888-8888-888888888888',
   'Carla Mendez',
   'Buenos Aires, AR',
@@ -163,51 +77,6 @@ insert into public.global_books (
   created_by
 )
 values
-  (
-    'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb1',
-    'The Left Hand of Darkness',
-    'Ursula K. Le Guin',
-    'Ace Books',
-    'A classic science fiction novel about politics, identity, and a frozen world.',
-    'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600',
-    '44444444-4444-4444-4444-444444444444'
-  ),
-  (
-    'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2',
-    'Beloved',
-    'Toni Morrison',
-    'Vintage',
-    'A haunting and intimate novel about memory, love, and survival after slavery.',
-    'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=600',
-    '44444444-4444-4444-4444-444444444444'
-  ),
-  (
-    'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb3',
-    'The Name of the Rose',
-    'Umberto Eco',
-    'Picador',
-    'A historical mystery set in an Italian monastery, blending semiotics and suspense.',
-    'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=600',
-    '44444444-4444-4444-4444-444444444444'
-  ),
-  (
-    'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb4',
-    'Parable of the Sower',
-    'Octavia E. Butler',
-    'Grand Central Publishing',
-    'A visionary dystopian novel following a young woman through social collapse.',
-    'https://images.unsplash.com/photo-1541963463532-d68292c34b19?w=600',
-    '44444444-4444-4444-4444-444444444444'
-  ),
-  (
-    'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb5',
-    'If on a winter''s night a traveler',
-    'Italo Calvino',
-    'Mariner Books',
-    'A playful, fragmented novel about reading, authorship, and unfinished stories.',
-    'https://images.unsplash.com/photo-1621351123083-b88ecd2d5708?w=600',
-    '44444444-4444-4444-4444-444444444444'
-  ),
   (
     'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb6',
     'Kindred',
@@ -257,72 +126,6 @@ insert into public.books (
   is_published
 )
 values
-  (
-    'cccccccc-cccc-cccc-cccc-ccccccccccc1',
-    '44444444-4444-4444-4444-444444444444',
-    'The Left Hand of Darkness',
-    'Ursula K. Le Guin',
-    'Trade paperback with a few pencil notes and a clean spine.',
-    'good',
-    'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600',
-    'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb1',
-    true
-  ),
-  (
-    'cccccccc-cccc-cccc-cccc-ccccccccccc2',
-    '55555555-5555-5555-5555-555555555555',
-    'Beloved',
-    'Toni Morrison',
-    'Paperback edition with lightly worn corners.',
-    'good',
-    'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=600',
-    'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2',
-    true
-  ),
-  (
-    'cccccccc-cccc-cccc-cccc-ccccccccccc3',
-    '66666666-6666-6666-6666-666666666666',
-    'The Name of the Rose',
-    'Umberto Eco',
-    'Hardcover with dust jacket in excellent shape.',
-    'like_new',
-    'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=600',
-    'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb3',
-    true
-  ),
-  (
-    'cccccccc-cccc-cccc-cccc-ccccccccccc4',
-    '77777777-7777-7777-7777-777777777777',
-    'Parable of the Sower',
-    'Octavia E. Butler',
-    'Private shelf copy kept for a future trade.',
-    'like_new',
-    'https://images.unsplash.com/photo-1541963463532-d68292c34b19?w=600',
-    'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb4',
-    false
-  ),
-  (
-    'cccccccc-cccc-cccc-cccc-ccccccccccc5',
-    '44444444-4444-4444-4444-444444444444',
-    'Collected Stories',
-    'Clarice Lispector',
-    'Unlinked copy used to test the optional global book workflow.',
-    'fair',
-    'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=600',
-    null,
-    true
-  ),
-  (
-    'cccccccc-cccc-cccc-cccc-ccccccccccc6',
-    '44444444-4444-4444-4444-444444444444',
-    'Reading Journal',
-    'Demo Reader',
-    'A private unlinked record for exercising edit and publish states.',
-    'new',
-    null,
-    null,
-    false
-  ),
   (
     'cccccccc-cccc-cccc-cccc-ccccccccccc7',
     '88888888-8888-8888-8888-888888888888',
@@ -399,4 +202,119 @@ set
   cover_path = excluded.cover_path,
   global_book_id = excluded.global_book_id,
   is_published = excluded.is_published,
+  updated_at = now();
+
+insert into public.global_book_discussions (
+  id,
+  global_book_id,
+  author_id,
+  title,
+  body
+)
+values
+  (
+    'dddddddd-dddd-dddd-dddd-ddddddddddd4',
+    'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb6',
+    '88888888-8888-8888-8888-888888888888',
+    'Best way to introduce Butler to a friend?',
+    'I have a friend who likes literary fiction more than sci-fi. Wondering whether Kindred is the best first pick or if Parable is a stronger hook.'
+  ),
+  (
+    'dddddddd-dddd-dddd-dddd-ddddddddddd5',
+    'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb7',
+    '99999999-9999-9999-9999-999999999999',
+    'Did Piranesi click for you right away?',
+    'The atmosphere has me already, but I am curious whether the mystery takes shape quickly or if the payoff is more gradual.'
+  ),
+  (
+    'dddddddd-dddd-dddd-dddd-ddddddddddd6',
+    'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb8',
+    '55555555-5555-5555-5555-555555555555',
+    'Favorite companion read for The Dispossessed?',
+    'I want to pair this with something shorter for a tiny reading group. Thinking essay, novella, or another Le Guin with a different energy.'
+  )
+on conflict (id) do update
+set
+  global_book_id = excluded.global_book_id,
+  author_id = excluded.author_id,
+  title = excluded.title,
+  body = excluded.body,
+  is_deleted = false,
+  deleted_at = null,
+  updated_at = now();
+
+insert into public.discussion_comments (
+  id,
+  discussion_id,
+  author_id,
+  parent_comment_id,
+  reply_to_comment_id,
+  reply_to_user_id,
+  body
+)
+values
+  (
+    'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee8',
+    'dddddddd-dddd-dddd-dddd-ddddddddddd4',
+    '44444444-4444-4444-4444-444444444444',
+    null,
+    null,
+    null,
+    'Kindred is the one I hand to almost everyone first. It has the urgency of a page-turner even for people who do not usually read speculative fiction.'
+  ),
+  (
+    'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee9',
+    'dddddddd-dddd-dddd-dddd-ddddddddddd4',
+    '77777777-7777-7777-7777-777777777777',
+    null,
+    null,
+    null,
+    'Parable might hit harder if they already like dystopian stories, but Kindred is the safer recommendation for literary readers.'
+  ),
+  (
+    'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee10',
+    'dddddddd-dddd-dddd-dddd-ddddddddddd5',
+    '66666666-6666-6666-6666-666666666666',
+    null,
+    null,
+    null,
+    'It clicked for me slowly. The voice and setting do most of the work early, then the shape of the mystery starts tightening a bit later.'
+  ),
+  (
+    'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee11',
+    'dddddddd-dddd-dddd-dddd-ddddddddddd5',
+    '99999999-9999-9999-9999-999999999999',
+    'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee10',
+    'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee10',
+    '66666666-6666-6666-6666-666666666666',
+    'That sounds good to me, honestly. I am happy to stay in the atmosphere if the payoff is there.'
+  ),
+  (
+    'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee12',
+    'dddddddd-dddd-dddd-dddd-ddddddddddd6',
+    '88888888-8888-8888-8888-888888888888',
+    null,
+    null,
+    null,
+    'I paired it with Le Guin essays the first time, but for a lighter second text I would probably choose a novella with a sharper personal focus.'
+  ),
+  (
+    'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee13',
+    'dddddddd-dddd-dddd-dddd-ddddddddddd6',
+    '44444444-4444-4444-4444-444444444444',
+    null,
+    null,
+    null,
+    'You could also pair it with The Ones Who Walk Away from Omelas for a shorter ethics conversation, even if the tone is different.'
+  )
+on conflict (id) do update
+set
+  discussion_id = excluded.discussion_id,
+  author_id = excluded.author_id,
+  parent_comment_id = excluded.parent_comment_id,
+  reply_to_comment_id = excluded.reply_to_comment_id,
+  reply_to_user_id = excluded.reply_to_user_id,
+  body = excluded.body,
+  is_deleted = false,
+  deleted_at = null,
   updated_at = now();

@@ -29,6 +29,27 @@ values
     '77777777-7777-7777-7777-777777777777',
     'Mystery first or philosophy first?',
     'I love historical mysteries but I am not sure how dense Eco gets here. Hoping it still moves once the monastery setting is established.'
+  ),
+  (
+    'dddddddd-dddd-dddd-dddd-ddddddddddd4',
+    'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb6',
+    '88888888-8888-8888-8888-888888888888',
+    'Best way to introduce Butler to a friend?',
+    'I have a friend who likes literary fiction more than sci-fi. Wondering whether Kindred is the best first pick or if Parable is a stronger hook.'
+  ),
+  (
+    'dddddddd-dddd-dddd-dddd-ddddddddddd5',
+    'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb7',
+    '99999999-9999-9999-9999-999999999999',
+    'Did Piranesi click for you right away?',
+    'The atmosphere has me already, but I am curious whether the mystery takes shape quickly or if the payoff is more gradual.'
+  ),
+  (
+    'dddddddd-dddd-dddd-dddd-ddddddddddd6',
+    'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb8',
+    '55555555-5555-5555-5555-555555555555',
+    'Favorite companion read for The Dispossessed?',
+    'I want to pair this with something shorter for a tiny reading group. Thinking essay, novella, or another Le Guin with a different energy.'
   )
 on conflict (id) do update
 set
@@ -112,6 +133,60 @@ values
     'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee6',
     '55555555-5555-5555-5555-555555555555',
     'Perfect, that balance is what I was trying to gauge before picking up a copy.'
+  ),
+  (
+    'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee8',
+    'dddddddd-dddd-dddd-dddd-ddddddddddd4',
+    '44444444-4444-4444-4444-444444444444',
+    null,
+    null,
+    null,
+    'Kindred is the one I hand to almost everyone first. It has the urgency of a page-turner even for people who do not usually read speculative fiction.'
+  ),
+  (
+    'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee9',
+    'dddddddd-dddd-dddd-dddd-ddddddddddd4',
+    '77777777-7777-7777-7777-777777777777',
+    null,
+    null,
+    null,
+    'Parable might hit harder if they already like dystopian stories, but Kindred is the safer recommendation for literary readers.'
+  ),
+  (
+    'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee10',
+    'dddddddd-dddd-dddd-dddd-ddddddddddd5',
+    '66666666-6666-6666-6666-666666666666',
+    null,
+    null,
+    null,
+    'It clicked for me slowly. The voice and setting do most of the work early, then the shape of the mystery starts tightening a bit later.'
+  ),
+  (
+    'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee11',
+    'dddddddd-dddd-dddd-dddd-ddddddddddd5',
+    '99999999-9999-9999-9999-999999999999',
+    'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee10',
+    'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee10',
+    '66666666-6666-6666-6666-666666666666',
+    'That sounds good to me, honestly. I am happy to stay in the atmosphere if the payoff is there.'
+  ),
+  (
+    'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee12',
+    'dddddddd-dddd-dddd-dddd-ddddddddddd6',
+    '88888888-8888-8888-8888-888888888888',
+    null,
+    null,
+    null,
+    'I paired it with Le Guin essays the first time, but for a lighter second text I would probably choose a novella with a sharper personal focus.'
+  ),
+  (
+    'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee13',
+    'dddddddd-dddd-dddd-dddd-ddddddddddd6',
+    '44444444-4444-4444-4444-444444444444',
+    null,
+    null,
+    null,
+    'You could also pair it with The Ones Who Walk Away from Omelas for a shorter ethics conversation, even if the tone is different.'
   )
 on conflict (id) do update
 set
