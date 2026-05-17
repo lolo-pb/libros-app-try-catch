@@ -233,7 +233,7 @@ export function HomeScreen() {
           <ThemedText
             type="defaultSemiBold"
             style={styles.feedCardTitle}
-            numberOfLines={2}
+            numberOfLines={3}
           >
             {globalBook.title}
           </ThemedText>
@@ -243,12 +243,19 @@ export function HomeScreen() {
           >
             {globalBook.author}
           </ThemedText>
-          <ThemedText
-            style={[styles.feedCardEditorial, { color: colors.tabIconDefault }]}
-            numberOfLines={2}
-          >
-            {globalBook.editorial || "Editorial not added yet"}
-          </ThemedText>
+          <View style={styles.feedCardMetaRow}>
+            <ThemedText
+              style={[styles.feedCardEditorial, { color: colors.tabIconDefault }]}
+              numberOfLines={1}
+            >
+              {globalBook.editorial ?? ""}
+            </ThemedText>
+            <ThemedText
+              style={[styles.feedCardDiscussionCount, { color: colors.tabIconDefault }]}
+            >
+              {globalBook.discussion_count}
+            </ThemedText>
+          </View>
         </View>
       </Pressable>
     );
@@ -448,7 +455,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingTop: 12,
     paddingBottom: 14,
-    gap: 4,
+    gap: 6,
   },
   feedCardTitle: {
     fontSize: 16,
@@ -458,8 +465,24 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   feedCardEditorial: {
+    flex: 1,
     fontSize: 13,
-    lineHeight: 18,
+    lineHeight: 16,
+    minHeight: 16,
+  },
+  feedCardMetaRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 2,
+    minHeight: 16,
+  },
+  feedCardDiscussionCount: {
+    fontSize: 11,
+    fontWeight: "700",
+    lineHeight: 16,
+    minWidth: 16,
+    textAlign: "right",
   },
   feedbackState: {
     alignItems: "center",

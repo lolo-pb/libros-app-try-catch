@@ -19,10 +19,17 @@ export async function loadGlobalBooks() {
   }
 
   const globalBookIds = (globalBooks ?? []).map((globalBook) => globalBook.id);
-  const booksByGlobalBook = await loadPublishedBooksByGlobalBookId(globalBookIds);
+  const [booksByGlobalBook, discussionCountsByGlobalBook] = await Promise.all([
+    loadPublishedBooksByGlobalBookId(globalBookIds),
+    loadDiscussionCountsByGlobalBookId(globalBookIds),
+  ]);
 
   return (globalBooks ?? []).map((globalBook) =>
-    buildGlobalBookWithBooks(globalBook, booksByGlobalBook.get(globalBook.id) ?? []),
+    buildGlobalBookWithBooks(
+      globalBook,
+      booksByGlobalBook.get(globalBook.id) ?? [],
+      discussionCountsByGlobalBook.get(globalBook.id) ?? 0,
+    ),
   );
 }
 
@@ -41,11 +48,15 @@ export async function loadGlobalBook(globalBookId: string) {
     return null;
   }
 
-  const booksByGlobalBook = await loadPublishedBooksByGlobalBookId([globalBookId]);
+  const [booksByGlobalBook, discussionCountsByGlobalBook] = await Promise.all([
+    loadPublishedBooksByGlobalBookId([globalBookId]),
+    loadDiscussionCountsByGlobalBookId([globalBookId]),
+  ]);
 
   return buildGlobalBookWithBooks(
     globalBook,
     booksByGlobalBook.get(globalBookId) ?? [],
+    discussionCountsByGlobalBook.get(globalBookId) ?? 0,
   );
 }
 
@@ -117,6 +128,68 @@ async function loadPublishedBooksByGlobalBookId(globalBookIds: string[]) {
   return booksByGlobalBook;
 }
 
+async function loadDiscussionCountsByGlobalBookId(globalBookIds: string[]) {
+  if (!globalBookIds.length) {
+    return new Map<string, number>();
+  }
+
+  const { data: discussions, error } = await supabase
+    .from("global_book_discussions")
+    .select("id, global_book_id, is_deleted")
+    .in("global_book_id", globalBookIds);
+
+  if (error) {
+    throw error;
+  }
+
+  const discussionIds = (discussions ?? []).map((discussion) => discussion.id);
+
+  if (!discussionIds.length) {
+    return new Map<string, number>();
+  }
+
+  const { data: comments, error: commentsError } = await supabase
+    .from("discussion_comments")
+    .select("discussion_id, is_deleted")
+    .in("discussion_id", discussionIds);
+
+  if (commentsError) {
+    throw commentsError;
+  }
+
+  const visibleCommentsByDiscussionId = new Map<string, number>();
+
+  for (const comment of comments ?? []) {
+    if (comment.is_deleted) {
+      continue;
+    }
+
+    visibleCommentsByDiscussionId.set(
+      comment.discussion_id,
+      (visibleCommentsByDiscussionId.get(comment.discussion_id) ?? 0) + 1,
+    );
+  }
+
+  const countsByGlobalBook = new Map<string, number>();
+
+  for (const discussion of discussions ?? []) {
+    const hasVisibleContent =
+      !discussion.is_deleted ||
+      (visibleCommentsByDiscussionId.get(discussion.id) ?? 0) > 0;
+
+    if (!hasVisibleContent) {
+      continue;
+    }
+
+    countsByGlobalBook.set(
+      discussion.global_book_id,
+      (countsByGlobalBook.get(discussion.global_book_id) ?? 0) + 1,
+    );
+  }
+
+  return countsByGlobalBook;
+}
+
 async function loadGlobalBooksById(globalBookIds: string[]) {
   if (!globalBookIds.length) {
     return new Map<string, GlobalBook>();
@@ -154,11 +227,13 @@ async function loadProfilesById(profileIds: string[]) {
 function buildGlobalBookWithBooks(
   globalBook: GlobalBook,
   books: PublishedBookWithOwner[],
+  discussionCount: number,
 ): GlobalBookWithBooks {
   return {
     ...globalBook,
     books,
     published_books_count: books.length,
+    discussion_count: discussionCount,
     display_cover_path: globalBook.cover_path ?? books[0]?.cover_path ?? null,
   };
 }

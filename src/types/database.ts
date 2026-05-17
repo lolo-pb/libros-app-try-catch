@@ -351,6 +351,7 @@ export type PublishedBookWithOwner = Book & {
 export type GlobalBookWithBooks = GlobalBook & {
   books: PublishedBookWithOwner[];
   published_books_count: number;
+  discussion_count: number;
   display_cover_path: string | null;
 };
 
