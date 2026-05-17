@@ -268,25 +268,9 @@ export function HomeScreen() {
     >
       <ThemedView style={styles.container}>
         <ThemedView style={styles.fixedHeader}>
-        <ThemedText type="title" style={styles.logoText}>
-          BookTrade
-        </ThemedText>
-        <ThemedView
-          style={[
-            styles.searchContainer,
-            {
-              backgroundColor: colorScheme === "dark" ? "#2c2c2e" : "#f0f0f0",
-            },
-          ]}
-        >
-          <TextInput
-            style={[styles.searchInput, { color: colors.text }]}
-            placeholder="Search topics..."
-            placeholderTextColor={colors.tabIconDefault}
-            value={search}
-            onChangeText={setSearch}
-          />
-        </ThemedView>
+          <ThemedText type="title" style={styles.logoText}>
+            BookTrade
+          </ThemedText>
         </ThemedView>
 
         <ScrollView
@@ -306,6 +290,30 @@ export function HomeScreen() {
             />
           }
         >
+          <ThemedView
+            style={[
+              styles.searchScrollWrapper,
+              { backgroundColor: colors.background },
+            ]}
+          >
+            <ThemedView
+              style={[
+                styles.searchContainer,
+                {
+                  backgroundColor: colorScheme === "dark" ? "#2c2c2e" : "#f0f0f0",
+                },
+              ]}
+            >
+              <TextInput
+                style={[styles.searchInput, { color: colors.text }]}
+                placeholder="Search topics..."
+                placeholderTextColor={colors.tabIconDefault}
+                value={search}
+                onChangeText={setSearch}
+              />
+            </ThemedView>
+          </ThemedView>
+
           <ThemedView style={styles.sectionHeader}>
             <View>
               <ThemedText type="subtitle" style={styles.sectionTitle}>
@@ -388,9 +396,8 @@ const styles = StyleSheet.create({
   fixedHeader: {
     paddingHorizontal: 20,
     paddingTop: 12,
-    gap: 10,
     alignItems: "center",
-    paddingBottom: 6,
+    paddingBottom: 10,
   },
   logoText: {
     fontSize: 28,
@@ -410,11 +417,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 40,
   },
+  searchScrollWrapper: {
+    paddingBottom: 12,
+  },
   searchInput: {
     fontSize: 16,
   },
   sectionHeader: {
-    paddingTop: 8,
+    paddingTop: 2,
     paddingBottom: 18,
     width: "100%",
   },
