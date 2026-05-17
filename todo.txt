@@ -9,9 +9,14 @@ todo:
         - top following horizontal scroll   (*) needs following mechanics
  
         - botom infinite scroll of recommended discussions{
-            -disscussion metadata
+            -disscussion metadata (Maybe)
 
-            -make pinterest style
+            -make the searchbar disappear when you scroll down and reapear even if not ot the top of the page
+
+            -make searchbar work
+
+            -pgvectors
+
         }
     }
 
