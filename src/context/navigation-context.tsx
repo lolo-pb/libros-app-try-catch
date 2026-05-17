@@ -1,4 +1,8 @@
-import { NavigationState } from "@/src/navigation/types";
+import {
+  HomeScreenSnapshot,
+  NavigationState,
+  PreservedScreenState,
+} from "@/src/navigation/types";
 import React, { createContext, useCallback, useContext } from "react";
 
 interface NavigationContextType {
@@ -10,6 +14,10 @@ interface NavigationContextType {
   ) => void;
   navigateToSection: (sectionId: string) => void;
   goBack: () => void;
+  setPreservedScreenState: <K extends keyof PreservedScreenState>(
+    screenId: K,
+    state: PreservedScreenState[K],
+  ) => void;
 }
 
 const NavigationContext = createContext<NavigationContextType | undefined>(
@@ -23,8 +31,10 @@ export function NavigationProvider({
 }: {
   children: React.ReactNode;
   navigationState: NavigationState;
-  onNavigationChange: (state: NavigationState) => void;
+  onNavigationChange: React.Dispatch<React.SetStateAction<NavigationState>>;
 }) {
+  const preservedScreenState = navigationState.preservedScreenState ?? {};
+
   const navigateToScreen = useCallback(
     (
       sectionId: string,
@@ -35,23 +45,24 @@ export function NavigationProvider({
         navigationState.currentSection === sectionId &&
         navigationState.currentScreen === screenId;
 
-      onNavigationChange({
+      onNavigationChange((currentState) => ({
         currentSection: sectionId,
         currentScreen: screenId,
         params,
         history: isSameScreen
-          ? navigationState.history ?? []
+          ? currentState.history ?? []
           : [
-              ...(navigationState.history ?? []),
+              ...(currentState.history ?? []),
               {
-                sectionId: navigationState.currentSection,
-                screenId: navigationState.currentScreen,
-                params: navigationState.params,
+                sectionId: currentState.currentSection,
+                screenId: currentState.currentScreen,
+                params: currentState.params,
               },
             ],
-      });
+        preservedScreenState: currentState.preservedScreenState,
+      }));
     },
-    [navigationState, onNavigationChange],
+    [navigationState.currentScreen, navigationState.currentSection, onNavigationChange],
   );
 
   const navigateToSection = useCallback(
@@ -60,38 +71,61 @@ export function NavigationProvider({
         return;
       }
 
-      onNavigationChange({
+      onNavigationChange((currentState) => ({
         currentSection: sectionId,
-        currentScreen: navigationState.currentScreen,
-        params: navigationState.params,
+        currentScreen:
+          currentState.currentSection === sectionId
+            ? currentState.currentScreen
+            : currentState.currentScreen,
+        params: currentState.params,
         history: [
-          ...(navigationState.history ?? []),
+          ...(currentState.history ?? []),
           {
-            sectionId: navigationState.currentSection,
-            screenId: navigationState.currentScreen,
-            params: navigationState.params,
+            sectionId: currentState.currentSection,
+            screenId: currentState.currentScreen,
+            params: currentState.params,
           },
         ],
-      });
+        preservedScreenState: currentState.preservedScreenState,
+      }));
     },
-    [navigationState, onNavigationChange],
+    [navigationState.currentSection, onNavigationChange],
   );
 
   const goBack = useCallback(() => {
-    const history = navigationState.history ?? [];
-    const previousRoute = history[history.length - 1];
+    onNavigationChange((currentState) => {
+      const history = currentState.history ?? [];
+      const previousRoute = history[history.length - 1];
 
-    if (!previousRoute) {
-      return;
-    }
+      if (!previousRoute) {
+        return currentState;
+      }
 
-    onNavigationChange({
-      currentSection: previousRoute.sectionId,
-      currentScreen: previousRoute.screenId,
-      params: previousRoute.params,
-      history: history.slice(0, -1),
+      return {
+        currentSection: previousRoute.sectionId,
+        currentScreen: previousRoute.screenId,
+        params: previousRoute.params,
+        history: history.slice(0, -1),
+        preservedScreenState: currentState.preservedScreenState,
+      };
     });
-  }, [navigationState.history, onNavigationChange]);
+  }, [onNavigationChange]);
+
+  const setPreservedScreenState = useCallback(
+    <K extends keyof PreservedScreenState>(
+      screenId: K,
+      state: PreservedScreenState[K],
+    ) => {
+      onNavigationChange((currentState) => ({
+        ...currentState,
+        preservedScreenState: {
+          ...(currentState.preservedScreenState ?? {}),
+          [screenId]: state,
+        },
+      }));
+    },
+    [onNavigationChange],
+  );
 
   return (
     <NavigationContext.Provider
@@ -100,6 +134,7 @@ export function NavigationProvider({
         navigateToScreen,
         navigateToSection,
         goBack,
+        setPreservedScreenState,
       }}
     >
       {children}

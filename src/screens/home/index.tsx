@@ -5,13 +5,16 @@ import { useAppNavigation } from "@/src/context/navigation-context";
 import { useColorScheme } from "@/src/hooks/use-color-scheme";
 import { resolveCoverSource } from "@/src/lib/book-covers";
 import { loadGlobalBooks } from "@/src/lib/global-books";
+import type { HomeScreenSnapshot } from "@/src/navigation/types";
 import type { GlobalBookWithBooks } from "@/src/types/database";
 import { Image } from "expo-image";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
   RefreshControl,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
   ScrollView,
   StyleSheet,
   TextInput,
@@ -40,12 +43,44 @@ function splitIntoColumns(items: GlobalBookWithBooks[]) {
 export function HomeScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
-  const { navigateToScreen } = useAppNavigation();
-  const [search, setSearch] = useState("");
-  const [globalBooks, setGlobalBooks] = useState<GlobalBookWithBooks[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { navigateToScreen, navigationState, setPreservedScreenState } =
+    useAppNavigation();
+  const restoredSnapshot = navigationState.preservedScreenState?.["home-main"];
+  const hasRestoredSnapshot = restoredSnapshot?.hasLoadedOnce === true;
+  const scrollViewRef = useRef<ScrollView | null>(null);
+  const scrollOffsetRef = useRef(restoredSnapshot?.scrollOffset ?? 0);
+  const hasRestoredScrollRef = useRef(false);
+  const pendingScrollRestoreRef = useRef(restoredSnapshot?.scrollOffset ?? 0);
+  const latestSnapshotRef = useRef<HomeScreenSnapshot | null>(null);
+  const setPreservedScreenStateRef = useRef(setPreservedScreenState);
+  const [search, setSearch] = useState(restoredSnapshot?.search ?? "");
+  const [globalBooks, setGlobalBooks] = useState<GlobalBookWithBooks[]>(
+    restoredSnapshot?.globalBooks ?? [],
+  );
+  const [isLoading, setIsLoading] = useState(
+    restoredSnapshot?.isLoading ?? true,
+  );
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(
+    restoredSnapshot?.errorMessage ?? null,
+  );
+
+  const createHomeSnapshot = useCallback(
+    (): HomeScreenSnapshot => ({
+      hasLoadedOnce:
+        !isLoading || globalBooks.length > 0 || errorMessage !== null,
+      search,
+      globalBooks,
+      errorMessage,
+      isLoading,
+      scrollOffset: scrollOffsetRef.current,
+    }),
+    [errorMessage, globalBooks, isLoading, search],
+  );
+
+  const persistHomeSnapshot = useCallback(() => {
+    setPreservedScreenState("home-main", createHomeSnapshot());
+  }, [createHomeSnapshot, setPreservedScreenState]);
 
   const loadCatalog = React.useCallback(async (showSpinner = true) => {
     if (showSpinner) {
@@ -68,13 +103,72 @@ export function HomeScreen() {
   }, []);
 
   useEffect(() => {
+    if (hasRestoredSnapshot) {
+      return;
+    }
+
     loadCatalog();
-  }, [loadCatalog]);
+  }, [hasRestoredSnapshot, loadCatalog]);
+
+  const restoreScrollPosition = useCallback(() => {
+    if (!hasRestoredSnapshot || hasRestoredScrollRef.current) {
+      return;
+    }
+
+    const nextOffset = pendingScrollRestoreRef.current;
+    scrollViewRef.current?.scrollTo({
+      y: nextOffset,
+      animated: false,
+    });
+    scrollOffsetRef.current = nextOffset;
+    hasRestoredScrollRef.current = true;
+  }, [hasRestoredSnapshot]);
+
+  useEffect(() => {
+    pendingScrollRestoreRef.current = restoredSnapshot?.scrollOffset ?? 0;
+    hasRestoredScrollRef.current = false;
+  }, [restoredSnapshot?.scrollOffset]);
+
+  useEffect(() => {
+    if (!hasRestoredSnapshot) {
+      return;
+    }
+
+    const frame = requestAnimationFrame(() => {
+      restoreScrollPosition();
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [hasRestoredSnapshot, restoreScrollPosition]);
+
+  useEffect(() => {
+    latestSnapshotRef.current = createHomeSnapshot();
+  }, [createHomeSnapshot]);
+
+  useEffect(() => {
+    setPreservedScreenStateRef.current = setPreservedScreenState;
+  }, [setPreservedScreenState]);
+
+  useEffect(() => {
+    return () => {
+      if (latestSnapshotRef.current) {
+        setPreservedScreenStateRef.current("home-main", latestSnapshotRef.current);
+      }
+    };
+  }, []);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
     loadCatalog(false);
   };
+
+  const handleScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      scrollOffsetRef.current = event.nativeEvent.contentOffset.y;
+      latestSnapshotRef.current = createHomeSnapshot();
+    },
+    [createHomeSnapshot],
+  );
 
   const filteredGlobalBooks = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -189,8 +283,14 @@ export function HomeScreen() {
         </ThemedView>
 
         <ScrollView
+          ref={scrollViewRef}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
+          onScroll={handleScroll}
+          onContentSizeChange={restoreScrollPosition}
+          onMomentumScrollEnd={persistHomeSnapshot}
+          onScrollEndDrag={persistHomeSnapshot}
+          scrollEventThrottle={16}
           refreshControl={
             <RefreshControl
               refreshing={isRefreshing}

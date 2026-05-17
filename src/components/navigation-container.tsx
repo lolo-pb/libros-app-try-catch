@@ -9,7 +9,7 @@ import { SectionNavBar } from "./section-nav-bar";
 interface NavigationContainerProps {
   sections: NavigationSection[];
   navigationState: NavigationState;
-  onNavigationChange: (state: NavigationState) => void;
+  onNavigationChange: React.Dispatch<React.SetStateAction<NavigationState>>;
   children: React.ReactNode;
 }
 
@@ -21,6 +21,7 @@ export function NavigationContainer({
 }: NavigationContainerProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
+  const preservedScreenState = navigationState.preservedScreenState;
 
   const handleSectionChange = useCallback(
     (sectionId: string) => {
@@ -39,10 +40,11 @@ export function NavigationContainer({
           currentSection: sectionId,
           currentScreen: firstScreenId,
           history: [],
+          preservedScreenState,
         });
       }
     },
-    [navigationState, onNavigationChange, sections],
+    [navigationState, onNavigationChange, preservedScreenState, sections],
   );
 
   useEffect(() => {
@@ -68,6 +70,7 @@ export function NavigationContainer({
                 globalBookId,
               },
               history: [],
+              preservedScreenState,
             });
             return true;
           }
@@ -95,6 +98,7 @@ export function NavigationContainer({
                 globalBookId,
               },
               history: navigationState.history ?? [],
+              preservedScreenState,
             });
             return true;
           }
@@ -108,6 +112,7 @@ export function NavigationContainer({
                 globalBookId,
               },
               history: navigationState.history ?? [],
+              preservedScreenState,
             });
             return true;
           }
@@ -122,6 +127,7 @@ export function NavigationContainer({
             currentScreen: previousRoute.screenId,
             params: previousRoute.params,
             history: history.slice(0, -1),
+            preservedScreenState,
           });
           return true;
         }
@@ -139,6 +145,7 @@ export function NavigationContainer({
             currentSection: navigationState.currentSection,
             currentScreen: firstScreenId,
             history: [],
+            preservedScreenState,
           });
           return true;
         }
@@ -148,6 +155,7 @@ export function NavigationContainer({
             currentSection: "home",
             currentScreen: "home-main",
             history: [],
+            preservedScreenState,
           });
           return true;
         }
@@ -159,7 +167,7 @@ export function NavigationContainer({
     return () => {
       subscription.remove();
     };
-  }, [navigationState, onNavigationChange, sections]);
+  }, [navigationState, onNavigationChange, preservedScreenState, sections]);
 
   return (
     <NavigationProvider

@@ -15,10 +15,6 @@ export default function RootLayout() {
     currentScreen: "home-main",
   });
 
-  const handleNavigationChange = useCallback((state: NavigationState) => {
-    setNavigationState(state);
-  }, []);
-
   const currentSection = navigationSections.find(
     (s) => s.id === navigationState.currentSection,
   );
@@ -33,7 +29,7 @@ export default function RootLayout() {
         <NavigationContainer
           sections={navigationSections}
           navigationState={navigationState}
-          onNavigationChange={handleNavigationChange}
+          onNavigationChange={setNavigationState}
         >
           {ScreenComponent && <ScreenComponent />}
         </NavigationContainer>
