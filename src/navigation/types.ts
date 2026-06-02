@@ -44,4 +44,5 @@ export interface NavigationState {
   params?: Record<string, string | undefined>;
   history?: NavigationRoute[];
   preservedScreenState?: PreservedScreenState;
+  homeReselectCount?: number;
 }

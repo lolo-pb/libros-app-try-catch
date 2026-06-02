@@ -33,18 +33,25 @@ export function NavigationContainer({
           navigationState.currentSection === sectionId &&
           navigationState.currentScreen === firstScreenId
         ) {
+          if (sectionId === "home" && firstScreenId === "home-main") {
+            onNavigationChange((currentState) => ({
+              ...currentState,
+              homeReselectCount: (currentState.homeReselectCount ?? 0) + 1,
+            }));
+          }
           return;
         }
 
-        onNavigationChange({
+        onNavigationChange((currentState) => ({
           currentSection: sectionId,
           currentScreen: firstScreenId,
           history: [],
-          preservedScreenState,
-        });
+          preservedScreenState: currentState.preservedScreenState,
+          homeReselectCount: currentState.homeReselectCount,
+        }));
       }
     },
-    [navigationState, onNavigationChange, preservedScreenState, sections],
+    [navigationState.currentScreen, navigationState.currentSection, onNavigationChange, sections],
   );
 
   useEffect(() => {

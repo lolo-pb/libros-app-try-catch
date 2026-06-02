@@ -11,8 +11,6 @@ todo:
         - botom infinite scroll of recommended discussions{
             -disscussion metadata (Maybe)
 
-            -make the searchbar disappear when you scroll down and reapear even if not ot the top of the page
-
             -make searchbar work
 
             -pgvectors
@@ -24,6 +22,7 @@ todo:
 
     -GlobalBook{
         -discussion y coment dates no tiene que salir el año si son de este año
+        -like system
     }
 
     -Books{}

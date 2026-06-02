@@ -61,6 +61,7 @@ export function HomeScreen() {
   const { navigateToScreen, navigationState, setPreservedScreenState } =
     useAppNavigation();
   const restoredSnapshot = navigationState.preservedScreenState?.["home-main"];
+  const homeReselectCount = navigationState.homeReselectCount ?? 0;
   const hasRestoredSnapshot = restoredSnapshot?.hasLoadedOnce === true;
   const scrollViewRef = useRef<ScrollView | null>(null);
   const scrollOffsetRef = useRef(restoredSnapshot?.scrollOffset ?? 0);
@@ -136,6 +137,29 @@ export function HomeScreen() {
 
     loadCatalog();
   }, [hasRestoredSnapshot, loadCatalog]);
+
+  useEffect(() => {
+    if (
+      navigationState.currentSection !== "home" ||
+      navigationState.currentScreen !== "home-main" ||
+      homeReselectCount === 0
+    ) {
+      return;
+    }
+
+    setSearch("");
+    scrollViewRef.current?.scrollTo({
+      y: 0,
+      animated: true,
+    });
+    scrollOffsetRef.current = 0;
+    loadCatalog();
+  }, [
+    homeReselectCount,
+    loadCatalog,
+    navigationState.currentScreen,
+    navigationState.currentSection,
+  ]);
 
   const restoreScrollPosition = useCallback(() => {
     if (!hasRestoredSnapshot || hasRestoredScrollRef.current) {
