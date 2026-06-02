@@ -240,27 +240,6 @@ export function BookScreen() {
                 </ThemedText>
               </View>
             </View>
-            <ThemedText style={styles.description}>
-              {book.description || "No description yet."}
-            </ThemedText>
-
-            {globalBook ? (
-              <Pressable
-                onPress={() =>
-                  navigateToScreen("home", "global-book", {
-                    globalBookId: globalBook.id,
-                  })
-                }
-                style={[
-                  styles.globalBookLink,
-                  { backgroundColor: colors.tint + "12" },
-                ]}
-              >
-                <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
-                  View topic: {globalBook.title}
-                </ThemedText>
-              </Pressable>
-            ) : null}
 
             <ThemedView style={styles.badgeRow}>
               <ThemedView
@@ -273,52 +252,126 @@ export function BookScreen() {
               <Pressable
                 disabled={!isOwner}
                 onPress={handleToggleAvailability}
-                style={[styles.badge, { backgroundColor: colors.tint + "15" }]}
+                style={[
+                  styles.badge,
+                  isOwner ? styles.toggleBadge : null,
+                  book.is_published
+                    ? {
+                        backgroundColor: colors.tint + "15",
+                        borderColor: colors.tint,
+                      }
+                    : {
+                        backgroundColor: "#d6454518",
+                        borderColor: "#d64545",
+                      },
+                ]}
               >
-                <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
+                <ThemedText
+                  style={{
+                    color: book.is_published ? colors.tint : "#d64545",
+                    fontWeight: "700",
+                  }}
+                >
                   {book.is_published ? "Available" : "Unavailable"}
                 </ThemedText>
               </Pressable>
             </ThemedView>
 
+            <ThemedView
+              style={[
+                styles.infoBox,
+                {
+                  backgroundColor: colorScheme === "dark" ? "#2c2c2e" : "#f8f8f8",
+                },
+              ]}
+            >
+              <ThemedText type="defaultSemiBold">Description:</ThemedText>
+              <ThemedText style={[styles.description, { color: colors.tabIconDefault }]}>
+                {book.description || "No description yet."}
+              </ThemedText>
+            </ThemedView>
+
+            {globalBook ? (
+              <>
+                <View style={styles.topicSection}>
+                  <ThemedText type="subtitle">Global topic</ThemedText>
+                  <Pressable
+                    onPress={() =>
+                      navigateToScreen("home", "global-book", {
+                        globalBookId: globalBook.id,
+                      })
+                    }
+                    style={[
+                      styles.topicCard,
+                      {
+                        backgroundColor:
+                          colorScheme === "dark" ? "#2c2c2e" : "#f8f8f8",
+                      },
+                    ]}
+                  >
+                    <View style={styles.topicContent}>
+                      <ThemedText type="defaultSemiBold" style={styles.topicTitle}>
+                        {globalBook.title}
+                      </ThemedText>
+                      <ThemedText style={{ color: colors.tabIconDefault }}>
+                        {globalBook.author}
+                      </ThemedText>
+                      <ThemedText style={{ color: colors.tabIconDefault }}>
+                        {globalBook.editorial || "Editorial not added yet"}
+                      </ThemedText>
+                    </View>
+                    <Image
+                      source={resolveCoverSource(globalBook)}
+                      style={styles.topicCover}
+                      contentFit="cover"
+                    />
+                  </Pressable>
+                </View>
+              </>
+            ) : null}
+
             {isOwner ? (
-              <ThemedView style={styles.ownerActions}>
-                <Pressable
-                  onPress={() =>
-                    navigateToScreen(backSection, "edit-book", {
-                      bookId: book.id,
-                      returnSection: backSection,
-                      returnScreen,
-                      globalBookId: globalBook?.id ?? relatedGlobalBookId,
-                    })
-                  }
-                  style={[styles.ownerButton, { backgroundColor: colors.tint }]}
-                >
-                  <ThemedText style={styles.ownerButtonText}>Edit book</ThemedText>
-                </Pressable>
-                <Pressable
-                  disabled={isDeleting}
-                  onPress={handleDelete}
-                  style={[
-                    styles.ownerButton,
-                    styles.deleteButton,
-                    { borderColor: colors.icon },
-                  ]}
-                >
-                  {isDeleting ? (
-                    <ActivityIndicator color={colors.tint} />
-                  ) : (
-                    <ThemedText type="defaultSemiBold">Delete book</ThemedText>
-                  )}
-                </Pressable>
-              </ThemedView>
+              <>
+                <ThemedView style={styles.ownerActions}>
+                  <Pressable
+                    onPress={() =>
+                      navigateToScreen(backSection, "edit-book", {
+                        bookId: book.id,
+                        returnSection: backSection,
+                        returnScreen,
+                        globalBookId: globalBook?.id ?? relatedGlobalBookId,
+                      })
+                    }
+                    style={[styles.ownerButton, { backgroundColor: colors.tint }]}
+                  >
+                    <ThemedText style={styles.ownerButtonText}>Edit book</ThemedText>
+                  </Pressable>
+                  <Pressable
+                    disabled={isDeleting}
+                    onPress={handleDelete}
+                    style={[
+                      styles.ownerButton,
+                      styles.deleteButton,
+                      { borderColor: colors.icon },
+                    ]}
+                  >
+                    {isDeleting ? (
+                      <ActivityIndicator color={colors.tint} />
+                    ) : (
+                      <ThemedText type="defaultSemiBold">Delete book</ThemedText>
+                    )}
+                  </Pressable>
+                </ThemedView>
+              </>
             ) : (
-              <Pressable
-                onPress={handleRequestTrade}
-                style={[styles.tradeButton, { backgroundColor: colors.tint }]}
-              >
-                <ThemedText style={styles.tradeButtonText}>Request trade</ThemedText>
-              </Pressable>
+              <>
+                <Pressable
+                  onPress={handleRequestTrade}
+                  style={[styles.tradeButton, { backgroundColor: colors.tint }]}
+                >
+                  <ThemedText style={styles.tradeButtonText}>Request trade</ThemedText>
+                </Pressable>
+              </>
             )}
           </>
         )}
@@ -371,13 +424,6 @@ const styles = StyleSheet.create({
   metaText: {
     marginTop: 8,
   },
-  globalBookLink: {
-    alignSelf: "flex-start",
-    borderRadius: 8,
-    marginTop: 18,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-  },
   badgeRow: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -386,13 +432,47 @@ const styles = StyleSheet.create({
   },
   badge: {
     alignSelf: "flex-start",
+    alignItems: "center",
     borderRadius: 6,
+    justifyContent: "center",
+    minHeight: 36,
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
+  toggleBadge: {
+    borderWidth: 1,
+  },
+  infoBox: {
+    borderRadius: 12,
+    gap: 8,
+    marginTop: 18,
+    padding: 16,
+  },
   description: {
     lineHeight: 21,
-    marginTop: 12,
+  },
+  topicSection: {
+    gap: 12,
+    marginTop: 28,
+  },
+  topicCard: {
+    borderRadius: 14,
+    flexDirection: "row",
+    gap: 14,
+    padding: 14,
+  },
+  topicCover: {
+    borderRadius: 10,
+    height: 110,
+    width: 76,
+  },
+  topicContent: {
+    flex: 1,
+    gap: 4,
+    justifyContent: "center",
+  },
+  topicTitle: {
+    fontSize: 18,
   },
   tradeButton: {
     alignItems: "center",
