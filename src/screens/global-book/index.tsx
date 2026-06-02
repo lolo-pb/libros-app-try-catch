@@ -138,9 +138,19 @@ export function GlobalBookScreen() {
                 </ThemedText>
               </View>
             </View>
-            <ThemedText style={styles.description}>
-              {globalBook.description || "No description yet."}
-            </ThemedText>
+            <ThemedView
+              style={[
+                styles.descriptionBox,
+                {
+                  backgroundColor: colorScheme === "dark" ? "#2c2c2e" : "#f8f8f8",
+                },
+              ]}
+            >
+              <ThemedText type="defaultSemiBold">Description:</ThemedText>
+              <ThemedText style={[styles.description, { color: colors.tabIconDefault }]}>
+                {globalBook.description || "No description yet."}
+              </ThemedText>
+            </ThemedView>
 
             <ThemedView style={styles.badgeRow}>
               <ThemedView
@@ -360,9 +370,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
+  descriptionBox: {
+    borderRadius: 12,
+    gap: 8,
+    marginTop: 12,
+    padding: 16,
+  },
   description: {
     lineHeight: 21,
-    marginTop: 12,
   },
   publicationSection: {
     marginTop: 28,
