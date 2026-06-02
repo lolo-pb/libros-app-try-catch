@@ -9,6 +9,21 @@ export async function ensureProfileForUser(user?: User | null) {
   const existingProfile = await getProfileById(user.id);
 
   if (existingProfile) {
+    if (existingProfile.email !== (user.email ?? null)) {
+      const { data: updatedProfile, error: updateError } = await supabase
+        .from("profiles")
+        .update({ email: user.email ?? null })
+        .eq("id", user.id)
+        .select("*")
+        .maybeSingle();
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      return updatedProfile ?? existingProfile;
+    }
+
     return existingProfile;
   }
 
@@ -20,6 +35,7 @@ export async function ensureProfileForUser(user?: User | null) {
     .insert({
       id: user.id,
       display_name: fallbackDisplayName,
+      email: user.email ?? null,
     })
     .select("*")
     .maybeSingle();

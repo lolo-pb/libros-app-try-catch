@@ -23,6 +23,7 @@ export interface Database {
         Row: {
           id: string;
           display_name: string | null;
+          email: string | null;
           avatar_path: string | null;
           city: string | null;
           latitude: number | null;
@@ -33,6 +34,7 @@ export interface Database {
         Insert: {
           id: string;
           display_name?: string | null;
+          email?: string | null;
           avatar_path?: string | null;
           city?: string | null;
           latitude?: number | null;
@@ -42,6 +44,7 @@ export interface Database {
         };
         Update: {
           display_name?: string | null;
+          email?: string | null;
           avatar_path?: string | null;
           city?: string | null;
           latitude?: number | null;

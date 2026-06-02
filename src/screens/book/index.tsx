@@ -49,6 +49,11 @@ export function BookScreen() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const isOwner = Boolean(session?.user.id && book?.owner_id === session.user.id);
+  const ownerAvatarUrl = owner?.avatar_path?.startsWith("http")
+    ? owner.avatar_path
+    : owner?.avatar_path
+      ? supabase.storage.from("avatars").getPublicUrl(owner.avatar_path).data.publicUrl
+      : null;
 
   useEffect(() => {
     let isMounted = true;
@@ -291,6 +296,42 @@ export function BookScreen() {
               </ThemedText>
             </ThemedView>
 
+            <ThemedView
+              style={[
+                styles.publisherBox,
+                {
+                  backgroundColor: colorScheme === "dark" ? "#2c2c2e" : "#f8f8f8",
+                },
+              ]}
+            >
+              <ThemedText type="defaultSemiBold">Published by:</ThemedText>
+              <View style={styles.publisherCard}>
+                <View style={[styles.publisherAvatar, { backgroundColor: colors.tint + "20" }]}>
+                  {ownerAvatarUrl ? (
+                    <Image
+                      source={{ uri: ownerAvatarUrl }}
+                      style={styles.publisherAvatarImage}
+                      contentFit="cover"
+                    />
+                  ) : (
+                    <ThemedText style={[styles.publisherAvatarText, { color: colors.tint }]}>
+                      {(owner?.display_name ?? "B").slice(0, 1)}
+                    </ThemedText>
+                  )}
+                </View>
+                <View style={styles.publisherRow}>
+                  <ThemedText style={{ color: colors.tabIconDefault }}>
+                    {owner?.display_name ?? "BookTrade reader"}
+                  </ThemedText>
+                  {owner?.email ? (
+                    <ThemedText style={{ color: colors.tabIconDefault }}>
+                      {owner.email}
+                    </ThemedText>
+                  ) : null}
+                </View>
+              </View>
+            </ThemedView>
+
             {globalBook ? (
               <>
                 <View style={styles.topicSection}>
@@ -450,6 +491,37 @@ const styles = StyleSheet.create({
   },
   description: {
     lineHeight: 21,
+  },
+  publisherCard: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 12,
+  },
+  publisherBox: {
+    borderRadius: 12,
+    gap: 10,
+    marginTop: 12,
+    padding: 16,
+  },
+  publisherAvatar: {
+    alignItems: "center",
+    borderRadius: 22,
+    height: 44,
+    justifyContent: "center",
+    overflow: "hidden",
+    width: 44,
+  },
+  publisherAvatarImage: {
+    height: "100%",
+    width: "100%",
+  },
+  publisherAvatarText: {
+    fontSize: 18,
+    fontWeight: "900",
+    textTransform: "uppercase",
+  },
+  publisherRow: {
+    gap: 4,
   },
   topicSection: {
     gap: 12,
