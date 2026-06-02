@@ -29,6 +29,12 @@ const VARIANT_PATTERNS: FeedCardVariant[][] = [
   ["medium", "compact", "tall"],
   ["compact", "tall", "medium"],
   ["tall", "compact", "medium"],
+  ["tall", "medium", "tall", "compact"],
+  ["compact", "medium", "tall", "medium"],
+  ["tall", "compact", "tall", "medium"],
+  ["medium", "tall", "compact", "compact"],
+  ["tall", "medium", "compact", "medium"],
+  ["compact", "tall", "medium", "tall"],
 ];
 
 function getCardVariant(
