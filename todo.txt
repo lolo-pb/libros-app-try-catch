@@ -26,11 +26,7 @@ todo:
         -discussion y coment dates no tiene que salir el año si son de este año
     }
 
-    -Books{
-        -borde al boton de available/ y cambio de color para q sea mas claro lo que es toggleable
-
-        - y botones en general, estan medio feos 
-    }
+    -Books{}
 
     -trade{
         -you shoiuld go to book details from trade request
@@ -38,6 +34,10 @@ todo:
     
     -old Requests{
         -que requests listos se puedan borrar y cancelar, limpiar historial ponele
+    }
+
+    -other{
+        -sign up form should ask city
     }
 }
 

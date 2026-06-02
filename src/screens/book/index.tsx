@@ -320,11 +320,12 @@ export function BookScreen() {
                   )}
                 </View>
                 <View style={styles.publisherRow}>
-                  <ThemedText style={{ color: colors.tabIconDefault }}>
+                  <ThemedText style={[styles.publisherText, { color: colors.tabIconDefault }]}>
                     {owner?.display_name ?? "BookTrade reader"}
+                    {owner?.city ? ` | ${owner.city}` : ""}
                   </ThemedText>
                   {owner?.email ? (
-                    <ThemedText style={{ color: colors.tabIconDefault }}>
+                    <ThemedText style={[styles.publisherText, { color: colors.tabIconDefault }]}>
                       {owner.email}
                     </ThemedText>
                   ) : null}
@@ -521,7 +522,12 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   publisherRow: {
+    flex: 1,
     gap: 4,
+    minWidth: 0,
+  },
+  publisherText: {
+    flexShrink: 1,
   },
   topicSection: {
     gap: 12,
