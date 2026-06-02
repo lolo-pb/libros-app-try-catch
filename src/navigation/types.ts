@@ -31,6 +31,7 @@ export interface HomeScreenSnapshot {
   errorMessage: string | null;
   isLoading: boolean;
   scrollOffset: number;
+  variantPatternIndex: number;
 }
 
 export interface PreservedScreenState {

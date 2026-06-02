@@ -24,10 +24,19 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 type FeedCardVariant = "tall" | "medium" | "compact";
 
-const CARD_VARIANTS: FeedCardVariant[] = ["tall", "medium", "compact"];
+const VARIANT_PATTERNS: FeedCardVariant[][] = [
+  ["tall", "medium", "compact"],
+  ["medium", "compact", "tall"],
+  ["compact", "tall", "medium"],
+  ["tall", "compact", "medium"],
+];
 
-function getCardVariant(index: number, columnIndex: number): FeedCardVariant {
-  return CARD_VARIANTS[(index + columnIndex) % CARD_VARIANTS.length];
+function getCardVariant(
+  pattern: FeedCardVariant[],
+  index: number,
+  columnIndex: number,
+): FeedCardVariant {
+  return pattern[(index + columnIndex) % pattern.length];
 }
 
 function splitIntoColumns(items: GlobalBookWithBooks[]) {
@@ -53,6 +62,9 @@ export function HomeScreen() {
   const pendingScrollRestoreRef = useRef(restoredSnapshot?.scrollOffset ?? 0);
   const latestSnapshotRef = useRef<HomeScreenSnapshot | null>(null);
   const setPreservedScreenStateRef = useRef(setPreservedScreenState);
+  const variantPatternIndexRef = useRef(
+    restoredSnapshot?.variantPatternIndex ?? 0,
+  );
   const [search, setSearch] = useState(restoredSnapshot?.search ?? "");
   const [globalBooks, setGlobalBooks] = useState<GlobalBookWithBooks[]>(
     restoredSnapshot?.globalBooks ?? [],
@@ -64,6 +76,9 @@ export function HomeScreen() {
   const [errorMessage, setErrorMessage] = useState<string | null>(
     restoredSnapshot?.errorMessage ?? null,
   );
+  const [variantPatternIndex, setVariantPatternIndex] = useState(
+    restoredSnapshot?.variantPatternIndex ?? 0,
+  );
 
   const createHomeSnapshot = useCallback(
     (): HomeScreenSnapshot => ({
@@ -74,8 +89,9 @@ export function HomeScreen() {
       errorMessage,
       isLoading,
       scrollOffset: scrollOffsetRef.current,
+      variantPatternIndex,
     }),
-    [errorMessage, globalBooks, isLoading, search],
+    [errorMessage, globalBooks, isLoading, search, variantPatternIndex],
   );
 
   const persistHomeSnapshot = useCallback(() => {
@@ -91,6 +107,11 @@ export function HomeScreen() {
     try {
       const data = await loadGlobalBooks();
       setGlobalBooks(data);
+      setVariantPatternIndex((currentIndex) => {
+        const nextIndex = (currentIndex + 1) % VARIANT_PATTERNS.length;
+        variantPatternIndexRef.current = nextIndex;
+        return nextIndex;
+      });
     } catch (error) {
       setErrorMessage(
         error instanceof Error ? error.message : "Could not load topics.",
@@ -127,7 +148,9 @@ export function HomeScreen() {
   useEffect(() => {
     pendingScrollRestoreRef.current = restoredSnapshot?.scrollOffset ?? 0;
     hasRestoredScrollRef.current = false;
-  }, [restoredSnapshot?.scrollOffset]);
+    variantPatternIndexRef.current = restoredSnapshot?.variantPatternIndex ?? 0;
+    setVariantPatternIndex(restoredSnapshot?.variantPatternIndex ?? 0);
+  }, [restoredSnapshot?.scrollOffset, restoredSnapshot?.variantPatternIndex]);
 
   useEffect(() => {
     if (!hasRestoredSnapshot) {
@@ -148,6 +171,10 @@ export function HomeScreen() {
   useEffect(() => {
     setPreservedScreenStateRef.current = setPreservedScreenState;
   }, [setPreservedScreenState]);
+
+  useEffect(() => {
+    variantPatternIndexRef.current = variantPatternIndex;
+  }, [variantPatternIndex]);
 
   useEffect(() => {
     return () => {
@@ -190,12 +217,15 @@ export function HomeScreen() {
     [filteredGlobalBooks],
   );
 
+  const activeVariantPattern =
+    VARIANT_PATTERNS[variantPatternIndex % VARIANT_PATTERNS.length];
+
   const renderBookCard = (
     globalBook: GlobalBookWithBooks,
     columnIndex: number,
     itemIndex: number,
   ) => {
-    const variant = getCardVariant(itemIndex, columnIndex);
+    const variant = getCardVariant(activeVariantPattern, itemIndex, columnIndex);
     const coverHeightStyle =
       variant === "tall"
         ? styles.coverTall

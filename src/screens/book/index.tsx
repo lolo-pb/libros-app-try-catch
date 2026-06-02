@@ -365,12 +365,12 @@ export function BookScreen() {
               </>
             ) : (
               <>
-                <Pressable
-                  onPress={handleRequestTrade}
-                  style={[styles.tradeButton, { backgroundColor: colors.tint }]}
-                >
-                  <ThemedText style={styles.tradeButtonText}>Request trade</ThemedText>
-                </Pressable>
+              <Pressable
+                onPress={handleRequestTrade}
+                style={[styles.tradeButton, { backgroundColor: "#E91E63" }]}
+              >
+                <ThemedText style={styles.tradeButtonText}>Request trade</ThemedText>
+              </Pressable>
               </>
             )}
           </>
