@@ -1,5 +1,6 @@
 import { ThemedText } from "@/src/components/themed-text";
 import { ThemedView } from "@/src/components/themed-view";
+import { BackButton } from "@/src/components/ui/back-button";
 import { Colors } from "@/src/constants/theme";
 import { useAuth } from "@/src/context/auth-context";
 import { useAppNavigation } from "@/src/context/navigation-context";
@@ -145,17 +146,11 @@ export function NewDiscussionScreen() {
       edges={["top", "left", "right"]}
       style={[styles.safeArea, { backgroundColor: colors.background }]}
     >
-      <Pressable
+      <BackButton
+        accessibilityLabel="Back to Topic"
         onPress={() => navigateToScreen("home", "global-book", { globalBookId })}
-        style={[
-          styles.backButton,
-          { backgroundColor: colors.chrome, borderColor: colors.separator },
-        ]}
-      >
-        <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
-          Back to Topic
-        </ThemedText>
-      </Pressable>
+        style={styles.backButton}
+      />
 
       <ScrollView contentContainerStyle={styles.container}>
         {isLoading ? (
@@ -235,11 +230,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   backButton: {
-    borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
     left: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
     position: "absolute",
     top: 12,
     zIndex: 20,
