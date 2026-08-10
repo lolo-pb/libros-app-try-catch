@@ -84,7 +84,8 @@ export function NewBookScreen() {
   const inputStyle = [
     styles.input,
     {
-      backgroundColor: colorScheme === "dark" ? "#2c2c2e" : "#f0f0f0",
+      backgroundColor: colors.surface,
+      borderColor: colors.separator,
       color: colors.text,
     },
   ];
@@ -298,7 +299,7 @@ export function NewBookScreen() {
           style={[
             styles.coverPicker,
             {
-              backgroundColor: colorScheme === "dark" ? "#2c2c2e" : "#f0f0f0",
+              backgroundColor: colors.surface,
               borderColor: colors.tint + "30",
             },
           ]}
@@ -352,7 +353,8 @@ export function NewBookScreen() {
             style={[
               styles.linkedBox,
               {
-                backgroundColor: colorScheme === "dark" ? "#2c2c2e" : "#f6f6f6",
+                backgroundColor: colors.surface,
+                borderColor: colors.separator,
               },
             ]}
           >
@@ -388,8 +390,8 @@ export function NewBookScreen() {
                   style={[
                     styles.globalBookCard,
                     {
-                      backgroundColor:
-                        colorScheme === "dark" ? "#2c2c2e" : "#f6f6f6",
+                      backgroundColor: colors.surface,
+                      borderColor: colors.separator,
                     },
                   ]}
                 >
@@ -452,8 +454,7 @@ export function NewBookScreen() {
               style={[
                 styles.coverPicker,
                 {
-                  backgroundColor:
-                    colorScheme === "dark" ? "#2c2c2e" : "#f0f0f0",
+                  backgroundColor: colors.surface,
                   borderColor: colors.tint + "30",
                 },
               ]}
@@ -572,18 +573,24 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
+    alignSelf: "center",
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 48,
+    width: "100%",
+    maxWidth: 760,
   },
   title: {
-    fontSize: 30,
+    fontSize: 36,
+    letterSpacing: -1,
+    lineHeight: 40,
     marginBottom: 6,
   },
   helperText: {
     marginBottom: 22,
   },
   input: {
-    borderRadius: 8,
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
     fontSize: 16,
     minHeight: 48,
     marginBottom: 12,
@@ -600,7 +607,7 @@ const styles = StyleSheet.create({
   },
   coverPicker: {
     alignItems: "center",
-    borderRadius: 8,
+    borderRadius: 20,
     borderStyle: "dashed",
     borderWidth: 1,
     height: 180,
@@ -620,8 +627,8 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     alignItems: "center",
-    borderRadius: 8,
-    borderWidth: 1,
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
     flex: 1,
     height: 44,
     justifyContent: "center",
@@ -632,7 +639,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   linkedBox: {
-    borderRadius: 10,
+    borderRadius: 18,
+    borderWidth: StyleSheet.hairlineWidth,
     gap: 6,
     marginBottom: 18,
     padding: 14,
@@ -643,7 +651,8 @@ const styles = StyleSheet.create({
     paddingRight: 20,
   },
   globalBookCard: {
-    borderRadius: 12,
+    borderRadius: 18,
+    borderWidth: StyleSheet.hairlineWidth,
     gap: 8,
     padding: 12,
     width: 150,
@@ -654,6 +663,10 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   globalBookForm: {
+    backgroundColor: "rgba(142,142,147,0.08)",
+    borderRadius: 20,
+    gap: 2,
+    padding: 16,
     marginTop: 14,
     marginBottom: 18,
   },
@@ -664,14 +677,17 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   conditionChip: {
-    borderRadius: 6,
+    borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
   publishRow: {
     alignItems: "center",
     flexDirection: "row",
+    backgroundColor: "rgba(142,142,147,0.08)",
+    borderRadius: 18,
     marginBottom: 18,
+    padding: 14,
   },
   publishText: {
     flex: 1,
@@ -681,8 +697,8 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     alignItems: "center",
-    borderRadius: 8,
-    height: 48,
+    borderRadius: 14,
+    height: 50,
     justifyContent: "center",
   },
   primaryButtonText: {

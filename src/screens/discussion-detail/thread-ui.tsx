@@ -1,6 +1,8 @@
 import { ThemedText } from "@/src/components/themed-text";
 import { ThemedView } from "@/src/components/themed-view";
 import { IconSymbol } from "@/src/components/ui/icon-symbol";
+import { Colors } from "@/src/constants/theme";
+import { useColorScheme } from "@/src/hooks/use-color-scheme";
 import type { DiscussionCommentNode } from "@/src/types/database";
 import React, { useState } from "react";
 import {
@@ -40,6 +42,8 @@ export function CommentCard({
   highlight = false,
   children,
 }: CommentCardProps) {
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? "light"];
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const content = (
     <>
@@ -62,7 +66,10 @@ export function CommentCard({
                   setIsMenuOpen(false);
                   onPressDelete();
                 }}
-                style={styles.menuPanel}
+                style={[
+                  styles.menuPanel,
+                  { backgroundColor: colors.surface, borderColor: colors.separator },
+                ]}
               >
                 <IconSymbol name="trash.fill" size={16} color="#d11a2a" />
                 <ThemedText numberOfLines={1} style={styles.menuDeleteText}>
@@ -154,7 +161,13 @@ export function ComposerSection({
   const [inputHeight, setInputHeight] = useState(38);
 
   return (
-    <ThemedView onLayout={onLayout} style={styles.composerSection}>
+    <ThemedView
+      onLayout={onLayout}
+      style={[
+        styles.composerSection,
+        surfaceColor ? { backgroundColor: surfaceColor } : null,
+      ]}
+    >
       <View
         style={[
           styles.composerBar,
@@ -241,7 +254,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   commentCard: {
-    borderRadius: 10,
+    borderRadius: 18,
     gap: 4,
     marginBottom: 14,
     padding: 14,
@@ -267,10 +280,8 @@ const styles = StyleSheet.create({
   },
   menuPanel: {
     alignItems: "center",
-    backgroundColor: "#ffffff",
-    borderColor: "#d0d0d0",
     borderRadius: 12,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     flexDirection: "row",
     flexWrap: "nowrap",
     gap: 6,
@@ -293,6 +304,8 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   composerSection: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     gap: 8,
     paddingHorizontal: 12,
     paddingTop: 8,
@@ -300,7 +313,7 @@ const styles = StyleSheet.create({
   },
   composerBar: {
     alignItems: "flex-end",
-    borderRadius: 22,
+    borderRadius: 24,
     flexDirection: "row",
     gap: 10,
     minHeight: 48,

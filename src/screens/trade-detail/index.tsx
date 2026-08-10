@@ -211,7 +211,7 @@ export function TradeDetailScreen() {
             <TradeBookCard label="Requested book" book={targetBook} />
             <TradeBookCard label="Offered book" book={offeredBook} />
 
-            <ThemedView style={[styles.peopleBox, { borderColor: colors.icon }]}>
+            <ThemedView style={[styles.peopleBox, { backgroundColor: colors.surface, borderColor: colors.separator }]}>
               <ThemedText style={{ color: colors.tabIconDefault }}>
                 Requester: {requester?.display_name ?? "BookTrade reader"}
               </ThemedText>
@@ -279,18 +279,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
+    alignSelf: "center",
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 48,
+    width: "100%",
+    maxWidth: 680,
   },
   backButton: {
     alignSelf: "flex-start",
-    borderRadius: 8,
+    borderRadius: 999,
     marginBottom: 18,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
   title: {
-    fontSize: 30,
+    fontSize: 36,
+    letterSpacing: -1,
+    lineHeight: 40,
     marginBottom: 12,
   },
   helperText: {
@@ -306,7 +311,7 @@ const styles = StyleSheet.create({
   },
   statusBadge: {
     alignSelf: "flex-start",
-    borderRadius: 6,
+    borderRadius: 999,
     marginBottom: 22,
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -316,6 +321,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 15,
     marginBottom: 20,
+    borderRadius: 20,
+    padding: 14,
+    backgroundColor: "rgba(142,142,147,0.08)",
   },
   tradeCover: {
     borderRadius: 12,
@@ -327,8 +335,8 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   peopleBox: {
-    borderRadius: 8,
-    borderWidth: 1,
+    borderRadius: 18,
+    borderWidth: StyleSheet.hairlineWidth,
     gap: 4,
     marginBottom: 18,
     padding: 12,
@@ -342,8 +350,8 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     alignItems: "center",
-    borderRadius: 8,
-    height: 48,
+    borderRadius: 14,
+    height: 50,
     justifyContent: "center",
     marginTop: 12,
     paddingHorizontal: 16,
@@ -355,9 +363,9 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     alignItems: "center",
-    borderRadius: 8,
-    borderWidth: 1,
-    height: 48,
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
+    height: 50,
     justifyContent: "center",
   },
 });

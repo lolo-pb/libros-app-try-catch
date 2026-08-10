@@ -1,5 +1,5 @@
 import { IconSymbol } from "@/src/components/ui/icon-symbol";
-import { Colors } from "@/src/constants/theme";
+import { AppShadow, Colors } from "@/src/constants/theme";
 import { useColorScheme } from "@/src/hooks/use-color-scheme";
 import { NavigationSection } from "@/src/navigation/types";
 import * as Haptics from "expo-haptics";
@@ -29,16 +29,15 @@ export function SectionNavBar({
   };
 
   return (
-    <SafeAreaView
-      edges={["bottom"]}
-      style={{ backgroundColor: colors.background }}
-    >
+    <SafeAreaView edges={["bottom"]} style={styles.safeArea}>
       <View
         style={[
           styles.container,
           {
-            backgroundColor: colors.background,
+            backgroundColor: colors.chrome,
+            borderColor: colors.separator,
           },
+          AppShadow,
         ]}
       >
         {sections.map((section) => {
@@ -47,11 +46,17 @@ export function SectionNavBar({
             <Pressable
               key={section.id}
               onPress={() => handleSectionPress(section.id)}
-              style={[styles.tabButton, { flex: 1 }]}
+              style={({ pressed }) => [
+                styles.tabButton,
+                isActive && {
+                  backgroundColor: colors.tint + "16",
+                },
+                pressed && styles.tabButtonPressed,
+              ]}
             >
               <View style={styles.tabContent}>
                 <IconSymbol
-                  size={28}
+                  size={23}
                   name={section.icon as any}
                   color={isActive ? colors.tint : colors.tabIconDefault}
                 />
@@ -75,24 +80,38 @@ export function SectionNavBar({
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    backgroundColor: "transparent",
+    paddingHorizontal: 12,
+    paddingTop: 7,
+  },
   container: {
+    borderRadius: 24,
+    borderWidth: StyleSheet.hairlineWidth,
     flexDirection: "row",
-    backgroundColor: "#fff",
+    gap: 3,
+    minHeight: 62,
+    padding: 4,
   },
   tabButton: {
     flex: 1,
     alignItems: "center",
+    borderRadius: 19,
     justifyContent: "center",
-    paddingTop: 3,
-    paddingBottom: 3,
+    minHeight: 52,
+  },
+  tabButtonPressed: {
+    opacity: 0.72,
+    transform: [{ scale: 0.96 }],
   },
   tabContent: {
     alignItems: "center",
     justifyContent: "center",
-    gap: 4,
+    gap: 2,
   },
   tabLabel: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: "600",
+    letterSpacing: 0.1,
   },
 });

@@ -266,14 +266,14 @@ export function BookScreen() {
                         borderColor: colors.tint,
                       }
                     : {
-                        backgroundColor: "#d6454518",
-                        borderColor: "#d64545",
+                        backgroundColor: colors.danger + "16",
+                        borderColor: colors.danger,
                       },
                 ]}
               >
                 <ThemedText
                   style={{
-                    color: book.is_published ? colors.tint : "#d64545",
+                    color: book.is_published ? colors.tint : colors.danger,
                     fontWeight: "700",
                   }}
                 >
@@ -286,7 +286,8 @@ export function BookScreen() {
               style={[
                 styles.infoBox,
                 {
-                  backgroundColor: colorScheme === "dark" ? "#2c2c2e" : "#f8f8f8",
+                  backgroundColor: colors.surface,
+                  borderColor: colors.separator,
                 },
               ]}
             >
@@ -300,7 +301,8 @@ export function BookScreen() {
               style={[
                 styles.publisherBox,
                 {
-                  backgroundColor: colorScheme === "dark" ? "#2c2c2e" : "#f8f8f8",
+                  backgroundColor: colors.surface,
+                  borderColor: colors.separator,
                 },
               ]}
             >
@@ -346,8 +348,8 @@ export function BookScreen() {
                     style={[
                       styles.topicCard,
                       {
-                        backgroundColor:
-                          colorScheme === "dark" ? "#2c2c2e" : "#f8f8f8",
+                        backgroundColor: colors.surface,
+                        borderColor: colors.separator,
                       },
                     ]}
                   >
@@ -409,7 +411,7 @@ export function BookScreen() {
               <>
               <Pressable
                 onPress={handleRequestTrade}
-                style={[styles.tradeButton, { backgroundColor: "#E91E63" }]}
+                style={[styles.tradeButton, { backgroundColor: colors.accent }]}
               >
                 <ThemedText style={styles.tradeButtonText}>Request trade</ThemedText>
               </Pressable>
@@ -427,12 +429,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
+    alignSelf: "center",
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 48,
+    width: "100%",
+    maxWidth: 760,
   },
   backButton: {
     alignSelf: "flex-start",
-    borderRadius: 8,
+    borderRadius: 999,
     marginBottom: 18,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -448,7 +453,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   cover: {
-    borderRadius: 12,
+    borderRadius: 18,
     height: 188,
     width: 128,
   },
@@ -456,8 +461,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    fontSize: 28,
-    lineHeight: 32,
+    fontSize: 32,
+    letterSpacing: -0.7,
+    lineHeight: 36,
   },
   author: {
     fontSize: 17,
@@ -475,7 +481,7 @@ const styles = StyleSheet.create({
   badge: {
     alignSelf: "flex-start",
     alignItems: "center",
-    borderRadius: 6,
+    borderRadius: 999,
     justifyContent: "center",
     minHeight: 36,
     paddingHorizontal: 10,
@@ -485,7 +491,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   infoBox: {
-    borderRadius: 12,
+    borderRadius: 20,
+    borderWidth: StyleSheet.hairlineWidth,
     gap: 8,
     marginTop: 18,
     padding: 16,
@@ -499,7 +506,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   publisherBox: {
-    borderRadius: 12,
+    borderRadius: 20,
+    borderWidth: StyleSheet.hairlineWidth,
     gap: 10,
     marginTop: 12,
     padding: 16,
@@ -534,7 +542,8 @@ const styles = StyleSheet.create({
     marginTop: 28,
   },
   topicCard: {
-    borderRadius: 14,
+    borderRadius: 20,
+    borderWidth: StyleSheet.hairlineWidth,
     flexDirection: "row",
     gap: 14,
     padding: 14,
@@ -554,7 +563,7 @@ const styles = StyleSheet.create({
   },
   tradeButton: {
     alignItems: "center",
-    borderRadius: 8,
+    borderRadius: 14,
     marginTop: 28,
     paddingVertical: 14,
   },
@@ -569,7 +578,7 @@ const styles = StyleSheet.create({
   },
   ownerButton: {
     alignItems: "center",
-    borderRadius: 8,
+    borderRadius: 14,
     paddingVertical: 14,
   },
   ownerButtonText: {

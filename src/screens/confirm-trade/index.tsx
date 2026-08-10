@@ -11,7 +11,6 @@ import { Image } from "expo-image";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-const BOOKTRADE_PINK = "#e91e63";
 
 export function ConfirmTradeScreen() {
   const { session } = useAuth();
@@ -172,7 +171,7 @@ export function ConfirmTradeScreen() {
             <Pressable
               disabled={isSubmitting}
               onPress={handleConfirm}
-              style={[styles.primaryButton, { backgroundColor: BOOKTRADE_PINK }]}
+              style={[styles.primaryButton, { backgroundColor: colors.accent }]}
             >
               {isSubmitting ? (
                 <ActivityIndicator color="#fff" />
@@ -211,18 +210,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
+    alignSelf: "center",
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 48,
+    width: "100%",
+    maxWidth: 680,
   },
   backButton: {
     alignSelf: "flex-start",
-    borderRadius: 8,
+    borderRadius: 999,
     marginBottom: 18,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
   title: {
-    fontSize: 30,
+    fontSize: 36,
+    letterSpacing: -1,
+    lineHeight: 40,
     marginBottom: 6,
   },
   helperText: {
@@ -241,6 +245,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 15,
     marginBottom: 20,
+    borderRadius: 20,
+    padding: 14,
+    backgroundColor: "rgba(142,142,147,0.08)",
   },
   tradeCover: {
     borderRadius: 12,
@@ -257,8 +264,8 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     alignItems: "center",
-    borderRadius: 8,
-    height: 48,
+    borderRadius: 14,
+    height: 50,
     justifyContent: "center",
     marginTop: 12,
   },

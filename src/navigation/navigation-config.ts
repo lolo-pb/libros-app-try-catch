@@ -85,7 +85,7 @@ export const navigationSections: NavigationSection[] = [
   },
   {
     id: "books",
-    name: "My Books",
+    name: "Books",
     icon: "book.fill",
     screens: [
       {
@@ -116,7 +116,7 @@ export const navigationSections: NavigationSection[] = [
   },
   {
     id: "trades",
-    name: "My Trades",
+    name: "Trades",
     icon: "arrow.left.arrow.right",
     screens: [
       {
@@ -135,7 +135,7 @@ export const navigationSections: NavigationSection[] = [
   },
   {
     id: "user",
-    name: "My User",
+    name: "Profile",
     icon: "person.fill",
     screens: [
       {

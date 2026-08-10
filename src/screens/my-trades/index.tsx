@@ -288,7 +288,11 @@ function TradeSection({
           <Pressable
             key={trade.id}
             onPress={() => onOpenTrade(trade.id)}
-            style={[styles.tradeRow, { borderColor: colors.icon }]}
+            style={({ pressed }) => [
+              styles.tradeRow,
+              { backgroundColor: colors.surface, borderColor: colors.separator },
+              pressed && styles.rowPressed,
+            ]}
           >
             <Image
               source={resolveCoverSource(trade.targetBook)}
@@ -330,11 +334,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
+    alignSelf: "center",
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 48,
+    width: "100%",
+    maxWidth: 760,
   },
   title: {
-    fontSize: 30,
+    fontSize: 36,
+    letterSpacing: -1,
+    lineHeight: 40,
     marginBottom: 6,
   },
   helperText: {
@@ -352,23 +361,30 @@ const styles = StyleSheet.create({
     marginBottom: 26,
   },
   sectionTitle: {
-    marginBottom: 12,
+    marginBottom: 14,
   },
   emptySection: {
     alignItems: "center",
+    borderRadius: 20,
+    backgroundColor: "rgba(142,142,147,0.08)",
+    paddingHorizontal: 20,
     paddingVertical: 20,
   },
   tradeRow: {
     alignItems: "center",
-    borderRadius: 8,
-    borderWidth: 1,
+    borderRadius: 20,
+    borderWidth: StyleSheet.hairlineWidth,
     flexDirection: "row",
     gap: 8,
     marginBottom: 14,
-    padding: 10,
+    padding: 12,
+  },
+  rowPressed: {
+    opacity: 0.78,
+    transform: [{ scale: 0.985 }],
   },
   cover: {
-    borderRadius: 8,
+    borderRadius: 12,
     height: 78,
     width: 54,
   },
@@ -381,15 +397,15 @@ const styles = StyleSheet.create({
   },
   statusBadge: {
     alignSelf: "flex-start",
-    borderRadius: 6,
+    borderRadius: 999,
     marginTop: 6,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
   primaryButton: {
     alignItems: "center",
-    borderRadius: 8,
-    height: 48,
+    borderRadius: 14,
+    height: 50,
     justifyContent: "center",
     marginTop: 12,
     paddingHorizontal: 16,

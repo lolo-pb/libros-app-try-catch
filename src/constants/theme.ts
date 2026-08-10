@@ -1,41 +1,47 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
+import { Platform, type ViewStyle } from "react-native";
 
-import { Platform } from "react-native";
-
-const tintColorLight = "#0a7ea4";
-const tintColorDark = tintColorLight;
+const systemBlue = "#0A84FF";
 
 export const Colors = {
   light: {
-    text: "#11181C",
-    background: "#fff",
-    tint: tintColorLight,
-    icon: "#687076",
-    tabIconDefault: "#687076",
-    tabIconSelected: tintColorLight,
+    text: "#1C1C1E",
+    background: "#F5F5F7",
+    surface: "#FFFFFF",
+    surfaceMuted: "#ECECF0",
+    chrome: "rgba(255,255,255,0.92)",
+    tint: systemBlue,
+    accent: "#FF2D55",
+    icon: "#AEAEB2",
+    separator: "rgba(60,60,67,0.16)",
+    tabIconDefault: "#6C6C70",
+    tabIconSelected: systemBlue,
+    danger: "#FF3B30",
+    warning: "#FF9F0A",
+    success: "#34C759",
   },
   dark: {
-    text: "#ECEDEE",
-    background: "#151718",
-    tint: tintColorDark,
-    icon: "#9BA1A6",
-    tabIconDefault: "#9BA1A6",
-    tabIconSelected: tintColorDark,
+    text: "#F5F5F7",
+    background: "#000000",
+    surface: "#1C1C1E",
+    surfaceMuted: "#2C2C2E",
+    chrome: "rgba(28,28,30,0.94)",
+    tint: systemBlue,
+    accent: "#FF375F",
+    icon: "#48484A",
+    separator: "rgba(84,84,88,0.65)",
+    tabIconDefault: "#98989D",
+    tabIconSelected: systemBlue,
+    danger: "#FF453A",
+    warning: "#FFD60A",
+    success: "#30D158",
   },
 };
 
 export const Fonts = Platform.select({
   ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
     sans: "system-ui",
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
     serif: "ui-serif",
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
     rounded: "ui-rounded",
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
     mono: "ui-monospace",
   },
   default: {
@@ -52,3 +58,25 @@ export const Fonts = Platform.select({
     mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   },
 });
+
+export const AppRadii = {
+  control: 14,
+  card: 20,
+  large: 26,
+  pill: 999,
+} as const;
+
+export const AppShadow: ViewStyle = Platform.select<ViewStyle>({
+  ios: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 24,
+  },
+  android: {
+    elevation: 8,
+  },
+  web: {
+    boxShadow: "0 12px 36px rgba(0,0,0,0.12)",
+  },
+}) ?? {};

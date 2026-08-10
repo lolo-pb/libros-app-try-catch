@@ -90,7 +90,10 @@ export function MyUserScreen() {
         </ThemedText>
 
         <ThemedView
-          style={[styles.statsBox, { backgroundColor: colors.tint + "10" }]}
+          style={[
+            styles.statsBox,
+            { backgroundColor: colors.surface, borderColor: colors.separator },
+          ]}
         >
           <ThemedView style={styles.statItem}>
             <ThemedText type="subtitle">No rating yet</ThemedText>
@@ -108,13 +111,21 @@ export function MyUserScreen() {
 
         <Pressable
           onPress={() => navigateToScreen("user", "user-settings")}
-          style={[styles.secondaryButton, { borderColor: colors.icon }]}
+          style={({ pressed }) => [
+            styles.secondaryButton,
+            { backgroundColor: colors.surface, borderColor: colors.separator },
+            pressed && styles.buttonPressed,
+          ]}
         >
           <ThemedText type="defaultSemiBold">Edit profile</ThemedText>
         </Pressable>
         <Pressable
           onPress={() => navigateToScreen("books", "my-books")}
-          style={[styles.secondaryButton, { borderColor: colors.icon }]}
+          style={({ pressed }) => [
+            styles.secondaryButton,
+            { backgroundColor: colors.surface, borderColor: colors.separator },
+            pressed && styles.buttonPressed,
+          ]}
         >
           <ThemedText type="defaultSemiBold">See my books</ThemedText>
         </Pressable>
@@ -139,8 +150,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
+    alignSelf: "center",
     flex: 1,
     padding: 24,
+    width: "100%",
+    maxWidth: 680,
   },
   centerState: {
     alignItems: "center",
@@ -149,24 +163,26 @@ const styles = StyleSheet.create({
   },
   avatar: {
     alignItems: "center",
-    borderRadius: 48,
-    height: 96,
+    borderRadius: 58,
+    height: 116,
     justifyContent: "center",
     marginBottom: 18,
     overflow: "hidden",
-    width: 96,
+    width: 116,
   },
   avatarImage: {
     height: "100%",
     width: "100%",
   },
   avatarText: {
-    fontSize: 42,
+    fontSize: 46,
     fontWeight: "900",
     textTransform: "uppercase",
   },
   nameText: {
-    fontSize: 30,
+    fontSize: 36,
+    letterSpacing: -1,
+    lineHeight: 40,
     marginBottom: 6,
   },
   helperText: {
@@ -174,18 +190,19 @@ const styles = StyleSheet.create({
     marginTop: 14,
   },
   statsBox: {
-    borderRadius: 8,
+    borderRadius: 22,
+    borderWidth: StyleSheet.hairlineWidth,
     gap: 14,
     marginBottom: 18,
-    padding: 14,
+    padding: 18,
   },
   statItem: {
     gap: 4,
   },
   primaryButton: {
     alignItems: "center",
-    borderRadius: 8,
-    height: 48,
+    borderRadius: 14,
+    height: 50,
     justifyContent: "center",
     marginTop: 12,
   },
@@ -196,10 +213,14 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     alignItems: "center",
-    borderRadius: 8,
-    borderWidth: 1,
-    height: 48,
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
+    height: 50,
     justifyContent: "center",
     marginBottom: 12,
+  },
+  buttonPressed: {
+    opacity: 0.72,
+    transform: [{ scale: 0.985 }],
   },
 });

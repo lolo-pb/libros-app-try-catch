@@ -102,7 +102,7 @@ export function LoginScreen() {
       style={[styles.safeArea, { backgroundColor: colors.background }]}
     >
       <ThemedView style={styles.container}>
-        <ThemedText type="title" style={styles.logoText}>
+        <ThemedText type="title" style={[styles.logoText, { color: colors.accent }]}>
           BookTrade
         </ThemedText>
         <ThemedText style={[styles.intro, { color: colors.tabIconDefault }]}>
@@ -122,7 +122,8 @@ export function LoginScreen() {
               style={[
                 styles.input,
                 {
-                  backgroundColor: colorScheme === "dark" ? "#2c2c2e" : "#f0f0f0",
+                  backgroundColor: colors.surface,
+                  borderColor: colors.separator,
                   color: colors.text,
                 },
               ]}
@@ -143,7 +144,8 @@ export function LoginScreen() {
           style={[
             styles.input,
             {
-              backgroundColor: colorScheme === "dark" ? "#2c2c2e" : "#f0f0f0",
+              backgroundColor: colors.surface,
+              borderColor: colors.separator,
               color: colors.text,
             },
           ]}
@@ -157,7 +159,8 @@ export function LoginScreen() {
           style={[
             styles.input,
             {
-              backgroundColor: colorScheme === "dark" ? "#2c2c2e" : "#f0f0f0",
+              backgroundColor: colors.surface,
+              borderColor: colors.separator,
               color: colors.text,
             },
           ]}
@@ -173,7 +176,8 @@ export function LoginScreen() {
               style={[
                 styles.input,
                 {
-                  backgroundColor: colorScheme === "dark" ? "#2c2c2e" : "#f0f0f0",
+                  backgroundColor: colors.surface,
+                  borderColor: colors.separator,
                   color: colors.text,
                 },
               ]}
@@ -248,14 +252,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
+    alignSelf: "center",
     flex: 1,
     justifyContent: "center",
     padding: 24,
+    width: "100%",
+    maxWidth: 560,
   },
   logoText: {
-    color: "#E91E63",
-    fontSize: 34,
-    fontWeight: "900",
+    fontSize: 38,
+    fontWeight: "800",
+    letterSpacing: -1.2,
     marginBottom: 10,
     textAlign: "center",
   },
@@ -270,7 +277,8 @@ const styles = StyleSheet.create({
     marginTop: -4,
   },
   input: {
-    borderRadius: 8,
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
     fontSize: 16,
     height: 48,
     marginBottom: 12,
@@ -285,8 +293,8 @@ const styles = StyleSheet.create({
   },
   checkbox: {
     alignItems: "center",
-    borderRadius: 4,
-    borderWidth: 1,
+    borderRadius: 7,
+    borderWidth: StyleSheet.hairlineWidth,
     height: 22,
     justifyContent: "center",
     width: 22,
@@ -303,8 +311,8 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     alignItems: "center",
-    borderRadius: 8,
-    height: 48,
+    borderRadius: 14,
+    height: 50,
     justifyContent: "center",
     marginBottom: 16,
   },

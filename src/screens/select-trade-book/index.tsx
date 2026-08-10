@@ -178,12 +178,12 @@ export function SelectTradeBookScreen() {
                 style={[
                   styles.warningBox,
                   {
-                    backgroundColor: "#FFF4CC",
-                    borderColor: "#F2C94C",
+                    backgroundColor: colors.warning + "18",
+                    borderColor: colors.warning,
                   },
                 ]}
               >
-                <ThemedText style={{ color: "#7A4F00", fontWeight: "700" }}>
+                <ThemedText style={{ color: colors.warning, fontWeight: "700" }}>
                   You already have a pending request for this book.
                 </ThemedText>
               </ThemedView>
@@ -222,7 +222,11 @@ export function SelectTradeBookScreen() {
                     <Pressable
                       key={book.id}
                       onPress={() => setSelectedBookId(book.id)}
-                      style={[styles.bookRow, { borderColor: colors.icon }]}
+                      style={({ pressed }) => [
+                        styles.bookRow,
+                        { backgroundColor: colors.surface, borderColor: colors.separator },
+                        pressed && styles.rowPressed,
+                      ]}
                     >
                       <Image
                         source={resolveCoverSource(book)}
@@ -292,18 +296,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
+    alignSelf: "center",
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 48,
+    width: "100%",
+    maxWidth: 700,
   },
   backButton: {
     alignSelf: "flex-start",
-    borderRadius: 8,
+    borderRadius: 999,
     marginBottom: 18,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
   title: {
-    fontSize: 30,
+    fontSize: 36,
+    letterSpacing: -1,
+    lineHeight: 40,
     marginBottom: 6,
   },
   helperText: {
@@ -319,8 +328,8 @@ const styles = StyleSheet.create({
   },
   targetCard: {
     alignItems: "center",
-    borderRadius: 8,
-    borderWidth: 1,
+    borderRadius: 20,
+    borderWidth: StyleSheet.hairlineWidth,
     flexDirection: "row",
     gap: 12,
     marginBottom: 14,
@@ -336,8 +345,8 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   warningBox: {
-    borderRadius: 8,
-    borderWidth: 1,
+    borderRadius: 16,
+    borderWidth: StyleSheet.hairlineWidth,
     marginBottom: 14,
     padding: 12,
   },
@@ -356,15 +365,19 @@ const styles = StyleSheet.create({
   },
   bookRow: {
     alignItems: "center",
-    borderRadius: 8,
-    borderWidth: 1,
+    borderRadius: 18,
+    borderWidth: StyleSheet.hairlineWidth,
     flexDirection: "row",
     gap: 12,
     marginBottom: 12,
     padding: 10,
   },
+  rowPressed: {
+    opacity: 0.75,
+    transform: [{ scale: 0.985 }],
+  },
   bookCover: {
-    borderRadius: 8,
+    borderRadius: 12,
     height: 92,
     width: 64,
   },
@@ -391,8 +404,8 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     alignItems: "center",
-    borderRadius: 8,
-    height: 48,
+    borderRadius: 14,
+    height: 50,
     justifyContent: "center",
     marginTop: 12,
   },

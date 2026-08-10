@@ -93,7 +93,7 @@ export function GlobalBookScreen() {
         onPress={() => navigateToScreen("home", "home-main")}
         style={[
           styles.backButton,
-          { backgroundColor: colorScheme === "dark" ? "#3a3a3acc" : "#e6e6e6cc" },
+          { backgroundColor: colors.chrome, borderColor: colors.separator },
         ]}
       >
         <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
@@ -142,7 +142,8 @@ export function GlobalBookScreen() {
               style={[
                 styles.descriptionBox,
                 {
-                  backgroundColor: colorScheme === "dark" ? "#2c2c2e" : "#f8f8f8",
+                  backgroundColor: colors.surface,
+                  borderColor: colors.separator,
                 },
               ]}
             >
@@ -187,8 +188,8 @@ export function GlobalBookScreen() {
                   style={[
                     styles.emptyBox,
                     {
-                      backgroundColor:
-                        colorScheme === "dark" ? "#2c2c2e" : "#f6f6f6",
+                      backgroundColor: colors.surface,
+                      borderColor: colors.separator,
                     },
                   ]}
                 >
@@ -212,8 +213,8 @@ export function GlobalBookScreen() {
                     style={[
                       styles.discussionCard,
                       {
-                        backgroundColor:
-                          colorScheme === "dark" ? "#2c2c2e" : "#f8f8f8",
+                        backgroundColor: colors.surface,
+                        borderColor: colors.separator,
                       },
                     ]}
                   >
@@ -247,8 +248,8 @@ export function GlobalBookScreen() {
                   style={[
                     styles.emptyBox,
                     {
-                      backgroundColor:
-                        colorScheme === "dark" ? "#2c2c2e" : "#f6f6f6",
+                      backgroundColor: colors.surface,
+                      borderColor: colors.separator,
                     },
                   ]}
                 >
@@ -278,8 +279,8 @@ export function GlobalBookScreen() {
                       style={[
                         styles.bookCard,
                         {
-                          backgroundColor:
-                            colorScheme === "dark" ? "#2c2c2e" : "#f8f8f8",
+                          backgroundColor: colors.surface,
+                          borderColor: colors.separator,
                         },
                       ]}
                     >
@@ -314,13 +315,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
+    alignSelf: "center",
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 48,
     paddingTop: 70,
+    width: "100%",
+    maxWidth: 840,
   },
   backButton: {
     alignItems: "center",
-    borderRadius: 8,
+    borderRadius: 999,
+    borderWidth: StyleSheet.hairlineWidth,
     paddingHorizontal: 12,
     paddingVertical: 8,
     position: "absolute",
@@ -340,7 +345,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   cover: {
-    borderRadius: 12,
+    borderRadius: 18,
     height: 188,
     width: 128,
   },
@@ -348,8 +353,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    fontSize: 28,
-    lineHeight: 32,
+    fontSize: 32,
+    letterSpacing: -0.7,
+    lineHeight: 36,
   },
   author: {
     fontSize: 17,
@@ -366,12 +372,13 @@ const styles = StyleSheet.create({
   },
   badge: {
     alignSelf: "flex-start",
-    borderRadius: 6,
+    borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
   descriptionBox: {
-    borderRadius: 12,
+    borderRadius: 20,
+    borderWidth: StyleSheet.hairlineWidth,
     gap: 8,
     marginTop: 12,
     padding: 16,
@@ -394,7 +401,7 @@ const styles = StyleSheet.create({
   },
   startButton: {
     alignItems: "center",
-    borderRadius: 8,
+    borderRadius: 14,
     height: 40,
     justifyContent: "center",
     paddingHorizontal: 14,
@@ -404,7 +411,8 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   discussionCard: {
-    borderRadius: 12,
+    borderRadius: 18,
+    borderWidth: StyleSheet.hairlineWidth,
     gap: 6,
     padding: 14,
   },
@@ -412,7 +420,8 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   emptyBox: {
-    borderRadius: 12,
+    borderRadius: 18,
+    borderWidth: StyleSheet.hairlineWidth,
     gap: 6,
     padding: 16,
   },
@@ -421,7 +430,8 @@ const styles = StyleSheet.create({
     paddingRight: 20,
   },
   bookCard: {
-    borderRadius: 14,
+    borderRadius: 20,
+    borderWidth: StyleSheet.hairlineWidth,
     padding: 12,
     width: 160,
     gap: 8,

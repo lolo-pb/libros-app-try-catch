@@ -1,8 +1,10 @@
 import { ThemedText } from "@/src/components/themed-text";
 import { ThemedView } from "@/src/components/themed-view";
+import { IconSymbol } from "@/src/components/ui/icon-symbol";
 import { Colors } from "@/src/constants/theme";
 import { useAppNavigation } from "@/src/context/navigation-context";
 import { useColorScheme } from "@/src/hooks/use-color-scheme";
+import { useReducedMotion } from "@/src/hooks/use-reduced-motion";
 import { resolveCoverSource } from "@/src/lib/book-covers";
 import { loadGlobalBooks } from "@/src/lib/global-books";
 import type { HomeScreenSnapshot } from "@/src/navigation/types";
@@ -58,6 +60,7 @@ function splitIntoColumns(items: GlobalBookWithBooks[]) {
 export function HomeScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
+  const reduceMotion = useReducedMotion();
   const { navigateToScreen, navigationState, setPreservedScreenState } =
     useAppNavigation();
   const restoredSnapshot = navigationState.preservedScreenState?.["home-main"];
@@ -287,7 +290,7 @@ export function HomeScreen() {
           })}
           style={[styles.feedCardImage, coverHeightStyle]}
           contentFit="cover"
-          transition={400}
+          transition={reduceMotion ? 0 : 250}
         />
         <View style={styles.feedCardContent}>
           <ThemedText
@@ -328,7 +331,7 @@ export function HomeScreen() {
     >
       <ThemedView style={styles.container}>
         <ThemedView style={styles.fixedHeader}>
-          <ThemedText type="title" style={styles.logoText}>
+          <ThemedText type="title" style={[styles.logoText, { color: colors.accent }]}>
             BookTrade
           </ThemedText>
         </ThemedView>
@@ -358,12 +361,14 @@ export function HomeScreen() {
           >
             <ThemedView
               style={[
-                styles.searchContainer,
-                {
-                  backgroundColor: colorScheme === "dark" ? "#2c2c2e" : "#f0f0f0",
+              styles.searchContainer,
+              {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.separator,
                 },
               ]}
             >
+              <IconSymbol name="magnifyingglass" size={20} color={colors.tabIconDefault} />
               <TextInput
                 style={[styles.searchInput, { color: colors.text }]}
                 placeholder="Search topics..."
@@ -456,17 +461,20 @@ const styles = StyleSheet.create({
   fixedHeader: {
     paddingHorizontal: 20,
     paddingTop: 12,
-    alignItems: "center",
+    alignItems: "flex-start",
     paddingBottom: 10,
   },
   logoText: {
-    fontSize: 28,
-    color: "#E91E63",
-    fontWeight: "900",
+    fontSize: 30,
+    fontWeight: "800",
+    letterSpacing: -0.8,
   },
   searchContainer: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 9,
     height: 45,
-    borderRadius: 12,
+    borderRadius: 14,
     paddingHorizontal: 15,
     justifyContent: "center",
     alignSelf: "stretch",
@@ -474,13 +482,17 @@ const styles = StyleSheet.create({
     borderColor: "rgba(0,0,0,0.04)",
   },
   scrollContent: {
+    alignSelf: "center",
     paddingHorizontal: 20,
-    paddingBottom: 40,
+    paddingBottom: 48,
+    width: "100%",
+    maxWidth: 980,
   },
   searchScrollWrapper: {
     paddingBottom: 12,
   },
   searchInput: {
+    flex: 1,
     fontSize: 16,
   },
   sectionHeader: {

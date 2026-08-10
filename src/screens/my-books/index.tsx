@@ -147,7 +147,7 @@ export function MyBooksScreen() {
         </ThemedView>
 
         {errorMessage ? (
-          <ThemedView style={styles.errorBox}>
+          <ThemedView style={[styles.errorBox, { backgroundColor: colors.surface }]}>
             <ThemedText type="defaultSemiBold">Could not load your books</ThemedText>
             <ThemedText style={[styles.errorText, { color: colors.tabIconDefault }]}>
               {errorMessage}
@@ -166,7 +166,7 @@ export function MyBooksScreen() {
             <ActivityIndicator color={colors.tint} />
           </ThemedView>
         ) : books.length === 0 ? (
-          <ThemedView style={styles.emptyBox}>
+          <ThemedView style={[styles.emptyBox, { backgroundColor: colors.surface }]}>
               <ThemedText type="defaultSemiBold">No books yet</ThemedText>
               <ThemedText style={{ color: colors.tabIconDefault }}>
               Add your first book and optionally link it to a topic.
@@ -185,7 +185,14 @@ export function MyBooksScreen() {
               onPress={() =>
                 navigateToScreen("books", "book", { bookId: book.id })
               }
-              style={styles.bookCard}
+              style={({ pressed }) => [
+                styles.bookCard,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.separator,
+                },
+                pressed && styles.cardPressed,
+              ]}
             >
               {(() => {
                 return (
@@ -233,8 +240,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
+    alignSelf: "center",
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 48,
+    width: "100%",
+    maxWidth: 760,
   },
   centerState: {
     alignItems: "center",
@@ -243,16 +253,18 @@ const styles = StyleSheet.create({
     paddingTop: 40,
   },
   headerRow: {
-    alignItems: "center",
+    alignItems: "flex-end",
     flexDirection: "row",
     gap: 12,
-    marginBottom: 24,
+    marginBottom: 28,
   },
   headerText: {
     flex: 1,
   },
   title: {
-    fontSize: 30,
+    fontSize: 36,
+    letterSpacing: -1,
+    lineHeight: 40,
     marginBottom: 6,
   },
   helperText: {
@@ -261,7 +273,7 @@ const styles = StyleSheet.create({
   },
   addButton: {
     alignItems: "center",
-    borderRadius: 8,
+    borderRadius: 14,
     height: 44,
     justifyContent: "center",
     paddingHorizontal: 16,
@@ -272,8 +284,8 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     alignItems: "center",
-    borderRadius: 8,
-    height: 48,
+    borderRadius: 14,
+    height: 50,
     justifyContent: "center",
   },
   primaryButtonText: {
@@ -288,10 +300,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
     marginBottom: 14,
+    borderRadius: 20,
+    padding: 20,
   },
   retryButton: {
     alignItems: "center",
-    borderRadius: 8,
+    borderRadius: 14,
     marginTop: 6,
     paddingHorizontal: 16,
     paddingVertical: 10,
@@ -303,11 +317,13 @@ const styles = StyleSheet.create({
   emptyBox: {
     alignItems: "center",
     gap: 8,
-    paddingVertical: 50,
+    borderRadius: 22,
+    paddingHorizontal: 24,
+    paddingVertical: 56,
   },
   emptyButton: {
     alignItems: "center",
-    borderRadius: 8,
+    borderRadius: 14,
     marginTop: 8,
     paddingHorizontal: 16,
     paddingVertical: 10,
@@ -318,12 +334,19 @@ const styles = StyleSheet.create({
   },
   bookCard: {
     alignItems: "center",
+    borderRadius: 20,
+    borderWidth: StyleSheet.hairlineWidth,
     flexDirection: "row",
     gap: 15,
-    marginBottom: 20,
+    marginBottom: 14,
+    padding: 12,
+  },
+  cardPressed: {
+    opacity: 0.78,
+    transform: [{ scale: 0.985 }],
   },
   bookCover: {
-    borderRadius: 12,
+    borderRadius: 14,
     height: 130,
     width: 90,
   },
@@ -336,7 +359,7 @@ const styles = StyleSheet.create({
   },
   smallButton: {
     alignSelf: "flex-start",
-    borderRadius: 6,
+    borderRadius: 10,
     marginTop: 8,
     paddingHorizontal: 10,
     paddingVertical: 5,

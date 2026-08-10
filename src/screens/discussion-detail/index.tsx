@@ -60,9 +60,9 @@ export function DiscussionDetailScreen() {
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const scrollViewRef = useRef<ScrollView | null>(null);
 
-  const surfaceColor = colorScheme === "dark" ? "#222225" : "#f8f8f8";
-  const nestedSurfaceColor = colorScheme === "dark" ? "#202023" : "#f5f5f5";
-  const inputBackgroundColor = colorScheme === "dark" ? "#2c2c2e" : "#f0f0f0";
+  const surfaceColor = colors.surface;
+  const nestedSurfaceColor = colors.surfaceMuted;
+  const inputBackgroundColor = colors.surfaceMuted;
 
   const fetchDiscussion = useCallback(async () => {
     if (!discussionId) {
@@ -228,7 +228,7 @@ export function DiscussionDetailScreen() {
           onPress={() => navigateToScreen("home", "global-book", { globalBookId })}
           style={[
             styles.backButton,
-            { backgroundColor: colorScheme === "dark" ? "#3a3a3acc" : "#e6e6e6cc" },
+            { backgroundColor: colors.chrome, borderColor: colors.separator },
           ]}
         >
           <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
@@ -322,7 +322,7 @@ export function DiscussionDetailScreen() {
               </ThemedText>
 
               {discussion.root_comments.length === 0 ? (
-                <ThemedView style={styles.emptyBox}>
+                <ThemedView style={[styles.emptyBox, { backgroundColor: colors.surface }]}>
                   <ThemedText type="defaultSemiBold">No comments yet</ThemedText>
                   <ThemedText style={{ color: colors.tabIconDefault }}>
                     Start the conversation on this topic.
@@ -395,6 +395,7 @@ export function DiscussionDetailScreen() {
               inputTextColor={colors.text}
               mutedTextColor={colors.tabIconDefault}
               buttonColor={colors.tint}
+              surfaceColor={colors.chrome}
               onLayout={(event) => setComposerHeight(event.nativeEvent.layout.height)}
             />
           </View>
@@ -412,11 +413,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
+    alignSelf: "center",
     padding: 20,
     paddingTop: 72,
+    width: "100%",
+    maxWidth: 760,
   },
   backButton: {
-    borderRadius: 8,
+    borderRadius: 999,
+    borderWidth: StyleSheet.hairlineWidth,
     left: 20,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -430,14 +435,15 @@ const styles = StyleSheet.create({
     paddingTop: 80,
   },
   discussionCard: {
-    borderRadius: 12,
+    borderRadius: 22,
     gap: 8,
     marginBottom: 24,
     padding: 16,
   },
   title: {
-    fontSize: 28,
-    lineHeight: 32,
+    fontSize: 32,
+    letterSpacing: -0.7,
+    lineHeight: 36,
   },
   bodyText: {
     marginTop: 4,
@@ -451,7 +457,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   emptyBox: {
-    borderRadius: 12,
+    borderRadius: 18,
     gap: 6,
     marginBottom: 24,
     padding: 16,

@@ -34,7 +34,8 @@ export function NewDiscussionScreen() {
   const inputStyle = [
     styles.input,
     {
-      backgroundColor: colorScheme === "dark" ? "#2c2c2e" : "#f0f0f0",
+      backgroundColor: colors.surface,
+      borderColor: colors.separator,
       color: colors.text,
     },
   ];
@@ -148,7 +149,7 @@ export function NewDiscussionScreen() {
         onPress={() => navigateToScreen("home", "global-book", { globalBookId })}
         style={[
           styles.backButton,
-          { backgroundColor: colorScheme === "dark" ? "#3a3a3acc" : "#e6e6e6cc" },
+          { backgroundColor: colors.chrome, borderColor: colors.separator },
         ]}
       >
         <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
@@ -219,9 +220,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
+    alignSelf: "center",
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 48,
     paddingTop: 72,
+    width: "100%",
+    maxWidth: 700,
   },
   centerState: {
     alignItems: "center",
@@ -231,7 +235,8 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   backButton: {
-    borderRadius: 8,
+    borderRadius: 999,
+    borderWidth: StyleSheet.hairlineWidth,
     left: 20,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -240,14 +245,17 @@ const styles = StyleSheet.create({
     zIndex: 20,
   },
   title: {
-    fontSize: 30,
+    fontSize: 36,
+    letterSpacing: -1,
+    lineHeight: 40,
     marginBottom: 6,
   },
   helperText: {
     marginBottom: 22,
   },
   input: {
-    borderRadius: 8,
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
     fontSize: 16,
     minHeight: 48,
     paddingHorizontal: 14,
@@ -265,8 +273,8 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     alignItems: "center",
-    borderRadius: 8,
-    height: 48,
+    borderRadius: 14,
+    height: 50,
     justifyContent: "center",
     marginTop: 18,
   },

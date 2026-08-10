@@ -13,6 +13,7 @@ const MAPPING = {
   "chevron.left.forwardslash.chevron.right": "code",
   "chevron.right": "chevron-right",
   "trash.fill": "delete",
+  magnifyingglass: "search",
 } as const satisfies Record<string, ComponentProps<typeof MaterialIcons>["name"]>;
 
 export function IconSymbol({

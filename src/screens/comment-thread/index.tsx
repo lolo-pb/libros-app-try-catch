@@ -62,9 +62,9 @@ export function CommentThreadScreen() {
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const scrollViewRef = useRef<ScrollView | null>(null);
 
-  const surfaceColor = colorScheme === "dark" ? "#222225" : "#f8f8f8";
-  const nestedSurfaceColor = colorScheme === "dark" ? "#202023" : "#f5f5f5";
-  const inputBackgroundColor = colorScheme === "dark" ? "#2c2c2e" : "#f0f0f0";
+  const surfaceColor = colors.surface;
+  const nestedSurfaceColor = colors.surfaceMuted;
+  const inputBackgroundColor = colors.surfaceMuted;
 
   const fetchThread = useCallback(async () => {
     if (!discussionId || !commentId) {
@@ -242,7 +242,7 @@ export function CommentThreadScreen() {
           }}
           style={[
             styles.backButton,
-            { backgroundColor: colorScheme === "dark" ? "#3a3a3acc" : "#e6e6e6cc" },
+            { backgroundColor: colors.chrome, borderColor: colors.separator },
           ]}
         >
           <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
@@ -399,7 +399,7 @@ export function CommentThreadScreen() {
               </ThemedText>
 
               {thread.child_comments.length === 0 ? (
-                <ThemedView style={styles.emptyBox}>
+                <ThemedView style={[styles.emptyBox, { backgroundColor: colors.surface }]}>
                   <ThemedText type="defaultSemiBold">No replies yet</ThemedText>
                   <ThemedText style={{ color: colors.tabIconDefault }}>
                     Start this branch of the conversation.
@@ -477,6 +477,7 @@ export function CommentThreadScreen() {
               inputTextColor={colors.text}
               mutedTextColor={colors.tabIconDefault}
               buttonColor={colors.tint}
+              surfaceColor={colors.chrome}
               onLayout={(event) => setComposerHeight(event.nativeEvent.layout.height)}
             />
           </View>
@@ -494,11 +495,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
+    alignSelf: "center",
     padding: 20,
     paddingTop: 72,
+    width: "100%",
+    maxWidth: 760,
   },
   backButton: {
-    borderRadius: 8,
+    borderRadius: 999,
+    borderWidth: StyleSheet.hairlineWidth,
     left: 20,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -515,7 +520,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   discussionCard: {
-    borderRadius: 12,
+    borderRadius: 20,
     gap: 8,
     marginBottom: 14,
     padding: 16,
@@ -538,7 +543,7 @@ const styles = StyleSheet.create({
     height: 1,
   },
   emptyBox: {
-    borderRadius: 12,
+    borderRadius: 18,
     gap: 6,
     marginBottom: 24,
     padding: 16,

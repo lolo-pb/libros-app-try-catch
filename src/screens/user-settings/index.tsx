@@ -40,7 +40,8 @@ export function UserSettingsScreen() {
   const inputStyle = [
     styles.input,
     {
-      backgroundColor: colorScheme === "dark" ? "#2c2c2e" : "#f0f0f0",
+      backgroundColor: colors.surface,
+      borderColor: colors.separator,
       color: colors.text,
     },
   ];
@@ -228,7 +229,7 @@ export function UserSettingsScreen() {
           <ThemedView style={styles.avatarActions}>
             <Pressable
               onPress={handleChooseAvatar}
-              style={[styles.secondaryButton, { borderColor: colors.icon }]}
+              style={[styles.secondaryButton, { backgroundColor: colors.surface, borderColor: colors.separator }]}
             >
               <ThemedText type="defaultSemiBold">
                 {previewUrl ? "Change photo" : "Choose photo"}
@@ -240,7 +241,7 @@ export function UserSettingsScreen() {
                   setAvatarAsset(null);
                   setShouldRemoveAvatar(true);
                 }}
-                style={[styles.secondaryButton, { borderColor: colors.icon }]}
+                style={[styles.secondaryButton, { backgroundColor: colors.surface, borderColor: colors.separator }]}
               >
                 <ThemedText type="defaultSemiBold">Remove</ThemedText>
               </Pressable>
@@ -264,7 +265,7 @@ export function UserSettingsScreen() {
         />
 
         <ThemedView
-          style={[styles.infoBox, { backgroundColor: colors.tint + "10" }]}
+          style={[styles.infoBox, { backgroundColor: colors.surface, borderColor: colors.separator }]}
         >
           <ThemedText type="defaultSemiBold">Reviews and ratings</ThemedText>
           <ThemedText style={{ color: colors.tabIconDefault }}>
@@ -299,18 +300,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
+    alignSelf: "center",
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 48,
+    width: "100%",
+    maxWidth: 680,
   },
   backButton: {
     alignSelf: "flex-start",
-    borderRadius: 8,
+    borderRadius: 999,
     marginBottom: 18,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
   title: {
-    fontSize: 30,
+    fontSize: 36,
+    letterSpacing: -1,
+    lineHeight: 40,
     marginBottom: 6,
   },
   helperText: {
@@ -344,7 +350,8 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   input: {
-    borderRadius: 8,
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
     fontSize: 16,
     marginBottom: 12,
     minHeight: 48,
@@ -352,19 +359,20 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   infoBox: {
-    borderRadius: 8,
+    borderRadius: 18,
+    borderWidth: StyleSheet.hairlineWidth,
     gap: 6,
     marginBottom: 18,
     marginTop: 4,
-    padding: 14,
+    padding: 16,
   },
   message: {
     marginBottom: 12,
   },
   primaryButton: {
     alignItems: "center",
-    borderRadius: 8,
-    height: 48,
+    borderRadius: 14,
+    height: 50,
     justifyContent: "center",
   },
   primaryButtonText: {
@@ -374,8 +382,8 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     alignItems: "center",
-    borderRadius: 8,
-    borderWidth: 1,
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
     flex: 1,
     height: 44,
     justifyContent: "center",
