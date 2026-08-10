@@ -1,6 +1,6 @@
 import { Platform, type ViewStyle } from "react-native";
 
-const systemBlue = "#0A84FF";
+export const BookTradeRed = "#E91E63";
 
 export const Colors = {
   light: {
@@ -9,12 +9,12 @@ export const Colors = {
     surface: "#FFFFFF",
     surfaceMuted: "#ECECF0",
     chrome: "rgba(255,255,255,0.92)",
-    tint: systemBlue,
-    accent: "#FF2D55",
+    tint: BookTradeRed,
+    accent: BookTradeRed,
     icon: "#AEAEB2",
     separator: "rgba(60,60,67,0.16)",
     tabIconDefault: "#6C6C70",
-    tabIconSelected: systemBlue,
+    tabIconSelected: BookTradeRed,
     danger: "#FF3B30",
     warning: "#FF9F0A",
     success: "#34C759",
@@ -25,12 +25,12 @@ export const Colors = {
     surface: "#1C1C1E",
     surfaceMuted: "#2C2C2E",
     chrome: "rgba(28,28,30,0.94)",
-    tint: systemBlue,
-    accent: "#FF375F",
+    tint: BookTradeRed,
+    accent: BookTradeRed,
     icon: "#48484A",
     separator: "rgba(84,84,88,0.65)",
     tabIconDefault: "#98989D",
-    tabIconSelected: systemBlue,
+    tabIconSelected: BookTradeRed,
     danger: "#FF453A",
     warning: "#FFD60A",
     success: "#30D158",

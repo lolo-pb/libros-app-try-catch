@@ -1,5 +1,6 @@
 import { StyleSheet, Text, type TextProps } from "react-native";
 
+import { BookTradeRed } from "@/src/constants/theme";
 import { useThemeColor } from "@/src/hooks/use-theme-color";
 
 export type ThemedTextProps = TextProps & {
@@ -59,6 +60,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     lineHeight: 24,
-    color: "#0A84FF",
+    color: BookTradeRed,
   },
 });
