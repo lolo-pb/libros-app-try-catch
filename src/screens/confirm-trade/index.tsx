@@ -1,5 +1,6 @@
 import { ThemedText } from "@/src/components/themed-text";
 import { ThemedView } from "@/src/components/themed-view";
+import { BackButton } from "@/src/components/ui/back-button";
 import { Colors } from "@/src/constants/theme";
 import { useAuth } from "@/src/context/auth-context";
 import { useAppNavigation } from "@/src/context/navigation-context";
@@ -127,19 +128,16 @@ export function ConfirmTradeScreen() {
       style={[styles.safeArea, { backgroundColor: colors.background }]}
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <Pressable
+        <BackButton
+          accessibilityLabel="Back to Book Selection"
           onPress={() =>
             navigateToScreen("home", "select-trade-book", {
               targetBookId,
               globalBookId,
             })
           }
-          style={[styles.backButton, { backgroundColor: colors.tint + "15" }]}
-        >
-          <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
-            Back
-          </ThemedText>
-        </Pressable>
+          style={styles.backButton}
+        />
 
         <ThemedText type="title" style={styles.title}>
           Confirm Trade
@@ -218,10 +216,7 @@ const styles = StyleSheet.create({
   },
   backButton: {
     alignSelf: "flex-start",
-    borderRadius: 999,
     marginBottom: 18,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
   },
   title: {
     fontSize: 36,

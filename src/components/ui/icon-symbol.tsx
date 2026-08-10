@@ -14,6 +14,7 @@ const MAPPING = {
   "chevron.right": "chevron-right",
   "trash.fill": "delete",
   magnifyingglass: "search",
+  "arrow.left": "arrow-back",
 } as const satisfies Record<string, ComponentProps<typeof MaterialIcons>["name"]>;
 
 export function IconSymbol({

@@ -1,5 +1,6 @@
 import { ThemedText } from "@/src/components/themed-text";
 import { ThemedView } from "@/src/components/themed-view";
+import { BackButton } from "@/src/components/ui/back-button";
 import { Colors } from "@/src/constants/theme";
 import { useAuth } from "@/src/context/auth-context";
 import { useAppNavigation } from "@/src/context/navigation-context";
@@ -36,12 +37,6 @@ export function BookScreen() {
       : returnScreen === "global-book" && relatedGlobalBookId
         ? "global-book"
         : "home-main";
-  const backLabel =
-    backSection === "books"
-      ? "Back to My Books"
-      : returnScreen === "global-book" && relatedGlobalBookId
-        ? "Back to Topic"
-        : "Back to Home";
   const [book, setBook] = useState<Book | null>(null);
   const [owner, setOwner] = useState<Profile | null>(null);
   const [globalBook, setGlobalBook] = useState<GlobalBook | null>(null);
@@ -198,18 +193,15 @@ export function BookScreen() {
       style={[styles.safeArea, { backgroundColor: colors.background }]}
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <Pressable
+        <BackButton
+          accessibilityLabel="Go back"
           onPress={() =>
             navigateToScreen(backSection, backScreen, {
               globalBookId: relatedGlobalBookId,
             })
           }
-          style={[styles.backButton, { backgroundColor: colors.tint + "15" }]}
-        >
-          <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
-            {backLabel}
-          </ThemedText>
-        </Pressable>
+          style={styles.backButton}
+        />
 
         {isLoading ? (
           <ThemedView style={styles.centerState}>
@@ -437,10 +429,7 @@ const styles = StyleSheet.create({
   },
   backButton: {
     alignSelf: "flex-start",
-    borderRadius: 999,
     marginBottom: 18,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
   },
   centerState: {
     alignItems: "center",

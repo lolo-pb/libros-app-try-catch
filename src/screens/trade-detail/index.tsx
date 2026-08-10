@@ -1,5 +1,6 @@
 import { ThemedText } from "@/src/components/themed-text";
 import { ThemedView } from "@/src/components/themed-view";
+import { BackButton } from "@/src/components/ui/back-button";
 import { Colors } from "@/src/constants/theme";
 import { useAuth } from "@/src/context/auth-context";
 import { useAppNavigation } from "@/src/context/navigation-context";
@@ -175,14 +176,11 @@ export function TradeDetailScreen() {
       style={[styles.safeArea, { backgroundColor: colors.background }]}
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <Pressable
+        <BackButton
+          accessibilityLabel="Back to My Trades"
           onPress={() => navigateToScreen("trades", "my-trades")}
-          style={[styles.backButton, { backgroundColor: colors.tint + "15" }]}
-        >
-          <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
-            Back to My Trades
-          </ThemedText>
-        </Pressable>
+          style={styles.backButton}
+        />
 
         {isLoading ? (
           <ThemedView style={styles.centerState}>
@@ -287,10 +285,7 @@ const styles = StyleSheet.create({
   },
   backButton: {
     alignSelf: "flex-start",
-    borderRadius: 999,
     marginBottom: 18,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
   },
   title: {
     fontSize: 36,

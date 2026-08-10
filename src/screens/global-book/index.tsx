@@ -1,5 +1,6 @@
 import { ThemedText } from "@/src/components/themed-text";
 import { ThemedView } from "@/src/components/themed-view";
+import { BackButton } from "@/src/components/ui/back-button";
 import { Colors } from "@/src/constants/theme";
 import { useAuth } from "@/src/context/auth-context";
 import { useAppNavigation } from "@/src/context/navigation-context";
@@ -89,17 +90,11 @@ export function GlobalBookScreen() {
       edges={["top", "left", "right"]}
       style={[styles.safeArea, { backgroundColor: colors.background }]}
     >
-      <Pressable
+      <BackButton
+        accessibilityLabel="Back to Home"
         onPress={() => navigateToScreen("home", "home-main")}
-        style={[
-          styles.backButton,
-          { backgroundColor: colors.chrome, borderColor: colors.separator },
-        ]}
-      >
-        <ThemedText style={{ color: colors.tint, fontWeight: "700" }}>
-          Back to Home
-        </ThemedText>
-      </Pressable>
+        style={styles.backButton}
+      />
 
       <ScrollView
         contentContainerStyle={styles.container}
@@ -326,15 +321,9 @@ const styles = StyleSheet.create({
     maxWidth: 840,
   },
   backButton: {
-    alignItems: "center",
-    borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
     position: "absolute",
     top: 40,
     left: 20,
-    width: 128,
     zIndex: 20,
   },
   centerState: {
