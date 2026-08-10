@@ -1,6 +1,36 @@
+<div align="center">
+
 # BookTrade
 
-Useful commands for local development, native builds, and Supabase pushes.
+Discover books, join reader discussions, publish your shelf, and arrange trades from a mobile-first app.
+
+</div>
+
+## App preview
+
+<p align="center">
+  <img src="docs/screenshots/catalog-mobile.png" alt="BookTrade catalog on mobile" width="240" />
+  <img src="docs/screenshots/book-detail-mobile.png" alt="BookTrade book detail and discussions on mobile" width="240" />
+  <img src="docs/screenshots/sign-in-mobile.png" alt="BookTrade sign-in screen on mobile" width="240" />
+</p>
+
+<p align="center">
+  <sub>Catalog &nbsp;&middot;&nbsp; Book details and discussions &nbsp;&middot;&nbsp; Sign in</sub>
+</p>
+
+## What you can do
+
+- Browse and search the shared book catalog.
+- Open book details and take part in reader discussions.
+- Publish books from your shelf and manage trade requests.
+- Keep your profile, books, and trades together in one mobile experience.
+
+## Tech stack
+
+- Expo and React Native
+- Expo Router
+- Supabase
+- TypeScript
 
 ## Install
 

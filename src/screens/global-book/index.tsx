@@ -101,7 +101,10 @@ export function GlobalBookScreen() {
         </ThemedText>
       </Pressable>
 
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+      >
         {isLoading ? (
           <ThemedView style={styles.centerState}>
             <ActivityIndicator color={colors.tint} />
