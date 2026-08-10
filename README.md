@@ -8,6 +8,8 @@ Discover books, join reader discussions, publish your shelf, and arrange trades 
 
 ## App preview
 
+<p align="center"><strong>Dark theme</strong></p>
+
 <p align="center">
   <img src="docs/screenshots/catalog-mobile.png" alt="BookTrade catalog on mobile" width="240" />
   <img src="docs/screenshots/book-detail-mobile.png" alt="BookTrade book detail and discussions on mobile" width="240" />
@@ -17,6 +19,22 @@ Discover books, join reader discussions, publish your shelf, and arrange trades 
 <p align="center">
   <sub>Catalog &nbsp;&middot;&nbsp; Book details and discussions &nbsp;&middot;&nbsp; Sign in</sub>
 </p>
+
+<p align="center"><strong>Light theme</strong></p>
+
+<p align="center">
+  <img src="docs/screenshots/catalog-mobile-light.png" alt="BookTrade catalog in light theme on mobile" width="240" />
+  <img src="docs/screenshots/book-detail-mobile-light.png" alt="BookTrade book detail and discussions in light theme on mobile" width="240" />
+  <img src="docs/screenshots/sign-in-mobile-light.png" alt="BookTrade sign-in screen in light theme on mobile" width="240" />
+</p>
+
+<p align="center">
+  <sub>Catalog &nbsp;&middot;&nbsp; Book details and discussions &nbsp;&middot;&nbsp; Sign in</sub>
+</p>
+
+## About BookTrade
+
+What started as a simple book-trading app has grown into a small social network built around books and the conversations they inspire. Chances are you have a book you have already read sitting on a shelf, and someone else does too. BookTrade helps readers discover one another, discuss shared interests, compare every available copy under a global book entry, and trade with more context before either book changes hands. One exchange gives both readers something new to enjoy, while the discussion gives each book a story before the trade even begins.
 
 ## What you can do
 
